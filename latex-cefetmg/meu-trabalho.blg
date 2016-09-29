@@ -1,0 +1,72 @@
+This is BibTeX, Version 0.99d (TeX Live 2013/Debian)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: meu-trabalho.aux
+A level-1 auxiliary file: ./01-elementos-pre-textuais/lista-figuras.aux
+A level-1 auxiliary file: ./01-elementos-pre-textuais/sumario.aux
+A level-1 auxiliary file: ./02-elementos-textuais/introducao.aux
+A level-1 auxiliary file: ./02-elementos-textuais/fundamentacao-teorica.aux
+A level-1 auxiliary file: ./02-elementos-textuais/trabalhos-relacionados.aux
+A level-1 auxiliary file: ./02-elementos-textuais/metodologia.aux
+A level-1 auxiliary file: ./03-elementos-pos-textuais/referencias.aux
+The style file: abntex2-alf.bst
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated wiz_functions (elt_size=4) to 9000 items from 6000.
+Database file #1: abntex2-options.bib
+Database file #2: ./base-referencias.bib
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated glb_str_ptr (elt_size=4) to 20 items from 10.
+Reallocated global_strs (elt_size=20001) to 20 items from 10.
+Reallocated glb_str_end (elt_size=4) to 20 items from 10.
++---------------------------------------------------------+
+| Estilo bibliográfico abntex2-alf.bst versão v-1.9.2           |
+| Em caso de dúvidas ou problemas com este estilo procure |
+| http://abntex2.googlecode.com                           |
++---------------------------------------------------------+
+You've used 22 entries,
+            6711 wiz_defined-function locations,
+            1303 strings with 11585 characters,
+and the built_in function-call counts, 19548 in all, are:
+= -- 2125
+> -- 354
+< -- 377
++ -- 549
+- -- 113
+* -- 1139
+:= -- 2465
+add.period$ -- 59
+call.type$ -- 23
+change.case$ -- 147
+chr.to.int$ -- 42
+cite$ -- 15
+duplicate$ -- 1621
+empty$ -- 1159
+format.name$ -- 512
+if$ -- 4206
+int.to.chr$ -- 7
+int.to.str$ -- 3
+missing$ -- 339
+newline$ -- 79
+num.names$ -- 75
+pop$ -- 405
+preamble$ -- 1
+purify$ -- 73
+quote$ -- 0
+skip$ -- 2005
+stack$ -- 1
+substring$ -- 737
+swap$ -- 580
+text.length$ -- 10
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 0
+while$ -- 101
+width$ -- 0
+write$ -- 226

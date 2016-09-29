@@ -1,0 +1,27 @@
+% -----------------------------------------------------------------------------
+% Introdução
+% -----------------------------------------------------------------------------
+
+\chapter{Introdução}
+\label{chap:introducao}
+
+A Internet está intrinsecamente inserida em nossas vidas, de tal forma que a consideramos vital. Sempre que podemos estamos conectados, e quando não podemos nos sentimos isolados. A partir dela modificamos o modo como vemos o mundo, temos acesso à informações, nos comunicamos, adquirimos conhecimento e etc. Estamos tão acostumados à ela que não paramos para pensar o quão incrível é o que pode ser considerado o maior sistema de engenharia já criado, ou como ele funciona.
+
+Apesar da Internet fazer parte de nossas vidas de forma tão categórica, tivemos o primeiro contato, do ponto de vista do usuário doméstico, apenas nos anos 90, pouco mais de 20 anos após o início do seu desenvolvimento.
+
+Em 1967 foi apresentada, pela ARPA (\textit{Advanced Research Projects Agency}) do departamento de defesa dos Estados Unidos, a ARPANET. Idealizada como uma pequena rede de computadores conectados, no qual cada host fosse ligado à um computador especializado, denominado \textit{Interface Message Processor} (IMP), sendo que estes seriam conectados à outros IMPs. Esta ideia foi concretizada 2 anos depois e em 1969 o sistema começou a operar em quatro localidades distintas. A Universidades da California de Los Angeles e Santa Barbara (UCLA e UCSB, respectivamente), em conjunto com o Instituto de Pesquisa de Standfor (SRI) e com a Universidade de Utah foram conectados através de seus IMPs. Um software, chamado NCP (\textit{Network Control Protocol}), possibilitava a comunicação entre os institutos. Foi a primeira rede de comutação de pacotes operacional\cite{Forouzan}.
+
+A partir do funcionamento bem sucedido da ARPANET, a mesma tecnologia de troca de pacotes foi empregado na comunicação por rádio tático e por satélite (SATNET). Porem, devido particularidades da cada ambiente de comunicação, cada uma dessas redes utilizavam diferentes parâmetros técnicos. Foi necessário, então, criação de métodos e protocolos a serem seguidos para integrá-los \cite{STALLINGS}. 
+
+Em 1974 foi publicado um artigo \cite{Cerf} no qual foi apresentado o protocolo TCP. "Um protocolo que suporta o compartilhamento de recursos que existem em diferentes redes de comutação de pacotes. O protocolo prevê variação em tamanhos de pacotes de rede individuais, falhas de transmissão, sequenciamento, controle de fluxo, verificação de erros fim-a-fim, bem como a criação e destruição de conexões lógicas processo-a-processo". Todos esses serão assuntos abordados neste trabalho.
+
+De acordo com \cite{Forouzan}, pouco tempo depois as autoridades decidiram dividir o TCP em dois protocolos distintos, o TCP (\textit{Transmission Control Protocol}) e o IP (\textit{Internetworking Protocol}). Desda forma, então, surgiu o modelo de conexão TCP/IP, o qual possibilita a intercomunicação entre redes heterogêneas iniciando assim o que futuramente seria conhecido como a Internet, a conexão de milhares de dispositivos comunicantes, mundialmente abrangente.
+
+Em 1983, em detrimento dos protocolos originais da ARPANET, o TCP/IP tornou-se o protocolo oficial da Internet. Ou seja, a partir de então, para se conectar a Internet tornou-se necessário a execução do modelo o TCP/IP. Modelo este que é definido oficialmente pelo IETF (\textit{Internet Engineering Task Force}), instituição que especifica os padrões que serão implementados e utilizados em toda a internet, \cite{RFC1180}.
+
+//dividido em 4 sessões (...)
+
+
+Pode-se perceber assim a importância do modelo TCP/IP, e, desta forma, surge a necessidade do seu estudo e entendimento por parte dos alunos de cursos que possuem em seu escopo o ensino de Redes de Computadores, e consequentemente o conhecimento dos profissionais no mercado. Porém a dificuldade de aprendizado enfrentada pelos alunos configura um grande problema.
+
+Este trabalho se propõe, então, a partir da simulação do funcionamento do modelo de protocolo TCP/IP, formular uma base a partir da qual será estudada o t\'opico na disciplina de Redes de Computadores. Essa simulação será composta por quatro aplicações, cada uma atuando como uma das camadas presentes na pilha de protocolos TCP/IP. A comunicação entre diferentes sistemas finais deverá ocorrer por meio do modelo cliente servidor. Com esta implementação pretende-se expor o encapsulamento das informações que ocorre em cada camada do modelo.

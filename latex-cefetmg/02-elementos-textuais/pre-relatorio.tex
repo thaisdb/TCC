@@ -1,0 +1,87 @@
+% -----------------------------------------------------------------------------
+% Introdução
+% -----------------------------------------------------------------------------
+
+\chapter{Pré relatório}
+\label{chap:pre-relatorio}
+
+
+
+\section{Introdução}
+\label{sec:antesleiame}
+
+O impacto da internet no cotidiano do ser humano hoje, pode ser considerado imensurável, está presente em nossas vidas de várias formas e intensidades. \cite{Fourouzan} define a internet como a composição de duas ou mais redes (grupo de dispositivos conectados que se comunicam) que podem, por sua vez, comunicar entre si. Em outras palavras: a Internet é um método de interconexão de redes físicas e um conjunto de convenções para uso de redes que permite a interação dos computadores que elas alcançam \cite{Comer} (no contexto atual, podemos considerar computadores como qualquer dispositivo final que tenha capacidade de acesso à internet).
+
+Todas as atividades na internet que envolvem duas ou mais entidades remotas comunicantes são governadas por um protocolo, o qual define um formato e a ordem das mensagens trocadas entre estas entidades, bem como as ações realizadas na transmissão e/ou no recebimento de uma mensagem ou outro evento \cite{Kurose}.
+
+Em 1973, Cerf e Kahn, delinearam estes protocolos, considerados uma nova versão do NCP (Network Control Protocol, software que fornecia a comunicação entre hosts). O artigo publicado sobre o protocolo de controle de transmissão (TCP) incluía conceitos como encapsulamento, datagrama e funções de gateway \cite{Forouzan}. O modelo de protocolos TCP/IP é constituído de cinco camadas: física, enlace de dados, rede, transporte e aplicação. 
+
+Posteriormente os protocolos de controle de transmissão TCP foi dividido em dois protocolos distintos: TCP (Transmission Control Protocol) e IP (Internetworking Protocol). O IP traria o roteamento de datagramas enquanto o TCP seria responsável pelas funções de níveis mais altos, como segmentação, remontagem e detecção de erros. O protocolo de interligação em rede tornou-se então conhecido como TCP/IP \cite{Forouzan}.
+
+Em 1983, o TCP/IP tornou-se o protocolo oficial (em detrimento dos protocolos originais da ARPANET). Ou seja, a partir de então, para usar a Internet para acessar um computador em uma rede diferente, tornou-se necessário executar o TCP/IP. Ele é oficalmente definido pelo RFC 1180 \cite{rfc}: RFCs são documentos técnicos desenvolvidos e mantidos pelo IETF (Internet Enginnering Task Force), instituição que especifica os padrões que serão implementados e utilizados em toda a internet.
+
+Hoje em dia temos \'a nossa disposi\c{c}\~ao alguns softwares com o objetivo de simular o funcionamento completo de uma rede, como exemplo o Cisco Packege Tracer \cite{CiscoPT} e o GNS3 \cite{GNS3}. Ambos s\~ao softwares dispon\'iveis gratuitamente e direciocionados para principalmente para o meio acad\^emico. O Cisco Packege Tracer \cite{CiscoPT} vai além e permite simular protocolos e visualizá-los. No trabalho de conclusão de curso Poletti \cite{Poletti} utilizou como base um simulador e implementou novas funcionalidades e aperfeiçoamento de recursos enfatizando as etapas que ocorrem no estabelecimento de conexão TCP.
+
+
+\section{Motivação e objetivo}
+\label{sec:justificativa}
+
+Dada tal importância ao modelo TCP/IP é de grande relevância o entendimento deste e seu funcionamento em cursos voltados para área de tecnologia que tem a disciplina de rede em seu currículo, como Engenharia da Computação, Engenharia Elétrica, Sistemas de Informação e etc. Com o objetivo de facilitar o aprendizado e o conhecimento de como este modelo se comporta foi idealizado neste trabalho a construção de aplicações que simulem cada camada presentes no modelo TCP/IP separadamente, permitindo que essa comunicação flua em uma rede normal.
+
+\section{Relevância}
+\label{sec:motivacao}
+
+A contribuição pretendida por esta proposta encontra-se no contexto educacional: criar uma ferramenta de ensino capaz de aprofundar o aprendizado dando uma visão mais aprofundada sobre a pilha de protocolos do modelo TCP/IP.
+
+\section{Metodologia}
+\label{metodologia}
+
+\begin{enumerate}
+	\item Revisar literatura e pesquisa de artigos publicados que contemplem a área.
+	\item Contemplar possíveis soluções para o problema e avaliar linguagens de programação mais adequada para a implementação.
+	\item Planejar a arquitetura do software e desenvolvimento.
+	\item Realizar sistemática de testes comparando resultados obtidos e desejados.
+	\item Analisar os resultados, elaborar a conclusão e documentação.
+\end{enumerate}
+
+\section{Infraestrutura necessária}
+\label{infra}
+
+Para o desenvolvimento deste trabalho será necessário dois computadores, com sistema operacional Linux, conectados em uma mesma rede.
+
+\section{Resultados esperados}
+\label{sec:organizacaoTrabalho}
+
+Este trabalho deve desenvolver quatro aplicações distintas, que representem as camadas de aplicação, transporte, rede e enlace de dados. A comunicação ponto a ponto deverá ocorrer por meio do modelo cliente servidor sobre uma rede existente.
+
+A proposta \'e que haja um monitoramento do funcionamento em camadas a apartir de uma implementa\c{c}\~ao (a ser definida no projeto) para a valida\c{c}\~ao das PDU's que foram trocadas entre camadas.
+
+
+
+\section{Cronograma}
+\label{cronos}
+
+\begin{table}[H]
+\centering
+%\caption{My caption}
+\label{my-label}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{l|l|l|l|l|l|l|l|l|l|}
+\cline{2-10}
+                                                                & Março                                           & Abril                    & Maio                     & Junho                    & Julho                    & Agosto                   & Setembro                 & Outubro                  & Novembro                 \\ \hline
+\multicolumn{1}{|l|}{Definição do Tema}                         & \cellcolor{black} &                          &                          &                          &                          &                          &                          &                          &                          \\ \hline
+\multicolumn{1}{|l|}{Elaboração e entrega do pré projeto}       & \cellcolor{black}                        &                          &                          &                          &                          &                          &                          &                          &                          \\ \hline
+\multicolumn{1}{|l|}{Revisão de Literatura}                     & \cellcolor{black}                        & \cellcolor{black} &                          &                          &                          &                          &                          &                          &                          \\ \hline
+\multicolumn{1}{|l|}{Avaliar possíveis soluções para o projeto} &                                                 & \cellcolor{black} & \cellcolor{black} &                          &                          &                          &                          &                          &                          \\ \hline
+\multicolumn{1}{|l|}{Planejamento da arquitetura do software}   &                                                 &                          & \cellcolor{black} &                          &                          &                          &                          &                          &                          \\ \hline
+\multicolumn{1}{|l|}{Elaboração e entrega do TCC1}              &                                                 &                          & \cellcolor{black} & \cellcolor{black} &                          &                          &                          &                          &                          \\ \hline
+\multicolumn{1}{|l|}{Desenvolvimento}                           &                                                 &                          &                          &                          & \cellcolor{black} & \cellcolor{black} & \cellcolor{black} &                          &                          \\ \hline
+\multicolumn{1}{|l|}{Testes}                                    &                                                 &                          &                          &                          &                          &                          & \cellcolor{black} &                          &                          \\ \hline
+\multicolumn{1}{|l|}{Análise dos resultados}                    &                                                 &                          &                          &                          &                          &                          &                          & \cellcolor{black} &                          \\ \hline
+\multicolumn{1}{|l|}{Elaboração e entrega do TCC2}              &                                                 &                          &                          &                          &                          &                          &                          & \cellcolor{black} & \cellcolor{black} \\ \hline
+\end{tabular}}
+\end{table}
+
+
+
+

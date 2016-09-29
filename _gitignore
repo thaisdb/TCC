@@ -1,0 +1,69 @@
+######################
+# Codigos compilados
+######################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+######################
+# Diretorios
+######################
+dist/
+build/
+
+######################
+# Pacotes
+######################
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+######################
+# Logs
+######################
+*.log
+
+######################
+# Arquivos do SO
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+######################
+# Latex
+######################
+*.*~
+*.aux
+*.bak
+*.bbl
+*.blg
+*.brf
+*.dvi
+*.fdb_latexmk
+*.fls
+*.glo
+*.idx
+*.ilg
+*.ind
+*.l*
+*.nav
+*.out
+*.ps
+*.snm
+*.synctex.*
+*.toc
+*.wsp
+meu-trabalho*.pdf

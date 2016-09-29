@@ -1,0 +1,26 @@
+% -----------------------------------------------------------------------------
+% Introdução
+% -----------------------------------------------------------------------------
+
+\chapter{Introdução}
+\label{chap:introducao}
+
+A Internet está intrinsecamente presente na vida da sociedade contemporânea, de tal forma que as pessoas a consideram indispensável. Inseridos neste contexto, o modo de ter acesso ao mundo se adaptou: a obtenção de informações, comunicação, estudo, pesquisas, relacionamentos e etc. 
+
+\citeonline{KUROSE} levantam a possibilidade da Internet ser o "maior sistema de engenharia já criado pela humanidade". Porém, apesar da Internet fazer parte da vida cotidiana de forma tão categórica, o primeiro contato, do ponto de vista do usuário doméstico, ocorreu apenas nos anos 90, pouco mais de 20 anos após o início do seu desenvolvimento.
+
+Em 1967 foi apresentada, pela ARPA (\textit{Advanced Research Projects Agency}) do departamento de defesa dos Estados Unidos, a ARPANET. Idealizada como uma pequena rede de computadores conectados, no qual cada host (sistema final conectado à rede) fosse ligado à um computador especializado, denominado \textit{Interface Message Processor} (IMP), sendo que estes seriam conectados à outros IMPs. Esta ideia foi concretizada 2 anos depois e em 1969 o sistema começou a operar em quatro localidades distintas. As	 Universidades da California de Los Angeles e Santa Barbara (UCLA e UCSB, respectivamente), em conjunto com o Instituto de Pesquisa de Stanford (SRI) e com a Universidade de Utah foram conectados através de seus IMPs. Um software, chamado NCP (\textit{Network Control Protocol}), possibilitava a comunicação entre os institutos \cite{FOR}. Foi a primeira rede de comutação de pacotes operacional (os dados a serem transferidos através da rede são divididos em pequenas partes, multiplexadas em conexões entre máquinas) \cite{COMER}.
+
+A partir do funcionamento bem sucedido da ARPANET, a mesma tecnologia de troca de pacotes foi empregado na comunicação por rádio tático e por satélite (SATNET). Porém, devido a particularidades de cada ambiente de comunicação, cada uma dessas redes utilizava diferentes parâmetros técnicos, foi necessário, ent\~ao a criação de protocolos para integrá-las \cite{STALLINGS}. Vincent Cerf e Bob Khan idealizaram, em 1972, um projeto de interligação de rede, chamado \textit{Internetting Project}, que pode ser considerado o predecessor da própria Internet. Para resolver os problemas de comunicação direta entre diferentes hosts, a solução sugerida foi a criação um hardware intermediário entre uma rede e outra, este dispositivo foi chamado \textit{gateway}.
+
+Em 1974 foi publicado um artigo \cite{Cerf} no qual foi apresentado o protocolo TCP. A descrição presente no artigo original resume precisamente o conteúdo proposto: "Um protocolo que suporta o compartilhamento de recursos que existem em diferentes redes de comutação de pacotes. O protocolo prevê variação em tamanhos de pacotes de rede individuais, falhas de transmissão, sequenciamento, controle de fluxo, verificação de erros fim-a-fim, bem como a criação e destruição de conexões lógicas processo-a-processo".
+
+De acordo com \citeonline{FOR}, pouco tempo depois as autoridades decidiram dividir o TCP em dois protocolos distintos, o TCP (\textit{Transmission Control Protocol}) e o IP (\textit{Internetworking Protocol}), e, em 1983, em detrimento dos protocolos originais da ARPANET, o TCP/IP tornou-se o modelo de conexão oficial da Internet. Ou seja, a partir de então, para se conectar à Internet, tornou-se necessário a execução deste modelo, o qual possibilita a intercomunicação entre redes heterogêneas, conectando, assim, milhares de dispositivos comunicantes de abrangência mundial.
+
+O modelo de protocolo TCP/IP é definido oficialmente pelo IETF (\textit{Internet Engineering Task Force}), instituição que especifica os padrões que serão implementados e utilizados em toda a Internet, no RFC\footnote{\textit{Request for Comments}: Documentos mantidos pela IETF que contêm conteúdo técnico e organizacional sobre a Internet.} 1180 \cite{RFC1180}.
+
+Pode-se perceber assim a importância do modelo TCP/IP, e, desta forma, surge a necessidade do seu estudo e entendimento por parte dos alunos de cursos que possuem em seu escopo o ensino de Redes de Computadores, como Engenharia da Computação e Elétrica, Sistemas de Informação, Ciência da Computação e etc. e consequentemente o conhecimento dos profissionais no mercado.
+
+Dado tal contexto este trabalho propõe, então, a partir da simulação do funcionamento do modelo de protocolos TCP/IP, formular um sistema a ser utilizado na aprendizagem, pretendendo compor a didática do ensino deste t\'opico na disciplina de Redes de Computadores, com o objetivo apoiar o docente no ensino e os alunos no aprendizado. Essa simulação será composta por quatro aplicações, cada uma simulando uma das camadas presentes na pilha de protocolos TCP/IP: aplicação, transporte, rede e física. Visando a exposição dos pacotes referentes a cada camada, e seu conteúdo. 
+
+Está incluso no escopo do trabalho apenas os principais protocolos utilizados em cada camada e seus funcionamentos ideais. Futuramente pretende-se a inclusão de erros e tratamento destes, para aprofundar o aprendizado da lógica por trás das ações de cada protocolo. 

@@ -1,0 +1,30 @@
+ RFC 1543: RFC procedures
+ RFC 1700: Assigned Numbers
+ RFC 1812: Requirements for IP Routers
+ RFC 1122 e 1123: IP Host Requirements
+ RFC 791: Internet Protocol (IP)
+ RFC 792: Internet Control Message Protocol (ICMP)
+ RFC 768: User Datagram Protocol (UDP)
+ RFC 793: Transmission Control Protocol (TCP)
+ RFC 950: IP Subnet Extensions
+ RFC 919: IP Broadcast Datagrams
+ RFC 821: Simple Mail Transfer Protocol (SMTP)
+ RFC 822: Format of Electronic Mail Messages
+ RFC 854, 855: Telnet Protocol
+ RFC 959: FTP Protocol
+ RFC 1661, 1662: Point-to-Point Protocol (PPP)
+ RFC 1939: Post Office Protocol Version 3 (POP3)
+ RFC 894: IP on Ethernet Networks
+ RFC 1055: IP on Serial Lines (SLIP)
+ RFC 1577: IP and ARP over ATM
+ RFC 826: Address Resolution Protocol (ARP)
+ RFC 2131: Dynamic Host Configuration Protocol (DHCP)
+ RFC 2045: Multipurpose Internet Mail Extensions (MIME)
+ RFC 1157: Simple Network Management Protocol (SNMP)
+ RFC 1771: Border Gateway Protocol Version 4 (BGP4)
+ RFC 1723: Routing Information Protocol Version 2 (RIP2)
+ RFC 1191: Path MTU Discovery
+ RFC 1583: Open Shortest Path First Routing V2 (OSPF2)
+ RFC 2068: Hypertext Transfer Protocol V1.1 (HTTP1.1)
+ RFC 1866: Hypertext Markup Language V2 (HTML2)
+ RFC 1256: ICMP Router Discovery Messages

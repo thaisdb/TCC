@@ -1,0 +1,29 @@
+many important things happen in the lower layers that should be exposed but are not.
+
+For example, packet loss is hidden by TCP’s retransmission machinery.If packet loss is due
+to a flawed network, the only symptom will be reduced performance. The inability to easily observe TCP’s inner
+workings impairs our ability to conduct research in TCP behavior, test new TCP algorithms, educate future protocol
+researchers and detect bugs in TCP and the lower layers.
+
+The Web100 project was created specifically to develop an advanced management interface for TCP. We have instru-
+mented TCP to collect per-connection statistics on all significant protocol events. There are instruments for captur-
+ing common events such as segments sent and received, as well as many more subtle instruments such as those char-
+acterizing the protocol events that cause TCP to reduce its transmission rate.
+
+Over the long run we expect this interface to become a standard, in the form of a TCP Extended Statistics Management Information Base (MIB)
+
+With the addition of some writable variables, the Web100 API and kernel data structures provide a convenient frame work for controlling non-standard or experimental TCP algorithms on a per-connection basis.
+
+In an educational context, Web100 has been used to provide a framework for conducting experiments, providing students with hands-on experience. The real-time views of TCP variables, and the ability to modify key parameters helps students understand the various components that impact TCP flows.
+
+Web100 is currently implemented as a Linux kernel patch plus user mode tools. All Web100 (with embedded Net100)
+
+In addition to the library, the Web100 software suite also in-
+cludes a number of application tools. There are some small
+command line-based tools which are particularly useful for
+scripting. Also, there are some graphical tools which aid in
+visualizing variables. One tool will display a running strip
+chart of a variable’s value or its change per unit time. An-
+other particularly useful part is the “triage” tool, which lo-
+cates the performance bottleneck as the sender, receiver, or
+network.

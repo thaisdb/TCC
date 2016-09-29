@@ -1,0 +1,91 @@
+\providecommand{\abntreprintinfo}[1]{%
+ \citeonline{#1}}
+\setlength{\labelsep}{0pt}\begin{thebibliography}{}
+\providecommand{\abntrefinfo}[3]{}
+\providecommand{\abntbstabout}[1]{}
+\abntbstabout{v-1.9.2 }
+
+\bibitem[Cerf e Kahn 1974]{Cerf}
+\abntrefinfo{Cerf e Kahn}{CERF; KAHN}{1974}
+{CERF, V.~G.; KAHN, R.~E. A protocol for packet network intercommunication.
+\textbf{IEEE Transactions on Communication}, 1974.
+Dispon{\'\i}vel em:
+  \url{https://www.cs.princeton.edu/courses/archive/fall06/cos561/papers/cerf74.pdf}.}
+
+\bibitem[Comer 2006]{COMER}
+\abntrefinfo{Comer}{COMER}{2006}
+{COMER, D.~E. \textbf{A interligação de redes com TCP/IP}. 5. ed. Rio de
+  Janeiro: Elsevier, 2006.}
+
+\bibitem[Emiroglu e Sahin 2013]{BULENT}
+\abntrefinfo{Emiroglu e Sahin}{EMIROGLU; SAHIN}{2013}
+{EMIROGLU, B.~G.; SAHIN, S. Analysis of students’ performances during lab
+  sessions of computer networks course.
+\textbf{Educational Technology \& Society}, n. 16 (3), p. 329–346, 2013.}
+
+\bibitem[Forouzan e Fegan 2008]{FOR}
+\abntrefinfo{Forouzan e Fegan}{FOROUZAN; FEGAN}{2008}
+{FOROUZAN, B.~A.; FEGAN, S.~C. \textbf{Protocolo TCP/IP}. 3. ed. São Paulo:
+  McGrow-Hill, 2008.}
+
+\bibitem[IETF 1980]{RFC768}
+\abntrefinfo{IETF}{IETF}{1980}
+{IETF. \textbf{User Datagram Protocol}. 1980.
+Dispon{\'\i}vel em: \url{https://tools.ietf.org/html/rfc768}. Acesso em: 23 de
+  mar{\c c}o de 2016.}
+
+\bibitem[IETF 1982]{RFC826}
+\abntrefinfo{IETF}{IETF}{1982}
+{IETF. \textbf{An Ethernet Address Resolution Protocol}. 1982.
+Dispon{\'\i}vel em: \url{https://tools.ietf.org/html/rfc826}.}
+
+\bibitem[IETF 1989]{RFC1123}
+\abntrefinfo{IETF}{IETF}{1989a}
+{IETF. \textbf{{Requirements for Internet Hosts. Application and Support}}.
+  1989.
+Dispon{\'\i}vel em: \url{https://tools.ietf.org/html/rfc1123}.}
+
+\bibitem[IETF 1989]{RFC1122}
+\abntrefinfo{IETF}{IETF}{1989b}
+{IETF. \textbf{{Requirements for Internet Hosts. Communication Layers}}. 1989.
+Dispon{\'\i}vel em: \url{https://tools.ietf.org/html/rfc1122}.}
+
+\bibitem[IETF 1991]{RFC1180}
+\abntrefinfo{IETF}{IETF}{1991}
+{IETF. \textbf{A TCP/IP Tutorial}. 1991.
+Dispon{\'\i}vel em: \url{https://tools.ietf.org/html/rfc1180}.}
+
+\bibitem[IETF 2007]{RFC4960}
+\abntrefinfo{IETF}{IETF}{2007}
+{IETF. \textbf{Stream Control Transmission Protocol}. 2007.
+Dispon{\'\i}vel em: \url{https://tools.ietf.org/html/rfc4960}.}
+
+\bibitem[Kurose e Ross 2013]{KUROSE}
+\abntrefinfo{Kurose e Ross}{KUROSE; ROSS}{2013}
+{KUROSE, J.~F.; ROSS, K.~W. \textbf{{Redes de Computadores e a Internet. Uma
+  abordagem top-down}}. 6. ed. São Paulo: Pearson, 2013.}
+
+\bibitem[Lee, Kim e Moon 2014]{LEE}
+\abntrefinfo{Lee, Kim e Moon}{LEE; KIM; MOON}{2014}
+{LEE, K.; KIM, J.; MOON, S. An educational networking framework for full layer
+  implementation and testing.
+2014.}
+
+\bibitem[Poletti 2013]{POLETTI}
+\abntrefinfo{Poletti}{POLETTI}{2013}
+{POLETTI, C. \textbf{Aprimoramento de um simulador didático de redes de
+  computadores}. 2013.
+Dispon{\'\i}vel em:
+  \url{https://intranet.univates.br/bdu/bitstream/10737/381/1/CristianoPoletti.pdf}.}
+
+\bibitem[Stallings 2007]{STALLINGS}
+\abntrefinfo{Stallings}{STALLINGS}{2007}
+{STALLINGS, W. \textbf{Data and Computer Comunication}. 8. ed. Upper Saddle
+  River, NJ: Pearson Prentice Hall, 2007.}
+
+\bibitem[Tanenbaum e Wetherall 2011]{TANENBAUM}
+\abntrefinfo{Tanenbaum e Wetherall}{TANENBAUM; WETHERALL}{2011}
+{TANENBAUM, A.~S.; WETHERALL, D. \textbf{Redes de computadores}. 5. ed. São
+  Paulo: Pearson Prentice Hall, 2011.}
+
+\end{thebibliography}
