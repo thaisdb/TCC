@@ -1,12 +1,11 @@
 from socket import *
 import sys
 import binascii
+from scapy.all import *
 
 host = '127.0.0.1'
-port = 5003
-
 class Client:
-    clientSocket = socket(AF_INET, SOCK_STREAM)
+    clientSocket = socket.socket(AF_INET, SOCK_STREAM)
     def __init__(self, host,port):
         self.port = int(float(port))
         self.host = host
@@ -14,10 +13,21 @@ class Client:
 
     def connect(self):
         self.clientSocket.connect((self.host, self.port))
+        self.arp()
         #self.clientSocket.send("sucesso".encode())
-        self.toBinaryFile()
-        self.sendBinaryFile()
+        #self.toBinaryFile()
+        #self.sendBinaryFile()
         #self.sendFile()
+
+    def arp(self):
+        ip = IP()
+        ip.dst = self.host
+        ping = ICMP()
+        #arp.op = ARP.who_has
+        #arp.pdst = self.host
+        resp = sr1(ip/ping)
+        ansr = sr1(ARP(pdst=self.host))
+        print (ansr.hwsrc)
 
     def sendFileName(self):
         self.file = open ( "testeFile.txt", "w")
@@ -44,5 +54,6 @@ class Client:
               #  self.clientSocket.send(bytes(oneByte, 'utf_8'))
 
             self.clientSocket.close()
+
 
 client = Client(host,sys.argv[1])
