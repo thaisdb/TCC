@@ -95,7 +95,7 @@ A arquitetura P2P, é um pouco diferente, o mesmo autor explica que nesta config
 
 De acordo com \citeonline{TANENBAUM}, o objetivo desta camada é prover serviço de comunicação entre processos de aplicações, em diferentes sistemas finais, da camada superior, ou seja ampliar o serviço de entrega IP (apresentado na próxima subseção) entre dois sistemas finais para um serviço de entrega entre dois processos que rodam nestes sistemas. Este tipo de comunicação é chamada transferência fim-a-fim.
 
-O pacote de dados, PDU, pertencente à esta camada é chamado "segmento de camada de transporte", o qual contém informações referentes à camada de aplicação, e após ter inserido informaç\~oes adicionais, como aplicaç\~ao origem e destino e checksum (c\'odigo utilizado para a verificaç\~ao da integridade do pacote), a PDU é passada para camada seguinte, a de Rede.
+O pacote de dados, PDU, pertencente à esta camada é chamado "seguimento de camada de transporte", o qual contém informações referentes à camada de aplicação, e após ter inserido informaç\~oes adicionais, como aplicaç\~ao origem e destino e checksum (c\'odigo utilizado para a verificaç\~ao da integridade do pacote), a PDU é passada para camada seguinte, a de Rede.
 
 A Internet possui dois protocolos distintos responsáveis pelo serviço de transporte, o TCP (\textit{Transmission Control Protocol}) e o UDP (\textit{User Datagram Protocol}). A principal diferença entre os protocolos citados é quanto à sua confiabilidade. O protocolo UDP fornece à camada de aplicação um serviço não confiável e orientado à mensagem, ao contrário do TCP, o qual garante uma transmissão confiável dos dados, utilizando para isso um serviço orientado à conexão, \cite{COMER}.
 

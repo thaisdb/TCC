@@ -1,0 +1,13 @@
+5) O final do último parágrafo do item 2.1 está confuso, "não contem uma camada específica específica par encaminhamento de internet"
+
+
+9) Aborde com mais detalhe cada simulador informando qual o nível de detalhamento que ele aborda da pilha e como ele manipula as pdus (quando houver).
+
+
+11) "Drivers TCP e IP"? Protocolos? Mesmo parágrafo anterior.
+Lee, Kim e Moon (2014) (...) drivers
+
+
+12) Detalhe mais os trabalhos relacionados, principalmente o do Poletti e mais ainda o do Lee.
+
+13) No início da metodologia é importante abordar o propósito geral, ou seja, implementar cada camada de forma independente...

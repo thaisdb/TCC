@@ -1,0 +1,20 @@
+x-x-x-x-x-x-x-x-x-x Resquest Line: x-x-x-x-x-x-x-x-x-x
+	Method: GET		Url: /site/sobre/naoencontrado.html		Version: HTTP/1.1
+x-x-x-x-x-x-x-x-x-x General Header: x-x-x-x-x-x-x-x-x-x
+	Host: www.sgi.cefetmg.br
+	Connection: keep-alive
+	User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.59 Safari/537.36
+	Accept: image/webp,image/*,*/*;q=0.8
+	Accept-Language: en-US,en;q=0.8,pt;q=0.6,pt-BR;q=0.4
+	Accept-Encoding: gzip, deflate, sdch
+	Empty Budy
+x-x-x-x-x-x-x-x-x-x Resquest Line: x-x-x-x-x-x-x-x-x-x
+	Method: GET		Url: /site/sobre/naoencontrado.html		Version: HTTP/1.1
+x-x-x-x-x-x-x-x-x-x General Header: x-x-x-x-x-x-x-x-x-x
+	Host: www.sgi.cefetmg.br
+	Connection: keep-alive
+	User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.59 Safari/537.36
+	Accept: */*
+	Accept-Language: en-US,en;q=0.8,pt;q=0.6,pt-BR;q=0.4
+	Accept-Encoding: gzip, deflate, sdch
+	Empty Budy

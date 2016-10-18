@@ -1,0 +1,78 @@
+###[ Ethernet ]###
+  dst       = 04:8d:39:04:f2:10
+  src       = 88:53:2e:8f:06:e2
+  type      = 0x800
+###[ IP ]###
+     version   = 4L
+     ihl       = 5L
+     tos       = 0x0
+     len       = 832
+     id        = 53009
+     flags     = DF
+     frag      = 0L
+     ttl       = 64
+     proto     = tcp
+     chksum    = 0x8e7e
+     src       = 192.168.15.12
+     dst       = 13.90.253.25
+     \options   \
+###[ TCP ]###
+        sport     = 46222
+        dport     = http
+        seq       = 387886920
+        ack       = 808897598
+        dataofs   = 8L
+        reserved  = 0L
+        flags     = PA
+        window    = 229
+        chksum    = 0xe2a9
+        urgptr    = 0
+        options   = [('NOP', None), ('NOP', None), ('Timestamp', (4612202, 1207459310))]
+###[ HTTP ]###
+###[ HTTP Request ]###
+              Method    = u'GET'
+              Path      = u'/s/d41d8cd98f00b204e9800998ecf8427e-CDN/en_USwlktxo/6346/41/1.0/_/download/batch/jira.webresources:captcha/jira.webresources:captcha.js'
+              Http-Version= u'HTTP/1.1'
+              Host      = u'jira.miningmath.com'
+              User-Agent= u'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.59 Safari/537.36'
+              Accept    = u'*/*'
+              Accept-Language= u'en-US,en;q=0.8,pt;q=0.6,pt-BR;q=0.4'
+              Accept-Encoding= u'gzip, deflate, sdch'
+              Accept-Charset= None
+              Referer   = u'http://jira.miningmath.com/login.jsp'
+              Authorization= None
+              Expect    = None
+              From      = None
+              If-Match  = None
+              If-Modified-Since= None
+              If-None-Match= None
+              If-Range  = None
+              If-Unmodified-Since= None
+              Max-Forwards= None
+              Proxy-Authorization= None
+              Range     = None
+              TE        = None
+              Cache-Control= None
+              Connection= u'keep-alive'
+              Date      = None
+              Pragma    = None
+              Trailer   = None
+              Transfer-Encoding= None
+              Upgrade   = None
+              Via       = None
+              Warning   = None
+              Keep-Alive= None
+              Allow     = None
+              Content-Encoding= None
+              Content-Language= None
+              Content-Length= None
+              Content-Location= None
+              Content-MD5= None
+              Content-Range= None
+              Content-Type= None
+              Expires   = None
+              Last-Modified= None
+              Cookie    = u'__utma=243711001.894886905.1476409481.1476409481.1476409481.1; __utmz=243711001.1476409481.1.1.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); atlassian.xsrf.token=BSS0-KUS3-F12Q-LQPK|8e82fe9380de40d4da177ba8d3c6ef9e6a9036ab|lout; JSESSIONID=761C9DB6717D0091D87E4A4C44ECB716'
+              Headers   = u'Accept-Language: en-US,en;q=0.8,pt;q=0.6,pt-BR;q=0.4\r\nAccept-Encoding: gzip, deflate, sdch\r\nConnection: keep-alive\r\nAccept: */*\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.59 Safari/537.36\r\nHost: jira.miningmath.com\r\nReferer: http://jira.miningmath.com/login.jsp\r\nCookie: __utma=243711001.894886905.1476409481.1476409481.1476409481.1; __utmz=243711001.1476409481.1.1.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); atlassian.xsrf.token=BSS0-KUS3-F12Q-LQPK|8e82fe9380de40d4da177ba8d3c6ef9e6a9036ab|lout; JSESSIONID=761C9DB6717D0091D87E4A4C44ECB716'
+              Additional-Headers= None
+
