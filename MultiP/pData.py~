@@ -1,7 +1,7 @@
 class ProtocolStruct:
-	def psHTTP (self, ip, mac):
-		IP = ip
-		MAC = mac
-		print ("inside protocolStruct mac", MAC)
+	def psHTTP (self, method, host):
+		METHOD = method
+		HOST = host
+		print ("inside protocolStruct mac", MAC, "ip", ip)
 	def psIP (self):
 		IP = 00

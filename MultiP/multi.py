@@ -1,17 +1,31 @@
 from multiprocessing import Process, Lock, Queue
 from clientAplication import Aplication
-#from TCP import clientTCP, serverTCP
+from clientTransport import TCPClient, UDPClient
 from teste import Work
-
-def f(l, i):
-	l.acquire()
-	print 'hello world', i
-	l.release()
 
 
 lock = Lock()
-app = Aplication()
-#q = Queue()
-#wk = Process(target=Work, args=(q,)).start()	
-#app = Process(target=Aplication, args=(q,)).start()
+#app = Aplication()
+jobs = Queue()
 
+
+udp = Process(target=UDPClient, args=("HTTPRequest.txt", jobs))
+udp.start()
+
+jobs.put(Aplication())
+jobs.wait()
+jobs.close()
+jobs.join_thread()
+app.join()
+
+'''
+app = Process(target=Aplication, args=(jobs,))
+app.start()
+
+jobs.put(UDPClient("HTTPRequest.txt"))
+
+#wait first process to finish
+jobs.close()
+jobs.join_thread()
+app.join()
+'''
