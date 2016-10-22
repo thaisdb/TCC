@@ -26,23 +26,20 @@ class Client:
         addrs = ni.ifaddresses('wlan0')
         self.mac = addrs[ni.AF_LINK][0]['addr']
         self.ipdst = self.host
-        self.macdst = os.system('arp -n ' + str(self.ipdst)) 
+        self.macdst = os.system('arp -n ' + str(self.ipdst))
         print "my ip: " + self.ip
         print "my mac: " + self.mac
         print "server ip: " + self.ipdst
         print "server mac: " + str(self.macdst)
 
-    def getmac(self, ip):
-        return os.system("arp -n " + str(ip))
-    
 
     def toBinaryFile(self):
-        with open("new.txt", "r") as originalFile:
+        with open("download.jpg", "rb") as originalFile:
             with open("binNew.txt", "a") as binaryFile:
                 data = originalFile.read(1)
                 while data:
                     binaryFile.write('{0:08b}'.format(ord(data)))
-                    data = originalFile.read(1)
+                    data = originalFile.read()
 
     def sendBinaryFile(self):
         with open("binNew.txt", "r") as originalBinaryFile:
