@@ -11,6 +11,8 @@ class Server():
     serverSocket = socket(AF_INET, SOCK_STREAM)
     BUFFER_SIZE = 1024
     BYTE_SIZE = 8
+    receivedFileName = 'default.txt'
+    fileType = 0 # 0 to text files and 1 to image files
     def __init__(self, host, port):
         self.host = host
         self.port = int(float(port))
@@ -20,19 +22,26 @@ class Server():
         while True:
             print("Listening for connections, on PORT: ", self.port)
             self.clientSocket, addr = self.serverSocket.accept()
-            self.reciveFile()
+            self.receiveFileName()
+            self.receiveFile()
             self.translateReceivedFile()
         self.clientSocket.close()
 
-    def reciveFileName(self, clientSocket):
-        while True:
-            data = clientSocket.recv(1024)
-            if not data: break
-            print (data)
-            self.file = data
+    def receiveFileName(self):
+        data = self.clientSocket.recv(1024)
+        if not data:
+            print 'No valid file  received'
+            return
+        self.receivedFileName = data
+        extension = self.receivedFileName.split('.')
+        if extension == 'txt':
+            self.fileType = 0
+        else:
+            self.fileType = 1
+        print ('filename: ' + self.receivedFileName)
 
-    def reciveFile(self):
-        with open ("receivedBinaryFile.txt", "w") as self.rFile:
+    def receiveFile(self):
+        with open ('receivedBinary_' + self.receivedFileName, "w") as self.rFile:
             data = self.clientSocket.recv(self.BUFFER_SIZE)
             while data:
                 if not data:
@@ -43,20 +52,20 @@ class Server():
 
 
     def translateReceivedFile (self):
-        with open("receivedFile.txt", "w") as newFile:
-            with open("receivedBinaryFile.txt", "r") as binFile:
+        if self.fileType == 0:
+            newFile = open('received_' + self.receivedFileName, "w")
+        else: #image
+            newFile = open('received_' + self.receivedFileName, 'wb')
+        with open('receivedBinary_' + self.receivedFileName, "r") as binFile:
+            buff = binFile.read(self.BYTE_SIZE)
+            while buff:
+                newFile.write(chr(int(buff, 2)))
                 buff = binFile.read(self.BYTE_SIZE)
-                while buff:
-                    print (buff)
-                    print (int(buff, 2))
-                    print (chr(int(buff, 2)))
-                    newFile.write(chr(int(buff, 2)))
-                    buff = binFile.read(self.BYTE_SIZE)
 
 
-    def getTMQ():
+    def sendTMQ():
         print 'asked'
-        return self.BUFFER_SIZE
+        #clientSocket.send(self.BUFFER_SIZE)
 
 try:
 	server = Server(sys.argv[1],sys.argv[2])
