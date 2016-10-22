@@ -2,16 +2,17 @@ import sys,os
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
 class httpHandler(BaseHTTPRequestHandler):
-
+    global htmlFile
+    htmlFile = None
     def do_GET(self):
         try:
             if self.path.endswith('.html'):
-                print 'reached here'
+                self.createFile()
                 f = open (DocumentRoot + self.path)
                 self.send_response (200)
                 self.send_header('Content-type', 'text/html')
                 self.end_headers()
-                self.wfile.write(f.read())
+                self.wfile.write(self.htmlFile.read())
                 f.close()
                 return
 
@@ -25,6 +26,12 @@ class httpHandler(BaseHTTPRequestHandler):
         except IOError:
             print (DocumentRoot+self.path)
             self.send_error(404, 'File not found %s' % self.path)
+
+    def createFile(self):
+        with self.htmlFile.open('htmlDataFile.html', 'w') as df:
+            df.write('<!DOCTYPE html> \n <html> \n <body>')
+            df.write('content')
+            df.write('</body> \n </html>')
 
 
     def do_POST(self):

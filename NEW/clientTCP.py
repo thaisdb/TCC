@@ -1,3 +1,4 @@
+from __future__ import with_statement
 import socket
 import sys
 import binascii
@@ -13,7 +14,11 @@ class Client:
     def __init__(self, host, port):
         self.port = int(float(port))
         self.host = host
-        self.connect()
+        try:
+            self.connect()
+        except socket.error, exc:
+            print 'Cound not connect:'
+            print exc
 
     def connect(self):
         self.clientSocket.connect((self.host, self.port))
@@ -27,6 +32,7 @@ class Client:
         self.mac = addrs[ni.AF_LINK][0]['addr']
         self.ipdst = self.host
         self.macdst = os.system('arp -n ' + str(self.ipdst))
+        #self.tmq = self.clientSocket.getTMQ()
         print "my ip: " + self.ip
         print "my mac: " + self.mac
         print "server ip: " + self.ipdst
@@ -34,12 +40,12 @@ class Client:
 
 
     def toBinaryFile(self):
-        with open("download.jpg", "rb") as originalFile:
-            with open("binNew.txt", "a") as binaryFile:
+        with open("new.txt", "r") as originalFile:
+            with open("binNew.txt", "w") as binaryFile:
                 data = originalFile.read(1)
                 while data:
                     binaryFile.write('{0:08b}'.format(ord(data)))
-                    data = originalFile.read()
+                    data = originalFile.read(1)
 
     def sendBinaryFile(self):
         with open("binNew.txt", "r") as originalBinaryFile:

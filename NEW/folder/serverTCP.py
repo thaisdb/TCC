@@ -1,4 +1,6 @@
+from __future__ import with_statement
 from socket import *
+from socket import error as socket_error
 import sys
 import binascii
 
@@ -7,7 +9,8 @@ import binascii
 
 class Server():
     serverSocket = socket(AF_INET, SOCK_STREAM)
-
+    BUFFER_SIZE = 1024
+    BYTE_SIZE = 8
     def __init__(self, host, port):
         self.host = host
         self.port = int(float(port))
@@ -29,31 +32,33 @@ class Server():
             self.file = data
 
     def reciveFile(self):
-        with open ("receivedBinaryFile.txt", "ab+") as self.rFile:
-            data = self.clientSocket.recv()
+        with open ("receivedBinaryFile.txt", "w") as self.rFile:
+            data = self.clientSocket.recv(self.BUFFER_SIZE)
             while data:
                 if not data:
                     print ("no data")
                     break
-                print ("reciving "+ data)
                 self.rFile.write(data)
-                data = self.clientSocket.recv()
+                data = self.clientSocket.recv(self.BUFFER_SIZE)
 
 
     def translateReceivedFile (self):
-        with open("newimage.jpg", "ab+") as newFile:
-            with open("receivedBinaryFile.txt", "rb+") as binFile:
-                buff = binFile.read(8)
+        with open("receivedFile.txt", "w") as newFile:
+            with open("receivedBinaryFile.txt", "r") as binFile:
+                buff = binFile.read(self.BYTE_SIZE)
                 while buff:
                     print (buff)
                     print (int(buff, 2))
+                    print (chr(int(buff, 2)))
                     newFile.write(chr(int(buff, 2)))
-                    buff = binFile.read(8)
+                    buff = binFile.read(self.BYTE_SIZE)
 
 
-
+    def getTMQ():
+        print 'asked'
+        return self.BUFFER_SIZE
 
 try:
 	server = Server(sys.argv[1],sys.argv[2])
-except:
-	print ("Couldn't execute the server\nVerify you ip and port\n")
+except socket_error as exc:
+	print ("Couldn't execute the server\n " + exc)

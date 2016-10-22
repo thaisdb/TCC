@@ -19,13 +19,14 @@ while 1:
     connection.request(cmd[0],cmd[1])
 
     rsp = connection.getresponse()
+    print rsp
+    print rsp.getheaders()
     wb.get('google-chrome')
     #webbrowser.open('file://' + rsp.read())
     #print(rsp.status, rsp.reason)
     data_received = rsp.read()
     with open('received.html', 'w') as filehtml:
         filehtml.write(data_received)
-        print os.getcwd()
         wb.open('file://'+ os.getcwd()+'/received.html')
 #webbrowser.open( data_received)
 
