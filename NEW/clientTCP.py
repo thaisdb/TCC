@@ -63,14 +63,14 @@ class Client:
             originalFile = open(self.fileName, "r")
         else:
             originalFile = open(self.fileName, 'rb')
-        with open('binary_' + self.fileName, 'w') as binaryFile:
+        with open('binary_file.txt', 'w') as binaryFile:
             data = originalFile.read(1)
             while data:
                 binaryFile.write('{0:08b}'.format(ord(data)))
                 data = originalFile.read(1)
 
     def sendBinaryFile(self):
-        with open('binary_' + self.fileName, "r") as originalBinaryFile:
+        with open('binary_file.txt', "r") as originalBinaryFile:
             fileBuffer = originalBinaryFile.read()
             while fileBuffer:
                 self.clientSocket.send(fileBuffer)
