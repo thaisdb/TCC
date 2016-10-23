@@ -2,37 +2,21 @@ import sys,os
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
 class httpHandler(BaseHTTPRequestHandler):
-    global htmlFile
-    htmlFile = None
+    #global htmlFile
     def do_GET(self):
         try:
             if self.path.endswith('.html'):
-                self.createFile()
                 f = open (DocumentRoot + self.path)
                 self.send_response (200)
                 self.send_header('Content-type', 'text/html')
                 self.end_headers()
-                self.wfile.write(self.htmlFile.read())
+                self.wfile.write(f.read())
                 f.close()
-                return
-
-            if self.path.endswith('.esp'):
-                self.send_response(200)
-                self.send_header('Content-type', 'text/html')
-                self.end_headers()
-                self.wfile.write('worked cunt')
                 return
 
         except IOError:
             print (DocumentRoot+self.path)
             self.send_error(404, 'File not found %s' % self.path)
-
-    def createFile(self):
-        with self.htmlFile.open('htmlDataFile.html', 'w') as df:
-            df.write('<!DOCTYPE html> \n <html> \n <body>')
-            df.write('content')
-            df.write('</body> \n </html>')
-
 
     def do_POST(self):
         global rootnode
@@ -58,20 +42,18 @@ def pyserver(nameVirtualHost):
             virtualhost[0] = ''
         serverAddr = (virtualhost[0], int(virtualhost[1]))
         server = HTTPServer(serverAddr, httpHandler)
-        print 'Start server http in %s' % nameVirtualHost
         server.serve_forever()
 
     except KeyboardInterrupt:
         print 'shuting down server HTTP'
         server.socket.close()
 
-
 if __name__ == '__main__':
     DocumentRoot = '/home/thais/Faculdade/TCC/NEW/'
     PORT = '8000'
     HOST = 'localhost'
     try:
-        #print 'sys.argv' + sys.argv[1]
+        print 'sys.argv' + sys.argv[1]
         pyserver(sys.argv[1])
     except:
         pyserver('%s:%s' % (HOST, PORT))
