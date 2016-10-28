@@ -1,5 +1,5 @@
 import sys
-import psutil
+#import psutil
 import urllib
 import os
 from socket import *
@@ -16,19 +16,19 @@ class clientHttp:
 
     def sendToTransportLayer(self):
         toTransportSocket = socket(AF_INET, SOCK_STREAM)
-        transportAdress = ('localhost', 22222)
-        toTransportSocket.bind(transportAdress)
+        transportAdress = ('localhost', 2222)
+        toTransportSocket.connect(transportAdress)
         try:
-            print "Sending request..."
+            print "Sending package..."
             toTransportSocket.send(self.browserPack)
             print "Done!"
-        except Exception as ex:
+        except Exception, ex:
             print 'ERROR! Could not sand package'
             print ex
 
     def listenBrowser(self):
         browserSocket = socket(AF_INET, SOCK_STREAM)
-        browserAdress = ('localhost', 11111)
+        browserAdress = ('localhost', 1111)
         browserSocket.bind(browserAdress)
         browserSocket.listen(1)
         #while True:
@@ -37,11 +37,9 @@ class clientHttp:
         print "Connected"
         try:
             print "Receiving..."
-            while True:
-               data = connection.recv(1024)
-               self.browserPack += data
+            self.browserPack = connection.recv(1024)
             print self.browserPack
-        except Exception as ex:
+        except Exception, ex:
             print 'ERROR!' + str(ex)
 
 
