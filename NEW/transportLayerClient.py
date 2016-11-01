@@ -1,12 +1,16 @@
 import sys
 from socket import *
 from struct import *
-
+import json
 class Transport:
     applicationPack = 'Teste de pacote, protocolo TCP'
-    updPack = ''
-    tcpPack = ''
+    updPackage = ''
+    tcpPackage = ''
     def __init__(self):
+        self.dstPort = 9999
+        self.srcPort = 2222
+        self.transpServerAddress = ('localhost', self.dstPort)
+
         #self.receiveFromApplicationLayer()
         #self.createTest()
         #sendChoice = raw_input("Choose the protocol to use:\n
@@ -20,68 +24,135 @@ class Transport:
 
     def sendUDPPackage(self):
         try:
-            udpSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
-            udpSocket.sendto(self.test, ('127.0.0.1', 3333))
+            udpSocket = socket(AF_INET, SOCK_DGRAM)
+            udpSocket.sendto(self.applicationPack, self.transpServerAddress)
         except Exception, ex:
             print 'ERROR! Coudn\'t sand UDP package.'
             print ex
 
+    def setFlags(self, mode):
+        #reboot tcp flags
+        self.flags = {'cwr':0, 'ece':0,
+                      'fin':0, 'syn':0, 'rst':0,
+                      'psh':0, 'ack':0, 'urg':0}
+        if mode == 'SYN':
+            self.flags['syn'] = 1
+        elif mode == 'ACK':
+            self.flags['ack'] = 1
+        else: #SYN-ACK
+            self.flags['syn'] = 1
+            self.flags['ack'] = 1
+
+    def threeWayHandshake(self):
+        self.seq = 454
+        self.ackSeq = 0
+        #size of tcp header in 32bit word
+        doff = 5 #4bit field: 5*4 = 20bytes
+        self.window = 5840 #max window size allowed
+        self.tcpChecksum = 0
+        self.urgPtr = 0
+        self.offsetRes = (doff << 4) + 0 #???
+
+        #send SYN
+        self.setFlags('SYN')
+        jFlags = json.dumps(self.flags)
+        tcpHeaderTuple = (self.srcPort, self.dstPort, self.seq, self.ackSeq, self.offsetRes,
+                          jFlags, self.window, self.tcpChecksum, self.urgPtr)
+        self.jTCPHeader = json.dumps(tcpHeaderTuple)
+        self.headerLength = sys.getsizeof(tcpHeaderTuple)
+        self.createPDU('TCP')
+        self.tcpSocket.send(tcpHeader)
+        self.resp = self.tcpSocket.recv(1024)
+
+    def createPDU(self, mode):
+        if mode == 'TCP':
+            print '|******************************************************************************************|'
+            print '|          Porta de Origem = ',  self.srcPort, '          |          Porta de Destino = ', self.dstPort, '          |'
+            print '|******************************************************************************************|'
+            print '|                                Numero de sequencia = ', self.seq, '                               |'
+            print '|******************************************************************************************|'
+            print '|                                Numero de confirmacao = ', self.ackSeq, '                               |'
+            print '|******************************************************************************************|'
+            print '|    Comprimento    |       | C | E | U | A | P | R | S | F |           Tamanho            |'
+            print '|    do cabecalho   |       | W | C | R | C | S | S | Y | I |             da               |'
+            print '|         =         |       | R | E | G | K | H | T | N | N |           Janela             |'
+            print '|       ', self.headerLength, '       |       |', self.flags['cwr'], '|', self.flags['ece'], '|',\
+                                                   self.flags['urg'], '|', self.flags['ack'], '|',\
+                                                   self.flags['psh'], '|', self.flags['rst'], '|',\
+                                                   self.flags['syn'], '|', self.flags['fin'], '|                              |'
+            print '|******************************************************************************************|'
+            print '|                Checksum = ', self.tcpChecksum, '              |            Ponteiro para urg.               |'
+            print '|******************************************************************************************|'
+            print '|                                         Opcoes                                           |'
+            print '|******************************************************************************************|'
+            print '|                                                                                          |'
+            print '|                                  Dados = Requisicao HTTP                                 |'
+            print '|                                                                                          |'
+            print '|******************************************************************************************|'
+        else: #UDP
+            print '|******************************************************************************************|'
+            print '|          Porta de Origem = ',  self.srcPort, '          |          Porta de Destino = ', self.dstPort, '          |'
+            print '|******************************************************************************************|'
+            print '|        Comprimento do UDP = ',  self.srcPort, '         |           Checksum do UDP = ', self.dstPort, '          |'
+            print '|******************************************************************************************|'
+            print '|                                                                                          |'
+            print '|                                  Dados = Requisicao HTTP                                 |'
+            print '|                                                                                          |'
+            print '|******************************************************************************************|'
+
+
+
     def sendTCPPackage(self):
         try:
-            tcpSocket = socket(AF_INET, SOCK_RAW, IPPROTO_TCP)
+            self.tcpSocket = socket(AF_INET, SOCK_STREAM)
+            #internetAddress = ('localhost', 3333)
+            self.tcpSocket.connect(self.transpServerAddress)
+
         except error, msg:
             print "Couldn't create the socket"
             print msg
-        src_ip = 'localhost'
-        dst_ip = 'localhost'
 
+        self.threeWayHandshake()
+        '''flags = json.dumps(self.flags)
+        testTuple = (self., flags)
+        print testTuple
+        tcppack = json.dumps(testTuple)
+        self.tcpSocket.send(tcppack)'''
+        print 'sent'
+
+
+
+        '''if self.treeWayHandshake():
 
         #TCP header fiels
-        src_port = 2222
-        #use testPackage
-        dst_port = 9999 #33333
-        seq = 454
-        ack_seq = 0
-        doff = 5 #4bit field, size of tcp header: 5*4 = 20bytes
+        self.srcPort = 2222
+        #use testServer
+        self.dstPort = 9999
+        #internert layer port
+        #dst_port = 3333
+       appPackTuple = (self.applicationPack,)
+        tcpPackage = tcpHeader + appPackTuple
 
-        #tcp flags SYN
-        fin, syn, rst, psh, ack, urg = 0, 1, 0, 0, 0, 0
-        #htons = Convert 32-bit positive integers from host to network byte order.
-        window = htons(5840) #max window size allowed
-        check = 0
-        urg_ptr = 0
-
-        offset_res = (doff << 4) + 0
-        flags = (fin + (syn << 1) + (rst << 2) + (psh << 3) + (ack << 4) + (urg << 5))
-
-        # the ! in the pack format string means network order
-        tcp_header = pack('!HHLLBBHHH', src_port, dst_port, seq, ack_seq, offset_res, flags, window, check, urg_ptr)
-
-        #pseudo header fields
-        src_addr = inet_aton('127.0.0.1')
-        dst_addr = inet_aton('127.0.0.1')
-        place_holder = 0
-        protocol = IPPROTO_TCP
-        tcp_length = len(tcp_header) + len(self.applicationPack)
-
-        psh = pack('!4s4sBBH1', src_addr, dst_addr, place_holder, protocol, tcp_length)
-        psh = psh + tcp_header + self.applicationPack
-
-        tcp_checksum = self.calculateChecksum(psh)
-        print 'TCP checksum = ' + str(tcp_checksum)
+        tcpChecksum = self.calculateChecksum(tcpPackage)
+        print 'TCP checksum = ' + str(tcpChecksum)
 
         # remake tcp header with correct checksum
-        tcp_header = pack('!HHLLBBH', src_port, dst_port, seq, ack_seq, offset_res, flags, window) + pack('H', tcp_checksum) + pack('!H', urg_ptr)
+        tcpHeader = (srcPort, dstPort, seq, ackSeq, offsetRes, flags, window, tcpChecksum, urgPtr)
+        strHeader = ''
+        for field in tcpHeader:
+            strHeader += (str(field) + '_')
+        print strHeader
 
         # full package - syn packets don't have any data
-        self.tcpPack = tcp_header + self.applicationPack
+        self.tcpPackage = strHeader + '\n' + self.applicationPack
         print '******TCP-PACK******'
-        print self.tcpPack
+        print self.tcpPackage
+        #print self.applicationPack
         # the port specified has no effect(=0)????
-        tcpSocket.sendto(self.tcpPack, ('127.0.0.1', 0))
+        self.tcpSocket.send(self.tcpPackage)
         print 'Sent'
-        tcpSocket.close()
-        '''#send
+        self.tcpSocket.close()
+        #send
         #get response
         #check response values
         if  #(TCP flags SYN-ACK

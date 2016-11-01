@@ -1,0 +1,29 @@
+% -----------------------------------------------------------------------------
+% Roteiro de funcionamento
+% -----------------------------------------------------------------------------
+
+\chapter{Roteiro de funcionamento}
+\label{Roteiro}
+http://www.hypeness.com.br/2014/07/pagina-apresenta-receitas-culinarias-para-cao-com-alimentos-de-verdade/
+Com o objetivo principal de figurar uma ferramenta educacional, o acesso aos dados, o reconhecimento das etapas de funcionamento e troca de mensagens entre as camadas foram os principais focos do desenvolvimento. Tendo em mente tal premissa a execução da ferramenta segue exatamente as mesmas etapas da troca de mensagens que ocorre no modelo de protocolos TCP/IP.
+
+A execuç\~ao \'e iniciada com uma requisiç\~ao http feita a partir de um browser, a camada responsável pela Aplicação recebe essa mensagem faz o reconhecimento de seu conteúdo repassa a mensagem para camada seguinte de Transporte. Os dados da referentes a uma requisição HTTP incluem o método, identificação do cliente, versão http, o host para o qual está se fazendo a requisição e características do cliente.
+
+%ponho ou não??
+Os principais métodos de requisição HTTP são apresentado são apresentados por \citeonline{TANENBAUM} sucintamente na Tabela X
+
+\begin{tabular}{ |p{3cm}||p{3cm}|p{3cm}|p{3cm}|  }
+	\hline
+	Método & Descrição\\
+	\hline
+	GET   	& Lê uma pagina Web\\
+	HEAD	& Lê um cabeçalho de página Web\\
+	POST 	& Acrescenta algo a uma página Web\\
+	PUT    	& Armazena uma página Web\\
+	DELETE	& Remove a página Web\\
+	TRACE	& Ecoa a solicitação recebida\\
+	CONNECT & Conecta através de um proxy\\
+	OPTIONS & Consulta opções para uma página\\
+	\hline
+\end{tabular}
+	 
