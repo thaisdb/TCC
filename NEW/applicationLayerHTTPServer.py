@@ -1,5 +1,7 @@
 import sys,os
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+import multiprocessing as mp
+import transportLayerServer as als
 
 class httpHandler(BaseHTTPRequestHandler):
     #global htmlFile
@@ -40,8 +42,11 @@ def pyserver(nameVirtualHost):
         virtualhost = str.split(nameVirtualHost, ':')
         if virtualhost[0] == '*':
             virtualhost[0] = ''
+        print virtualhost
         serverAddr = (virtualhost[0], int(virtualhost[1]))
+        print 'handling'
         server = HTTPServer(serverAddr, httpHandler)
+        print 'servin'
         server.serve_forever()
 
     except KeyboardInterrupt:
@@ -53,7 +58,8 @@ if __name__ == '__main__':
     PORT = '8000'
     HOST = 'localhost'
     try:
-        print 'sys.argv' + sys.argv[1]
+        print 'sys.argv ' + sys.argv[1]
         pyserver(sys.argv[1])
-    except:
-        pyserver('%s:%s' % (HOST, PORT))
+    except Exception as err:
+        print 'error' + str(err)
+        #pyserver('%s:%s' % (HOST, PORT))

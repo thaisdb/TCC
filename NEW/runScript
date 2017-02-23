@@ -1,0 +1,4 @@
+#!/bin/bash
+
+
+python applicationLayerHTTPServer.py 187.168.223.9 7873 

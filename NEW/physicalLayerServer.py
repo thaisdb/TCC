@@ -18,7 +18,7 @@ class Server():
         self.port = int(float(port))
         self.serverSocket.bind(('', self.port))
         self.serverSocket.listen(1)
-        print ("here")
+        print ("********Physical Layer***************************************")
         while True:
             print("Listening for connections, on PORT: ", self.port)
             self.clientSocket, addr = self.serverSocket.accept()

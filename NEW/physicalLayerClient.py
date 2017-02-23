@@ -10,8 +10,8 @@ from subprocess import Popen, PIPE
 
 
 class Client:
-    clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    fileName = 'default.txt'
+    physicalSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    networkSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     fileType = 0 #0 to text files and 1 to image files
     def __init__(self, host, port):
         self.port = int(float(port))
@@ -19,34 +19,36 @@ class Client:
         try:
             self.connect()
         except socket.error, exc:
-            print 'Cound not connect:'
+            print 'Could not connect:'
             print exc
 
     def connect(self):
-        self.clientSocket.connect((self.host, self.port))
+        print 'connecting'
+        self.physicalSocket.connect((self.host, self.port))
         self.getIPMAC()
-        if self.sendFileName():
-            self.toBinaryFile()
-            self.sendBinaryFile()
+        #if self.sendFileName():
+        self.receiveFromNetwork()
+        self.toBinaryFile()
+        self.sendBinaryFile()
 
     def getIPMAC (self):
+        print 'gettingIPMAC'
         self.ip = ni.ifaddresses('wlan0')[2][0]['addr']
         addrs = ni.ifaddresses('wlan0')
         self.mac = addrs[ni.AF_LINK][0]['addr']
         self.ipdst = self.host
         self.macdst = os.system('arp -n ' + str(self.ipdst))
-        #self.tmq = self.clientSocket.getTMQ()
+        #self.tmq = self.physicalSocket.getTMQ()
         print "my ip: " + self.ip
         print "my mac: " + self.mac
         print "server ip: " + self.ipdst
         print "server mac: " + str(self.macdst)
 
-
     def sendFileName(self):
-        self.fileName = raw_input('Write the file name you want to send: ')
+        #self.fileName = raw_input('Write the file name you want to send: ')
         try:
-            self.clientSocket.send(self.fileName)
-            print 'Sending: ' + self.fileName
+            self.physicalSocket.send(self.package)
+            print 'Sending: ' + self.package
             extension = self.fileName.split('.')[1]
             print extension
             if extension == 'txt':
@@ -60,9 +62,9 @@ class Client:
 
     def toBinaryFile(self):
         if self.fileType == 0:
-            originalFile = open(self.fileName, "r")
+            originalFile = open(self.package, "r")
         else:
-            originalFile = open(self.fileName, 'rb')
+            originalFile = open(self.package, 'rb')
         with open('binary_file.txt', 'w') as binaryFile:
             data = originalFile.read(1)
             while data:
@@ -73,9 +75,18 @@ class Client:
         with open('binary_file.txt', "r") as originalBinaryFile:
             fileBuffer = originalBinaryFile.read()
             while fileBuffer:
-                self.clientSocket.send(fileBuffer)
+                self.physicalSocket.send(fileBuffer)
                 fileBuffer = originalBinaryFile.read()
-            self.clientSocket.close()
+            self.physicalSocket.close()
+
+    def receiveFromNetwork(self):
+        self.networkSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.networkSocket.bind(('127.0.0.1', 5342))
+        self.networkSocket.listen(1)
+        self.networkSocket.accept()
+        self.package = self.networkSocket.recv(1024)
+        print 'pakcage from network received'
+        print self.package
 
 
 client = Client(sys.argv[1], sys.argv[2])

@@ -1,15 +1,17 @@
+#coding: utf-8
 import sys
 from socket import *
 from struct import *
 import json
+
 class Transport:
     applicationPack = 'Teste de pacote, protocolo TCP'
     updPackage = ''
     tcpPackage = ''
     def __init__(self):
-        self.dstPort = 9999
+        self.dstPort = 5342
         self.srcPort = 2222
-        self.transpServerAddress = ('localhost', self.dstPort)
+        self.physicalSocket = ('localhost', self.dstPort)
 
         #self.receiveFromApplicationLayer()
         #self.createTest()
@@ -25,26 +27,34 @@ class Transport:
     def sendUDPPackage(self):
         try:
             udpSocket = socket(AF_INET, SOCK_DGRAM)
-            udpSocket.sendto(self.applicationPack, self.transpServerAddress)
+            udpSocket.sendto(self.applicationPack, self.physicalScoket)
         except Exception, ex:
             print 'ERROR! Coudn\'t sand UDP package.'
             print ex
+	self.udpChecksum = 0
+	self.udpHeaderTuple = (self.srcPort, self.dstPort, self.udpChecksum)
+	self.createPDU('UDP')
 
-    def setFlags(self, mode):
-        #reboot tcp flags
-        self.flags = {'cwr':0, 'ece':0,
-                      'fin':0, 'syn':0, 'rst':0,
-                      'psh':0, 'ack':0, 'urg':0}
-        if mode == 'SYN':
-            self.flags['syn'] = 1
-        elif mode == 'ACK':
-            self.flags['ack'] = 1
-        else: #SYN-ACK
-            self.flags['syn'] = 1
-            self.flags['ack'] = 1
+
+    def sendTCPPackage(self):
+        try:
+            self.tcpSocket = socket(AF_INET, SOCK_STREAM)
+            #internetAddress = ('localhost', 3333)
+            self.tcpSocket.connect(self.physicalSocket)
+            if self.threeWayHandshake():
+        	print 'Conection estabilished'
+        except error, msg:
+            print "Couldn't estabilishe connection"
+            print msg
+
 
     def threeWayHandshake(self):
-        self.seq = 454
+        if self.send_SYN():
+            if self.receive_SYN_ACK():
+                self.send_ACK()
+
+    def send_SYN(self):
+        self.seq = 1
         self.ackSeq = 0
         #size of tcp header in 32bit word
         doff = 5 #4bit field: 5*4 = 20bytes
@@ -59,34 +69,88 @@ class Transport:
         tcpHeaderTuple = (self.srcPort, self.dstPort, self.seq, self.ackSeq, self.offsetRes,
                           jFlags, self.window, self.tcpChecksum, self.urgPtr)
         self.jTCPHeader = json.dumps(tcpHeaderTuple)
-        self.headerLength = sys.getsizeof(tcpHeaderTuple)
-        self.createPDU('TCP')
-        self.tcpSocket.send(tcpHeader)
-        self.resp = self.tcpSocket.recv(1024)
+        self.tcpChecksum = self.calculateChecksum(self.jTCPHeader)
+	#remount head with correct checksum
+        tcpHeaderTuple = (self.srcPort, self.dstPort, self.seq, self.ackSeq, self.offsetRes,
+                          jFlags, self.window, self.tcpChecksum, self.urgPtr)
+ 	self.jTCPHeader = json.dumps(tcpHeaderTuple)
 
-    def createPDU(self, mode):
+	self.headerLength = sys.getsizeof(tcpHeaderTuple)
+        self.create_PDU('TCP')
+        try:
+            self.tcpSocket.send(self.jTCPHeader)
+            print 'TCPHeader sent'
+            return True
+        except:
+            print 'Error sending SYN'
+            return False
+
+    def receive_SYN_ACK (self):
+        self.expected_SYN_ACK = self.tcpSocket.recv(1024)
+        if self.expected_SYN_ACK:
+            jFlags = self.flags
+            print "Received SYN_ACK"
+            (self.dstPort, self.srcPort, self.seq, self.ackSeq, self.offsetRes, jFlags,
+                self.window, self.tcpChecksum, self.urgPtr) = json.loads(self.expected_SYN_ACK)
+            self.flags = json.loads(jFlags)
+            self.create_PDU('TCP')
+            return True
+        else:
+            print "DID NOT Receive SYN_ACK"
+            return False
+
+    def send_ACK (self):
+        print 'Sending ACK'
+        self.setFlags('ACK')
+        self.create_PDU('TCP')
+        jFlags = json.dumps(self.flags)
+        tcpHeaderTuple = (self.srcPort, self.dstPort, self.seq, self.ackSeq, self.offsetRes,
+                          jFlags, self.window, self.tcpChecksum, self.urgPtr)
+    	self.jTCPHeader = json.dumps(tcpHeaderTuple)
+        try:
+            self.tcpSocket.send(self.jTCPHeader)
+            print 'ACK sent'
+        except:
+            print 'could not send ACK message'
+
+    def setFlags (self, mode):
+        #reboot tcp flags
+        self.flags = {'cwr':0, 'ece':0,
+                      'fin':0, 'syn':0, 'rst':0,
+                      'psh':0, 'ack':0, 'urg':0}
+        if mode == 'SYN':
+            self.seq = 0
+            self.flags['syn'] = 1
+        elif mode == 'ACK':
+            self.ackSeq = self.seq + 1
+            self.flags['ack'] = 1
+        else: #SYN-ACK
+            self.flags['syn'] = 1
+            self.flags['ack'] = 1
+
+    def create_PDU(self, mode):
         if mode == 'TCP':
             print '|******************************************************************************************|'
             print '|          Porta de Origem = ',  self.srcPort, '          |          Porta de Destino = ', self.dstPort, '          |'
             print '|******************************************************************************************|'
-            print '|                                Numero de sequencia = ', self.seq, '                               |'
+            print '|                                Número de sequência = ', self.seq, '                               |'
             print '|******************************************************************************************|'
-            print '|                                Numero de confirmacao = ', self.ackSeq, '                               |'
+            print '|                                Número de confirmação = ', self.ackSeq, '                               |'
             print '|******************************************************************************************|'
             print '|    Comprimento    |       | C | E | U | A | P | R | S | F |           Tamanho            |'
-            print '|    do cabecalho   |       | W | C | R | C | S | S | Y | I |             da               |'
+            print '|    do cabeçalho   |       | W | C | R | C | S | S | Y | I |             da               |'
             print '|         =         |       | R | E | G | K | H | T | N | N |           Janela             |'
             print '|       ', self.headerLength, '       |       |', self.flags['cwr'], '|', self.flags['ece'], '|',\
-                                                   self.flags['urg'], '|', self.flags['ack'], '|',\
-                                                   self.flags['psh'], '|', self.flags['rst'], '|',\
-                                                   self.flags['syn'], '|', self.flags['fin'], '|                              |'
+                                                   		     self.flags['urg'], '|', self.flags['ack'], '|',\
+                                                   		     self.flags['psh'], '|', self.flags['rst'], '|',\
+                                                   		     self.flags['syn'], '|', self.flags['fin'], '|                              |'
             print '|******************************************************************************************|'
             print '|                Checksum = ', self.tcpChecksum, '              |            Ponteiro para urg.               |'
             print '|******************************************************************************************|'
-            print '|                                         Opcoes                                           |'
+            print '|                                         Opções                                           |'
             print '|******************************************************************************************|'
             print '|                                                                                          |'
-            print '|                                  Dados = Requisicao HTTP                                 |'
+            print '|                                  Dados = Requisição HTTP                                 |'
             print '|                                                                                          |'
             print '|******************************************************************************************|'
         else: #UDP
@@ -96,29 +160,9 @@ class Transport:
             print '|        Comprimento do UDP = ',  self.srcPort, '         |           Checksum do UDP = ', self.dstPort, '          |'
             print '|******************************************************************************************|'
             print '|                                                                                          |'
-            print '|                                  Dados = Requisicao HTTP                                 |'
+            print '|                                  Dados = Requisição HTTP                                 |'
             print '|                                                                                          |'
             print '|******************************************************************************************|'
-
-
-
-    def sendTCPPackage(self):
-        try:
-            self.tcpSocket = socket(AF_INET, SOCK_STREAM)
-            #internetAddress = ('localhost', 3333)
-            self.tcpSocket.connect(self.transpServerAddress)
-
-        except error, msg:
-            print "Couldn't create the socket"
-            print msg
-
-        self.threeWayHandshake()
-        '''flags = json.dumps(self.flags)
-        testTuple = (self., flags)
-        print testTuple
-        tcppack = json.dumps(testTuple)
-        self.tcpSocket.send(tcppack)'''
-        print 'sent'
 
 
 
@@ -203,13 +247,6 @@ class Transport:
         except Exception, ex:
             print 'ERROR! Didn\'t received package from Application Layer'
             print ex
-
-    ''' def threeWayHandshake(self):
-        #Connect to internet layer
-        self.intSocket = socket(socket.AF_INET, socket.SOCK_STREAM)
-        toInt = ('localhost', 22222)
-        intSocket.connect(
-'''
 
 trans = Transport()
 
