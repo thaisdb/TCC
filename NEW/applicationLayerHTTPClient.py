@@ -4,24 +4,24 @@ import urllib
 import os
 from socket import *
 import httplib
+from threading import Thread
 #create connection
 
-class clientHttp:
+class ApplicationClient(Thread):
     # na verdade um server que escuta o browser
     browserPack = ' '
     def __init__(self):
+        print '*' * 20 + ' APPLICATION CLIENT ' + '*' * 20
         self.listenBrowser()
-        print self.browserPack
         self.sendToTransportLayer()
 
     def sendToTransportLayer(self):
         toTransportSocket = socket(AF_INET, SOCK_STREAM)
-        transportAdress = ('localhost', 2222)
-        toTransportSocket.connect(transportAdress)
+        transportAddress = ('localhost', 2222)
+        toTransportSocket.connect(transportAddress)
         try:
-            print "Sending package..."
             toTransportSocket.send(self.browserPack)
-            print "Done!"
+            print "Data sent to transport client!"
         except Exception, ex:
             print 'ERROR! Could not sand package'
             print ex
@@ -31,16 +31,14 @@ class clientHttp:
         browserAdress = ('localhost', 1111)
         browserSocket.bind(browserAdress)
         browserSocket.listen(1)
-        #while True:
-        print "Wainting browser"
+        print "Wainting browser..."
         connection, browserAddress = browserSocket.accept()
-        print "Connected"
         try:
-            print "Receiving..."
             self.browserPack = connection.recv(1024)
             print self.browserPack
+            browserSocket.close()
         except Exception, ex:
             print 'ERROR!' + str(ex)
 
 
-ch = clientHttp()
+ApplicationClient()

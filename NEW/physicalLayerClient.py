@@ -5,15 +5,18 @@ import binascii
 import netifaces as ni
 import os
 from subprocess import Popen, PIPE
-
+import json
+from threading import Thread
 #TODO receive server ip from the caller
 
 
-class Client:
+class PhysicalClient(Thread):
     physicalSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     networkSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     fileType = 0 #0 to text files and 1 to image files
+    space = '\t\t\t'
     def __init__(self, host, port):
+        print self.space + '*' * 20 + ' PHYSICAL CLIENT ' + '*' * 20
         self.port = int(float(port))
         self.host = host
         try:
@@ -23,7 +26,7 @@ class Client:
             print exc
 
     def connect(self):
-        print 'connecting'
+        print self.space + 'Connected to Physical Server'
         self.physicalSocket.connect((self.host, self.port))
         self.getIPMAC()
         #if self.sendFileName():
@@ -39,10 +42,10 @@ class Client:
         self.ipdst = self.host
         self.macdst = os.system('arp -n ' + str(self.ipdst))
         #self.tmq = self.physicalSocket.getTMQ()
-        print "my ip: " + self.ip
-        print "my mac: " + self.mac
-        print "server ip: " + self.ipdst
-        print "server mac: " + str(self.macdst)
+        print self.space + "my ip: " + self.ip
+        print self.space + "my mac: " + self.mac
+        print self.space + "server ip: " + self.ipdst
+        print self.space + "server mac: " + str(self.macdst)
 
     def sendFileName(self):
         #self.fileName = raw_input('Write the file name you want to send: ')
@@ -61,15 +64,18 @@ class Client:
             return False
 
     def toBinaryFile(self):
-        if self.fileType == 0:
-            originalFile = open(self.package, "r")
-        else:
-            originalFile = open(self.package, 'rb')
+        #if self.fileType == 0:
+        #    originalFile = open(self.package, "r")
+        #else:
+        #    originalFile = open(self.package, 'rb')
+        self.tamanho = sys.getsizeof(self.package)
+        packageTuple = ('preambulo', self.mac, self.macdst, self.tamanho, self.package)
+        data = json.dumps(packageTuple)
         with open('binary_file.txt', 'w') as binaryFile:
-            data = originalFile.read(1)
-            while data:
-                binaryFile.write('{0:08b}'.format(ord(data)))
-                data = originalFile.read(1)
+            for x in data:
+                binaryFile.write('{0:08b}'.format(ord(x)))
+
+
 
     def sendBinaryFile(self):
         with open('binary_file.txt', "r") as originalBinaryFile:
@@ -81,12 +87,12 @@ class Client:
 
     def receiveFromNetwork(self):
         self.networkSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.networkSocket.bind(('127.0.0.1', 5342))
+        self.networkSocket.bind(('127.0.0.1', 4444))
         self.networkSocket.listen(1)
-        self.networkSocket.accept()
-        self.package = self.networkSocket.recv(1024)
-        print 'pakcage from network received'
+        self.clientSocket, addr = self.networkSocket.accept()
+        self.package = json.loads(self.clientSocket.recv(1024))
+        print self.space + 'Packet from network received'
         print self.package
 
 
-client = Client(sys.argv[1], sys.argv[2])
+PhysicalClient ('127.0.0.1' , 7690)

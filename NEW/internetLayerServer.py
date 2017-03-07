@@ -52,8 +52,8 @@ class IP:
 
 
 
-class InternetClient(Thread):
-    space = '\t\t'
+class InternetServer(Thread):
+    space = "\t\t"
     def __init__(self):
         #network = raw_input("Enter an IP/mask(xxx.xxx.xxx.xxx/mmm): ")
         #self.ip1 = IP(network)
@@ -62,15 +62,13 @@ class InternetClient(Thread):
         #    self.ip2 = IP(network2)
         #    self.ipBelongsToNetwork()
         #self.routerTable('192.168.9.0')
-        print self.space + '*' * 20 + ' INTENERT CLIENT ' + '*' * 20
-        self.receiveFromTransport()
-        #self.belongsToNetwork()
-        self.toPhysical()
+        print self.space + '******************** INTERNET SERVER ********************'
+        self.receiveFromPhysical()
+        self.sendToTransport()
 
 
-    def belongsToNetwork(self):
+    def ipBelongsToNetwork(self):
         # ip1 AND subnetMask2
-
         ip1sm = [int(self.ip1.ipBin[i], 2) & int(self.ip1.netMaskBin[i], 2) for i in range(0, len(self.ip1.ipBin))]
         print ip1sm
         ip2sm = [int(self.ip2.ipBin[i], 2) & int(self.ip2.netMaskBin[i], 2) for i in range(0, len(self.ip2.ipBin))]
@@ -92,23 +90,21 @@ class InternetClient(Thread):
             print 'router'
             return 0
 
-    def toPhysical(self):
-        physicalSocket = socket(AF_INET, SOCK_STREAM)
-        physicalSocket.connect(('127.0.0.1', 4444))
-        physicalSocket.send(json.dumps(self.package))
+    def sendToTransport(self):
+        transportSocket = socket(AF_INET, SOCK_STREAM)
+        transportSocket.connect(('127.0.0.1', 6666))
+        transportSocket.send(self.package)
         print 'sending ip1'
 
-    def receiveFromTransport(self):
-        print 'internet receiving from transport'
-        transportSocket = socket(AF_INET, SOCK_STREAM)
-        transportSocket.bind (('127.0.0.1', 3333))
-        transportSocket.listen(1)
-        #print self.space + 'listening'
-        self.clientSocket, addr = transportSocket.accept()
-        #print self.space + 'connected'
+    def receiveFromPhysical(self):
+        physicalSocket = socket(AF_INET, SOCK_STREAM)
+        physicalSocket.bind (('127.0.0.1', 5555))
+        physicalSocket.listen(1)
+        print self.space + 'listening'
+        self.clientSocket, addr = physicalSocket.accept()
+        print self.space + 'connected'
         self.package = self.clientSocket.recv(1024)
         #print self.package
-        print self.space + 'Received segment from transport layer'
+        print self.space +'received from physical layer'
 
-
-InternetClient()
+InternetServer()

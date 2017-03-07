@@ -1,61 +1,67 @@
 from socket import *
 import json
+from threading import Thread
 #normal server port 99999
 
 
-class Transport:
+class TransportServer (Thread):
     SYN = {'cwr':0, 'ece':0, 'fin':0, 'syn':1, 'rst':0, 'psh':0, 'ack':0, 'urg':0}
     ACK = {'cwr':0, 'ece':0, 'fin':0, 'syn':0, 'rst':0, 'psh':0, 'ack':1, 'urg':0}
-
+    space = '\t'
     def __init__(self):
         self.srcPort = 9999
         self.dstPort = 2222
+        self.receiveFromInternet()
 
+    def receiveFromInternet(self):
         self.tcpServerSocket = socket(AF_INET, SOCK_STREAM)
         try:
-            self.tcpServerSocket.bind(('localhost', 8777))
-        except:
-            print "not binded"
-        print '**********************TRANSPORT LAYER**********************'
-        print 'listening on '
+            self.tcpServerSocket.bind(('localhost', 6666))
+        except Exception as err:
+            print self.space + "not binded: " + str(err)
+        print self.space + '********************** TRANSPORT SERVER **********************'
         self.tcpServerSocket.listen(1)
-        print 'Listening'
-        self.conn, self.addr = self.tcpServerSocket.accept()
-        self.appConn, self.addr = sel
-        print 'Client ' + str(self.addr) + ' connected'
-        try:
-            self.threeWayHandshake()
-            #packet = conn.recv(1024)
+        while True:
+            print self.space + 'Listening'
+            self.conn, self.addr = self.tcpServerSocket.accept()
+            #self.appConn, self.addr = sel
+            print self.space + 'Client ' + str(self.addr) + ' connected'
             try:
-                self.tcpServerSocket.close()
-                print 'Server Socket closed'
-            except socketError:
-                print 'Error closing socket'
-                print socketError
+                #self.threeWayHandshake()
+                self.package = self.conn.recv(1024)
+                print self.package
+                #self.interpretSegment()
+                self.sendToApplication()
+        #        try:
+        #            self.tcpServerSocket.close()
+        #            print 'Server Socket closed'
+        #        except socketError:
+        #            print 'Error closing socket'
+        #            print socketError
 
-        except:
-            print 'ERROR CONNECTING!'
-
+            except Exception as exc:
+                print self.space + 'ERROR CONNECTING!' + str(exc)
+        self.tcpServerSocket.close()
 
     def threeWayHandshake(self):
         if self.receive_SYN():
             self.send_SYN_ACK()
 
     def receive_SYN(self):
-        print "Expecting SYN"
+        print self.space + "Expecting SYN"
         expectSyn = self.conn.recv(1024)
         self.clientPort, self.serverPort, self.seq, self.ackSeq, self.offsetRes,jFlags, window, checksum, urgPtr = json.loads(expectSyn)
         self.flags = json.loads(jFlags)
         print self.flags
         if self.flags == self.SYN:
-            print "Received SYN package"
+            print self.space + "Received SYN package"
             return True
         else:
             self.verifyFlags('SYN')
             return False
 
     def send_SYN_ACK(self):
-        print 'Sending SYN_ACK'
+        print self.space + 'Sending SYN_ACK'
         self.setFlags('SYN_ACK')
         jFlags = json.dumps(self.flags)
         self.seq = 20
@@ -77,13 +83,13 @@ class Transport:
         #verifyFlags('ACK')
         print flags
         if self.ackSeq == self.seq + 1:
-            print "Received ACK package"
+            print self.space + "Received ACK package"
             return True
         else:
             #diff = [k for k in flags if flags[k] != self.SYN[k]]
             #for k in diff:
             #    print k, ': received ', flags[k], '-> expected ', self.SYN[k]
-            print "Acknowledgy missed"
+            print self.space + "Acknowledgy missed"
             return False
 
 
@@ -100,17 +106,30 @@ class Transport:
 
     def verifyFlags(self, mode):
         if (mode == 'SYN'):
-            print 'DID NOT receive expected SYN'
+            print self.space + 'DID NOT receive expected SYN'
             diff = [k for k in self.flags if self.flags[k] != self.SYN[k]]
             for k in diff:
-                print 'Flag', k, ': received ', self.flags[k], '-> expected ', self.SYN[k]
+                print self.space + 'Flag', k, ': received ', self.flags[k], '-> expected ', self.SYN[k]
 
         if (mode == 'ACK'):
-            print 'DID NOT receive expected ACK'
+            print self.space + 'DID NOT receive expected ACK'
             diff = [k for k in self.flags if self.flags[k] != self.ACK[k]]
             for k in diff:
-                print 'Flag', k, ': received ', self.flags[k], '-> expected ', self.ACK[k]
+                print self.space + 'Flag', k, ': received ', self.flags[k], '-> expected ', self.ACK[k]
+
+    def interpretSegment(self):
+        self.segment = json.loads(self.package)
+        print self.space + 'porta de origem = ' + str(self.segment[0])
+        print self.space + 'porta de destino = ' + str(self.segment[1])
+        print self.space + 'comprimento = ' + str(self.segment[2])
+        print self.space + 'checksum = ' + str(self.segment[3])
+        self.package = self.segment[4]
+
+    def sendToApplication(self):
+        applicationSocket = socket(AF_INET, SOCK_STREAM)
+        applicationSocket.connect(('127.0.0.1', 7777))
+        applicationSocket.send(self.package)
+        print self.space + 'sent package to app'
 
 
-
-tsp = Transport()
+TransportServer()
