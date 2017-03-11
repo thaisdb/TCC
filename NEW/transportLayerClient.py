@@ -15,15 +15,22 @@ class TransportClient(Thread):
         self.dstPort = 3333
         self.srcPort = 2222
         print self.space + '*' * 20 + ' TRANSPORT CLIENT ' + '*' * 20
-        self.receiveFromApplicationLayer()
-        #self.createTest()
-        #sendChoice = raw_input("Choose the protocol to use:\n
-        #                        [1] UDP \t [2] TCP")
-        #if int(sendChoice) == 1:
-        #    self.sendUDPPackage()
-        #else:
-        #self.physicalAddr =         #self.sendTCPPackage()
-        self.sendUDPPackage()
+        self.applicationSocket = socket(AF_INET, SOCK_STREAM)
+        localAddress = ('localhost', 2222)
+        self.applicationSocket.bind(localAddress)
+        while True:
+            self.applicationSocket.listen(1)
+            print self.space + 'listening'
+            self.receiveFromApplicationLayer()
+            #self.createTest()
+            #sendChoice = raw_input("Choose the protocol to use:\n
+            #                        [1] UDP \t [2] TCP")
+            #if int(sendChoice) == 1:
+            #    self.sendUDPPackage()
+            #else:
+            #self.physicalAddr =         #self.sendTCPPackage()
+            self.sendUDPPackage()
+        self.applicationSocket.close()
 
 
     def sendUDPPackage(self):
@@ -31,14 +38,16 @@ class TransportClient(Thread):
             udpSocket = socket(AF_INET, SOCK_STREAM)
             udpSocket.connect(('127.0.0.1', 3333))
             self.udpPackage = (self.srcPort, self.dstPort, 'cumprimento', 'checksum', self.applicationPack)
+            print self.udpPackage
             udpSocket.send(json.dumps(self.udpPackage))
+            self.create_PDU('UDP')
             print 'sent'
         except Exception, ex:
             print 'ERROR! Coudn\'t send UDP package.'
             print ex
-	#self.udpChecksum = 0
+            return False
+        #self.udpChecksum = 0
 	#self.udpHeaderTuple = (self.srcPort, self.dstPort, self.udpChecksum)
-	self.create_PDU('UDP')
 
 
     def sendTCPPackage(self):
@@ -184,24 +193,21 @@ class TransportClient(Thread):
         return s
 
     def receiveFromApplicationLayer(self):
-        self.applicationSocket = socket(AF_INET, SOCK_STREAM)
-        localAddress = ('localhost', 2222)
-        self.applicationSocket.bind(localAddress)
-        self.applicationSocket.listen(1)
-        print self.space + "Wainting Application Layer"
-        connection, applicationAddress = self.applicationSocket.accept()
-        try:
-            self.applicationPack = connection.recv(1024)
-            print 'received from application layer, sending to internet'
+        print 'receive from application layer'
+        self.clientSocket, addr = self.applicationSocket.accept()
+        #self.applicationPack = ''
+        #while self.clientSocket.recv(1024):
+        self.applicationPack += self.clientSocket.recv(1024)
+        print 'received from application layer, sending to internet'
             #TODO check size of pack, while will be obsolete
             #while data:
             #    self.applicationPack += data
             #    data = connection.recv(1024)
             #debug
             #self.applicationPack
-        except Exception, ex:
-            print self.space + 'ERROR! Didn\'t received package from Application Layer'
-            print ex
-
+        #except Exception, ex:
+         #   print self.space + 'ERROR! Didn\'t received package from Application Layer'
+          #  print ex
+          #  return False
 
 TransportClient()

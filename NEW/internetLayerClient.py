@@ -62,10 +62,16 @@ class InternetClient(Thread):
         #    self.ip2 = IP(network2)
         #    self.ipBelongsToNetwork()
         #self.routerTable('192.168.9.0')
+        self.transportSocket = socket(AF_INET, SOCK_STREAM)
+        self.transportSocket.bind (('127.0.0.1', 3333))
         print self.space + '*' * 20 + ' INTENERT CLIENT ' + '*' * 20
-        self.receiveFromTransport()
-        #self.belongsToNetwork()
-        self.toPhysical()
+        self.transportSocket.listen(1)
+        self.clientSocket, addr = self.transportSocket.accept()
+        print 'accepted connection'
+        if self.receiveFromTransport():
+            #self.belongsToNetwork()
+            self.toPhysical()
+        self.transportSocket.close()
 
 
     def belongsToNetwork(self):
@@ -93,22 +99,22 @@ class InternetClient(Thread):
             return 0
 
     def toPhysical(self):
-        physicalSocket = socket(AF_INET, SOCK_STREAM)
-        physicalSocket.connect(('127.0.0.1', 4444))
-        physicalSocket.send(json.dumps(self.package))
-        print 'sending ip1'
+        self.physicalSocket = socket(AF_INET, SOCK_STREAM)
+        self.physicalSocket.connect(('127.0.0.1', 4444))
+        self.physicalSocket.send(json.dumps(self.package))
+        print 'sended package to physical'
 
     def receiveFromTransport(self):
-        print 'internet receiving from transport'
-        transportSocket = socket(AF_INET, SOCK_STREAM)
-        transportSocket.bind (('127.0.0.1', 3333))
-        transportSocket.listen(1)
-        #print self.space + 'listening'
-        self.clientSocket, addr = transportSocket.accept()
-        #print self.space + 'connected'
-        self.package = self.clientSocket.recv(1024)
-        #print self.package
-        print self.space + 'Received segment from transport layer'
-
+        try:
+            print 'internet receiving from transport'
+            #print self.space + 'listening'
+            #print self.space + 'connected'
+            self.package = self.clientSocket.recv(1024)
+            #print self.package
+            print self.space + 'Received segment from transport layer'
+            return True
+        except:
+            print 'Did not receive request from transport'
+            return False
 
 InternetClient()

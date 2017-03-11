@@ -63,8 +63,15 @@ class InternetServer(Thread):
         #    self.ipBelongsToNetwork()
         #self.routerTable('192.168.9.0')
         print self.space + '******************** INTERNET SERVER ********************'
-        self.receiveFromPhysical()
-        self.sendToTransport()
+        physicalSocket = socket(AF_INET, SOCK_STREAM)
+        physicalSocket.bind (('127.0.0.1', 5555))
+        physicalSocket.listen(1)
+        print self.space + 'listening'
+        self.clientSocket, addr = physicalSocket.accept()
+        print self.space + 'connected'
+        while True:
+            self.receiveFromPhysical()
+            self.sendToTransport()
 
 
     def ipBelongsToNetwork(self):
@@ -97,12 +104,6 @@ class InternetServer(Thread):
         print 'sending ip1'
 
     def receiveFromPhysical(self):
-        physicalSocket = socket(AF_INET, SOCK_STREAM)
-        physicalSocket.bind (('127.0.0.1', 5555))
-        physicalSocket.listen(1)
-        print self.space + 'listening'
-        self.clientSocket, addr = physicalSocket.accept()
-        print self.space + 'connected'
         self.package = self.clientSocket.recv(1024)
         #print self.package
         print self.space +'received from physical layer'

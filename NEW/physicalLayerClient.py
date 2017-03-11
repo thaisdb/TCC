@@ -19,20 +19,19 @@ class PhysicalClient(Thread):
         print self.space + '*' * 20 + ' PHYSICAL CLIENT ' + '*' * 20
         self.port = int(float(port))
         self.host = host
-        try:
-            self.connect()
-        except socket.error, exc:
-            print 'Could not connect:'
-            print exc
+        self.connect()
+        if self.receiveFromNetwork():
+            self.toBinaryFile()
+            self.sendBinaryFile()
+        #except socket.error, exc:
+         #   print 'Could not connect:'
+          #  print exc
 
     def connect(self):
         print self.space + 'Connected to Physical Server'
         self.physicalSocket.connect((self.host, self.port))
         self.getIPMAC()
         #if self.sendFileName():
-        self.receiveFromNetwork()
-        self.toBinaryFile()
-        self.sendBinaryFile()
 
     def getIPMAC (self):
         print 'gettingIPMAC'
@@ -84,6 +83,7 @@ class PhysicalClient(Thread):
                 self.physicalSocket.send(fileBuffer)
                 fileBuffer = originalBinaryFile.read()
             self.physicalSocket.close()
+        return True
 
     def receiveFromNetwork(self):
         self.networkSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -92,7 +92,7 @@ class PhysicalClient(Thread):
         self.clientSocket, addr = self.networkSocket.accept()
         self.package = json.loads(self.clientSocket.recv(1024))
         print self.space + 'Packet from network received'
-        print self.package
+        print self.space + self.package
 
 
 PhysicalClient ('127.0.0.1' , 7690)

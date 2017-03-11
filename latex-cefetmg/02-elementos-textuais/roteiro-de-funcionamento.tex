@@ -12,6 +12,7 @@ A execuç\~ao \'e iniciada com uma requisiç\~ao http feita a partir de um brows
 Os principais métodos de requisição HTTP são apresentado, sucintamente na Tabela \ref{tab:requisicoesHTTP}, e como exemplo segue uma solicitação gerada em testes a qual é apresentada ao usuário.
 
 \begin{table}[H]
+	\centering
 	\small
 	\begin{tabular}{ |p{2cm}||p{7cm}| }
 		\hline
@@ -27,9 +28,8 @@ Os principais métodos de requisição HTTP são apresentado, sucintamente na Ta
 		OPTIONS & Consulta opções para uma página\\
 		\hline
 	\end{tabular}
-	\label {tab:requisicoesHTTP}
-	\centering
 	\caption {Métodos de requisição HTTP}
+	\label {tab:requisicoesHTTP}
 	\cite{TANENBAUM}
 \end{table}
 
@@ -76,11 +76,11 @@ Em ambos os casos as PDU's são apresentadas ao usuário e, no caso do protocolo
 	\centering
 	\subfloat[Protocolo UDP]{
 		\label{subfig-1:transOutput}
-		\includegraphics[width=0.8\textwidth] {04-figuras/ssUDP.png}
-	}
+		\includegraphics[width=\textwidth] {04-figuras/ssUDP.png}
+	} \\
 	\subfloat[Protocolo TCP]{
 		\label{subfig-2:transOutput}
-		\includegraphics[width=0.8\textwidth] {04-figuras/ssTCP.png}
+		\includegraphics[width=\textwidth] {04-figuras/ssTCP.png}
 	}
 	\caption{Resultados obtidos na execução do módulo de simulação referente a camada de Transporte}
 	\label{fig:transOutput}

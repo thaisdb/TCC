@@ -20,11 +20,11 @@ class PhysicalServer(Thread):
         self.port = int(float(port))
         self.serverSocket.bind(('', self.port))
         self.serverSocket.listen(1)
+        print self.space + 'Listening for connections, on PORT: ' + str(self.port)
+        self.clientSocket, addr = self.serverSocket.accept()
         print self.space + ("******************** PHYSICAL SERVER ********************")
         while True:
-            print self.space + 'Listening for connections, on PORT: ' + str(self.port)
-            self.clientSocket, addr = self.serverSocket.accept()
-            #self.receiveFileName()
+           #self.receiveFileName()
             self.receiveFile()
             self.translateReceivedFile()
             self.interpretPackage()
@@ -68,10 +68,11 @@ class PhysicalServer(Thread):
                 newFile.write(x)
                 buff = binFile.read(self.BYTE_SIZE)
                 self.package += x
+        print 'package:'
         self.interpretPackage()
 
     def interpretPackage(self):
-        self.package =  json.loads(self.package)
+        self.package =  self.package
         preambulo =     self.package[0]
         print preambulo
         srcmak =        self.package[1]
@@ -84,7 +85,7 @@ class PhysicalServer(Thread):
     def sendToInternet (self):
         internetSocket = socket(AF_INET, SOCK_STREAM)
         internetSocket.connect(('127.0.0.1', 5555))
-        print self.space + 'sending\n' + str(self.package)
+        print self.space + 'sending\n'
         internetSocket.send(self.package)
         print self.space + 'package sent!'
 
