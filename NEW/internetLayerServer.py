@@ -63,16 +63,15 @@ class InternetServer(Thread):
         #    self.ipBelongsToNetwork()
         #self.routerTable('192.168.9.0')
         print self.space + '******************** INTERNET SERVER ********************'
-        physicalSocket = socket(AF_INET, SOCK_STREAM)
-        physicalSocket.bind (('127.0.0.1', 5555))
-        physicalSocket.listen(1)
+        self.physicalSocket = socket(AF_INET, SOCK_STREAM)
+        self.physicalSocket.bind (('127.0.0.1', 5555))
+        self.physicalSocket.listen(1)
         print self.space + 'listening'
-        self.clientSocket, addr = physicalSocket.accept()
-        print self.space + 'connected'
         while True:
-            self.receiveFromPhysical()
-            self.sendToTransport()
-
+            if self.receiveFromPhysical():
+                self.sendToTransport()
+                if self.receiveAnswer():
+                    self.sendAnswerToPhysical()
 
     def ipBelongsToNetwork(self):
         # ip1 AND subnetMask2
@@ -98,14 +97,38 @@ class InternetServer(Thread):
             return 0
 
     def sendToTransport(self):
-        transportSocket = socket(AF_INET, SOCK_STREAM)
-        transportSocket.connect(('127.0.0.1', 6666))
-        transportSocket.send(self.package)
-        print 'sending ip1'
+        self.transportSocket = socket(AF_INET, SOCK_STREAM)
+        self.transportSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        self.transportSocket.connect(('127.0.0.1', 6666))
+        self.transportSocket.send(self.package)
+        print 'sending package request to transport layer'
 
     def receiveFromPhysical(self):
-        self.package = self.clientSocket.recv(1024)
+        self.physicalSocket, addr = self.physicalSocket.accept()
+        print self.space + 'connected'
+        self.package = self.physicalSocket.recv(1024)
         #print self.package
         print self.space +'received from physical layer'
+        return True
+
+    def receiveAnswer(self):
+        print 'waiting answer'
+        self.answer = ''
+        self.answer = self.transportSocket.recv(1024)
+        #while data != '':
+         #   self.answer += data
+         #   data = self.transportSocket.recv(1024)
+        print 'answer'
+        print self.answer
+        return True
+
+    def sendAnswerToPhysical(self):
+        try:
+            self.physicalSocket.send(self.answer)
+            print 'Answer sent to physical layer'
+            return True
+        except:
+            print 'could not send answer to physical layer'
+            return False
 
 InternetServer()

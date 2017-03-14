@@ -20,9 +20,12 @@ class PhysicalClient(Thread):
         self.port = int(float(port))
         self.host = host
         self.connect()
-        if self.receiveFromNetwork():
-            self.toBinaryFile()
-            self.sendBinaryFile()
+        while True:
+            if self.receiveFromNetwork():
+                self.toBinaryFile()
+                self.sendBinaryFile()
+                if self.receiveAnswer():
+                    self.sendAnswer()
         #except socket.error, exc:
          #   print 'Could not connect:'
           #  print exc
@@ -63,6 +66,7 @@ class PhysicalClient(Thread):
             return False
 
     def toBinaryFile(self):
+        print 'Creating binary file'
         #if self.fileType == 0:
         #    originalFile = open(self.package, "r")
         #else:
@@ -82,7 +86,7 @@ class PhysicalClient(Thread):
             while fileBuffer:
                 self.physicalSocket.send(fileBuffer)
                 fileBuffer = originalBinaryFile.read()
-            self.physicalSocket.close()
+            #self.physicalSocket.close()
         return True
 
     def receiveFromNetwork(self):
@@ -90,9 +94,21 @@ class PhysicalClient(Thread):
         self.networkSocket.bind(('127.0.0.1', 4444))
         self.networkSocket.listen(1)
         self.clientSocket, addr = self.networkSocket.accept()
-        self.package = json.loads(self.clientSocket.recv(1024))
+        self.package = self.clientSocket.recv(1024)
+        self.package = json.loads(self.package)
         print self.space + 'Packet from network received'
         print self.space + self.package
+        return True
+
+    def receiveAnswer(self):
+        self.answer = self.physicalSocket.recv(1024)
+        print 'answer'
+        print self.answer
+        return True
+
+    def sendAnswer(self):
+        self.networkSocket.send(self.answer)
+        print 'answer sent'
 
 
 PhysicalClient ('127.0.0.1' , 7690)

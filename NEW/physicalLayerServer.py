@@ -21,18 +21,18 @@ class PhysicalServer(Thread):
         self.serverSocket.bind(('', self.port))
         self.serverSocket.listen(1)
         print self.space + 'Listening for connections, on PORT: ' + str(self.port)
-        self.clientSocket, addr = self.serverSocket.accept()
         print self.space + ("******************** PHYSICAL SERVER ********************")
-        while True:
-           #self.receiveFileName()
-            self.receiveFile()
+        #self.receiveFileName()
+        if self.receiveFile():
             self.translateReceivedFile()
             self.interpretPackage()
             self.sendToInternet()
-        self.clientSocket.close()
+            if self.receiveAswer():
+                self.sendAswer()
+        self.physicalSocket.close()
 
     def receiveFileName(self):
-        data = self.clientSocket.recv(1024)
+        data = self.physicalSocket.recv(1024)
         if not data:
             print 'No valid file  received'
             return
@@ -45,14 +45,16 @@ class PhysicalServer(Thread):
         print ('filename: ' + self.receivedFileName)
 
     def receiveFile(self):
+        self.physicalSocket, addr = self.serverSocket.accept()
         with open ('receivedBinary_.txt', "w") as self.rFile:
-            data = self.clientSocket.recv(self.BUFFER_SIZE)
+            data = self.physicalSocket.recv(self.BUFFER_SIZE)
             while data:
                 if not data:
                     print ("no data")
                     break
                 self.rFile.write(data)
-                data = self.clientSocket.recv(self.BUFFER_SIZE)
+                data = self.physicalSocket.recv(self.BUFFER_SIZE)
+        return True
 
 
     def translateReceivedFile (self):
@@ -72,26 +74,39 @@ class PhysicalServer(Thread):
         self.interpretPackage()
 
     def interpretPackage(self):
-        self.package =  self.package
+        self.package =  json.loads(self.package)
         preambulo =     self.package[0]
-        print preambulo
+        print 'preambulo: '+ str(preambulo)
         srcmak =        self.package[1]
-        print srcmak
+        print 'srcMak: ' + str(srcmak)
         myMack =        self.package[2]
         tamanho =       self.package[3]
         self.package =  self.package[4]
         #print self.package
 
     def sendToInternet (self):
-        internetSocket = socket(AF_INET, SOCK_STREAM)
-        internetSocket.connect(('127.0.0.1', 5555))
+        self.internetSocket = socket(AF_INET, SOCK_STREAM)
+        self.internetSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        self.internetSocket.connect(('127.0.0.1', 5555))
         print self.space + 'sending\n'
-        internetSocket.send(self.package)
+        self.internetSocket.send(self.package)
         print self.space + 'package sent!'
 
 
     def sendTMQ():
         print 'asked'
         #clientSocket.send(self.BUFFER_SIZE)
+
+    def receiveAswer(self):
+        self.answer = self.internetSocket.recv(1024)
+        print 'received aswer'
+        return True
+
+    def sendAswer(self):
+        self.physicalSocket.send(self.answer)
+        print 'answer:'
+        print self.answer
+        print 'Answer sent to physical client'
+        return True
 
 PhysicalServer('127.0.0.1', 7690)

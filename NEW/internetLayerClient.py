@@ -103,6 +103,7 @@ class InternetClient(Thread):
         self.physicalSocket.connect(('127.0.0.1', 4444))
         self.physicalSocket.send(json.dumps(self.package))
         print 'sended package to physical'
+        print  json.dumps(self.package)
 
     def receiveFromTransport(self):
         try:

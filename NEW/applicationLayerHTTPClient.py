@@ -30,7 +30,7 @@ class ApplicationClient(Thread):
         try:
             self.transportSocket.send(self.browserPack)
             print "Data sent to transport client!"
-            self.transportSocket.close()
+            #self.transportSocket.close()
         except Exception, ex:
             print 'ERROR! Could not sand package'
             print ex
