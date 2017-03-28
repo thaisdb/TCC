@@ -1,5 +1,5 @@
 from __future__ import with_statement
-import socket
+from socket import *
 import sys
 import binascii
 import netifaces as ni
@@ -12,8 +12,8 @@ from layer import Layer
 
 
 class PhysicalClient(Thread):
-    physicalSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    networkSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    physicalSocket = socket(AF_INET, SOCK_STREAM)
+    networkSocket = socket(AF_INET, SOCK_STREAM)
     fileType = 0 #0 to text files and 1 to image files
     space = '\t\t\t'
     def __init__(self, host, port):
@@ -21,6 +21,10 @@ class PhysicalClient(Thread):
         self.port = int(float(port))
         self.host = host
         self.connect()
+        self.networkSocket = socket(AF_INET, SOCK_STREAM)
+        self.networkSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        self.networkSocket.bind(('127.0.0.1', 4444))
+        self.networkSocket.listen(1)
         while True:
             if self.receiveFromNetwork():
                 self.toBinaryFile()
@@ -93,9 +97,6 @@ class PhysicalClient(Thread):
 
 
     def receiveFromNetwork(self):
-        self.networkSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.networkSocket.bind(('127.0.0.1', 4444))
-        self.networkSocket.listen(1)
         self.clientSocket, addr = self.networkSocket.accept()
         self.package, success = Layer.receiveFrom(self.clientSocket)
         print "success + " + str(self.package)
@@ -103,16 +104,16 @@ class PhysicalClient(Thread):
         self.package = json.loads(self.package)
         #print self.space + 'Packet from network received'
         #print self.space + str(self.package)
-        return True
+        return True if self.package else False
 
     def receiveAnswer(self):
         print 'answer'
-        self.answer = self.physicalSocket.recv(1024)
+        self.answer, success = Layer.receiveFrom(self.physicalSocket)
         print self.answer
         return True
 
     def sendAnswer(self):
-        self.clientSocket.send(self.answer)
+        Layer.sendTo(self.clientSocket, self.answer)
         print 'answer sent'
 
 

@@ -18,11 +18,13 @@ class TransportClient(Thread):
         print self.space + '*' * 20 + ' TRANSPORT CLIENT ' + '*' * 20
         self.applicationSocket = socket(AF_INET, SOCK_STREAM)
         localAddress = ('localhost', 2222)
+        self.applicationSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.applicationSocket.bind(localAddress)
         #while True:
         self.applicationSocket.listen(1)
         print self.space + 'listening'
-        self.receiveFromApplicationLayer()
+        while True:
+            self.receiveFromApplicationLayer()
         #self.createTest()
         #sendChoice = raw_input("Choose the protocol to use:\n
         #                        [1] UDP \t [2] TCP")
@@ -30,18 +32,23 @@ class TransportClient(Thread):
         #    self.sendUDPPackage()
         #else:
         #self.physicalAddr =         #self.sendTCPPackage()
-        self.sendUDPPackage()
+            self.sendUDPPackage()
+            if self.receiveAnswerFromInternetLayer():
+                self.sendAnswerToApplicationLayer()
+
         self.applicationSocket.close()
 
 
     def sendUDPPackage(self):
         try:
-            udpSocket = socket(AF_INET, SOCK_STREAM)
-            udpSocket.connect(('127.0.0.1', 3333))
-            self.udpPackage = (self.srcPort, self.dstPort, 'cumprimento', 'checksum', self.applicationPack)
+            self.udpSocket = socket(AF_INET, SOCK_STREAM)
+            self.udpSocket.connect(('127.0.0.1', 3333))
+            #comprimento da mensagem http
+            comprimento = len(self.applicationPack)
+            self.udpPackage = (0, self.srcPort, self.dstPort, comprimento, 'checksum', self.applicationPack)
             print self.udpPackage
             pack = json.dumps(self.udpPackage)
-            if Layer.sendTo(udpSocket, pack):
+            if Layer.sendTo(self.udpSocket, pack):
                 print 'Data sent'
             #udpSocket.send(pack)
             #self.create_PDU('UDP')
@@ -201,7 +208,7 @@ class TransportClient(Thread):
         self.clientSocket, addr = self.applicationSocket.accept()
         #self.applicationPack = ''
         #while self.clientSocket.recv(1024):
-        self.applicationPack = Layer.receiveFrom(self.clientSocket)
+        self.applicationPack, success = Layer.receiveFrom(self.clientSocket)
         print 'received from application layer, sending to internet'
             #TODO check size of pack, while will be obsolete
             #while data:
@@ -213,5 +220,14 @@ class TransportClient(Thread):
          #   print self.space + 'ERROR! Didn\'t received package from Application Layer'
           #  print ex
           #  return False
+
+    def receiveAnswerFromInternetLayer(self):
+        print 'wainting answer'
+        self.answer, success = Layer.receiveFrom(self.udpSocket)
+        return True
+
+    def sendAnswerToApplicationLayer(self):
+        print 'Sending answer to app layer'
+        return Layer.sendTo(self.clientSocket, self.answer)
 
 TransportClient()

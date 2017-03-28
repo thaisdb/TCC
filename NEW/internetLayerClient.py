@@ -1,10 +1,13 @@
+#coding=utf-8
 from socket import *
 from bitstring import BitArray
 from bitstring import BitStream
 import json
+import re
 from threading import Thread
 from layer import Layer
-#class Internet:
+import netifaces
+
 
 class IP:
     def __init__(self, network):
@@ -37,6 +40,10 @@ class IP:
         self.ipClass()
 
 
+
+
+
+
     def ipClass(self):
         if int(self.netMaskInt[0]) == 255:
             if int(self.netMaskInt[1]) == 255:
@@ -64,14 +71,17 @@ class InternetClient(Thread):
         #    self.ipBelongsToNetwork()
         #self.routerTable('192.168.9.0')
         self.transportClientSocket = socket(AF_INET, SOCK_STREAM)
+        self.transportClientSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.transportClientSocket.bind (('127.0.0.1', 3333))
         print self.space + '*' * 20 + ' INTENERT CLIENT ' + '*' * 20
         self.transportClientSocket.listen(1)
         self.transportSocket, addr = self.transportClientSocket.accept()
         print 'accepted connection'
-        if self.receiveFromTransport():
-            #self.belongsToNetwork()
-            if self.toPhysical():
+        while True:
+            if self.receiveFromTransport():
+                self.createDatagram()
+                #self.belongsToNetwork()
+                self.toPhysical()
                 if self.receiveFromPhysical():
                     self.sendToTransport()
         self.transportSocket.close()
@@ -104,10 +114,11 @@ class InternetClient(Thread):
     def toPhysical(self):
         self.physicalSocket = socket(AF_INET, SOCK_STREAM)
         self.physicalSocket.connect(('127.0.0.1', 4444))
-        Layer.sendTo(self.physicalSocket, json.dumps(self.package))
+        Layer.sendTo(self.physicalSocket, self.datagram)
         #self.physicalSocket.send(json.dumps(self.package))
         print 'sended package to physical'
         #print  json.dumps(self.package)
+        return True
 
     def receiveFromTransport(self):
         self.package, success = Layer.receiveFrom(self.transportSocket)
@@ -118,14 +129,44 @@ class InternetClient(Thread):
             #print self.package
         print self.space + 'Received segment from transport layer'
         print self.package
-        if success:
-            return True
+        return True if self.package else False
+
+    def createDatagram(self):
+        host = re.compile('Host:(.*?):')
+        m = host.search(self.package)
+        if m:
+            host = str(m.group(1))
+            print "Host:" + host
+            if host == 'localhost':
+                dstIP = '127.0.0.1'
+            else:
+                dstIP = host
+            print 'ip = ' + str(self.myIP())
+            srcIP = self.myIP()['addr']
+            print 'srcip = ' + str(srcIP)
+        upperProtocol = int(json.loads(self.package)[0])
+        if upperProtocol == 0:
+            transportProtocol = 'UDP'
         else:
-            return False
-        #except Exception as x:
-        #    print 'Did not receive request from transport'
-        #    print x
-        #    return False
+            transportProtocol = 'TCP'
+        header = ('IPV4', 'ID', 'c. fragmentação', 'c. tempo', transportProtocol,'CRC', srcIP, dstIP, 'opcoes')
+        header = json.dumps(header)
+        self.datagram = ('IPV4', len(header), 'ID', 'c. fragmentação', 'c. tempo', transportProtocol,
+            'CRC', srcIP, dstIP, 'opções', json.loads(self.package))
+        self.datagram = json.dumps(self.datagram)
+
+
+    def myIP(self):
+        interfaces = netifaces.interfaces()
+        for i in interfaces:
+            if i == 'lo':
+                continue
+            iface = netifaces.ifaddresses(i).get(netifaces.AF_INET)
+            if iface != None:
+                for j in iface:
+                    return j
+         #           print j['addr']
+        #return True
 
     def receiveFromPhysical(self):
         print self.space + "Waiting answer"
@@ -134,8 +175,8 @@ class InternetClient(Thread):
         return True
 
     def sendToTransport(self):
-        self.transportSocket.send(self.answer)
+        Layer.sendTo(self.transportSocket, self.answer)
         print 'Answer sent'
 
-
+#IP('198.176.0.32/18')
 InternetClient()

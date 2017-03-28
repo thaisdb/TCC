@@ -17,14 +17,17 @@ class ApplicationClient(Thread):
         print '*' * 20 + ' APPLICATION CLIENT ' + '*' * 20
         self.browserSocket = socket(AF_INET, SOCK_STREAM)
         self.browserAdress = ('localhost', 1111)
+        self.browserSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.browserSocket.bind(self.browserAdress)
         self.browserSocket.listen(1)
         browser = webbrowser.get('google-chrome')
         # 2 for oppening another tab on browser
-        browser.open_new_tab('http://localhost:1111')
-        if (self.listenBrowser()) :
-            self.sendToTransportLayer()
-            #self.receiveFromTransport()
+        browser.open_new_tab('http://localhost:1111/d.html')
+        while True:
+            if (self.listenBrowser()) :
+                self.sendToTransportLayer()
+                if self.receiveFromTransport():
+                    self.sendToBrowser()
         self.browserSocket.close()
         self.transportSocket.close()
 
@@ -42,18 +45,21 @@ class ApplicationClient(Thread):
             print ex
 
     def receiveFromTransport(self):
-        try:
-            print 'waiting answer'
-            answer = self.transportSocket.recv(1024)
-            print answer
-        except:
-            print 'received nothing'
+        print 'wainting answer'
+        self.answer, success = Layer.receiveFrom(self.transportSocket)
+        print self.answer
+        return True
+
+    def sendToBrowser(self):
+        print 'sending answer to browser'
+        success = Layer.sendTo(self.connection, self.answer)
+        return True
 
     def listenBrowser(self):
         print "Wainting browser..."
-        connection, browserAddress = self.browserSocket.accept()
+        self.connection, browserAddr = self.browserSocket.accept()
         try:
-            self.browserPack = connection.recv(1024)
+            self.browserPack = self.connection.recv(1024)
             print self.browserPack
             return True
         except Exception, ex:

@@ -17,6 +17,7 @@ class TransportServer (Thread):
     def receiveFromInternet(self):
         self.tcpServerSocket = socket(AF_INET, SOCK_STREAM)
         try:
+            self.tcpServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
             self.tcpServerSocket.bind(('localhost', 6666))
             print self.space + '********************** TRANSPORT SERVER **********************'
             self.tcpServerSocket.listen(1)
@@ -24,6 +25,7 @@ class TransportServer (Thread):
             while True:
                 # if self.threeWayHandshake()
                 if self.receive_Data():
+                    self.interpretSegment()
                     if self.sendToApplication():
                         if self.applicationAnswer():
                             self.sendAnswerToInternet()
@@ -39,15 +41,14 @@ class TransportServer (Thread):
 
     def receive_Data(self):
         self.internetSocket, self.addr = self.tcpServerSocket.accept()
-        self.internetSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         print self.space + 'Connected!'
-        self.package, successs = Layer.receiveFrom(self.internetSocket)
+        self.package, success = Layer.receiveFrom(self.internetSocket)
+        print str(self.package)
         return success
-        #self.interpretSegment()
 
     def sendAnswerToInternet(self):
         print self.answer
-        self.internetSocket.send(self.answer)
+        Layer.sendTo(self.internetSocket, self.answer)
         print 'Answer sent to internet layer'
         return True
 
@@ -122,18 +123,21 @@ class TransportServer (Thread):
                 print self.space + 'Flag', k, ': received ', self.flags[k], '-> expected ', self.ACK[k]
 
     def interpretSegment(self):
-        self.segment = json.loads(self.package)
-        print self.space + 'porta de origem = ' + str(self.segment[0])
-        print self.space + 'porta de destino = ' + str(self.segment[1])
-        print self.space + 'comprimento = ' + str(self.segment[2])
-        print self.space + 'checksum = ' + str(self.segment[3])
-        self.package = self.segment[4]
+        self.package = json.loads(self.package)
+        print self.space + 'type trasnport = ' + str(self.package[0])
+        print self.space + 'porta de origem = ' + str(self.package[1])
+        print self.space + 'porta de destino = ' + str(self.package[2])
+        print self.space + 'comprimento = ' + str(self.package[3])
+        print self.space + 'checksum = ' + str(self.package[4])
+        self.package = self.package[5]
 
     def sendToApplication(self):
         self.applicationSocket = socket(AF_INET, SOCK_STREAM)
         self.applicationSocket.connect(('127.0.0.1', 7777))
-        Layer.sendTo(applicationSocket, self.package)
-        return self.applicationSocket.send(self.package)
+        Layer.sendTo(self.applicationSocket, self.package)
+        print 'sent request to application'
+        print self.package
+        return True
 
     def applicationAnswer(self):
         self.answer = ''

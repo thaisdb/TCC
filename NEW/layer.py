@@ -28,7 +28,7 @@ class Layer():
             buff = int(tmq) if tmq != None else BUFFER_SIZE
             data = ''
             while dataSize >= buff:
-                data = socket.recv(buff)
+                data += socket.recv(buff)
                 dataSize -= buff
             if dataSize > 0:
                 data += socket.recv(dataSize)
@@ -56,7 +56,7 @@ class Layer():
                     tmq = int(tmq)
                     #tmq = self.physicalSocket.recv(4)
                     #print 'Frame size = ' + str(size)
-                    with open(data, 'r') as dataFile:
+                    with open(data, 'rb') as dataFile:
                         fileBuffer = dataFile.read(tmq)
                         while fileBuffer:
                             socket.send(fileBuffer)

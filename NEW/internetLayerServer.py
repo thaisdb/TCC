@@ -1,3 +1,4 @@
+#coding=utf-8
 from socket import *
 from bitstring import BitArray
 from bitstring import BitStream
@@ -64,12 +65,14 @@ class InternetServer(Thread):
         #    self.ipBelongsToNetwork()
         #self.routerTable('192.168.9.0')
         print self.space + '******************** INTERNET SERVER ********************'
-        self.physicalSocket = socket(AF_INET, SOCK_STREAM)
-        self.physicalSocket.bind (('127.0.0.1', 5555))
-        self.physicalSocket.listen(1)
+        self.internetServerSocket = socket(AF_INET, SOCK_STREAM)
+        self.internetServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        self.internetServerSocket.bind (('127.0.0.1', 5555))
+        self.internetServerSocket.listen(1)
         print self.space + 'listening'
         while True:
             if self.receiveFromPhysical():
+                self.interpretPackage()
                 self.sendToTransport()
                 if self.receiveAnswer():
                     self.sendAnswerToPhysical()
@@ -105,15 +108,38 @@ class InternetServer(Thread):
         return Layer.sendTo(self.transportSocket, self.package)
 
     def receiveFromPhysical(self):
-        self.physicalSocket, addr = self.physicalSocket.accept()
+        self.physicalSocket, addr = self.internetServerSocket.accept()
         print self.space + 'connected'
-        self.package = Layer.receiveFrom(self.physicalSocket)
+        self.package, success = Layer.receiveFrom(self.physicalSocket)
         return True if self.package else False
+        #print 'received: ' + str(self.package)
+        #return success
+
+    def interpretPackage(self):
+        self.package = json.loads(str(self.package))
+        version = self.package[0]
+        print 'version = ' + str(version)
+        size = self.package[1]
+        print 'package size = ' + str(size)
+        packId = self.package[2]
+        cFrag = self.package[3]
+        cTemp = self.package[4]
+        transportProtocol = self.package[5]
+        print 'transport protocol = ' + str(transportProtocol)
+        crc = self.package[6]
+        srcIP = self.package[7]
+        dstIP = self.package[8]
+        print 'srcIP = ' + str(srcIP)
+        print 'dstIP + ' + str(dstIP)
+        opcoes = self.package[9]
+        self.package = json.dumps(self.package[10])
+        #print 'result = ' + str(self.package)
 
     def receiveAnswer(self):
         print self.space + 'Waiting answer...'
-        self.answer = Layer.receiveFrom(self.transportSocket)
+        self.answer, success = Layer.receiveFrom(self.transportSocket)
         print self.answer
+        return True
 
     def sendAnswerToPhysical(self):
         print 'Sending answer to physical layer'

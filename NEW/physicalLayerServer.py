@@ -1,3 +1,4 @@
+#coding=utf-8
 from __future__ import with_statement
 from socket import *
 from socket import error as socket_error
@@ -19,17 +20,19 @@ class PhysicalServer(Thread):
     def __init__(self, host, port):
         self.host = host
         self.port = int(float(port))
+        self.serverSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.serverSocket.bind(('', self.port))
         self.serverSocket.listen(1)
         print self.space + 'Listening for connections, on PORT: ' + str(self.port)
         print self.space + ("******************** PHYSICAL SERVER ********************")
         #self.receiveFileName()
-        if self.receiveFile():
-            self.translateReceivedFile()
-            self.interpretPackage()
-            self.sendToInternet()
-            if self.receiveAswer():
-                self.sendAswer()
+        while True:
+            if self.receiveFile():
+                self.translateReceivedFile()
+                self.interpretPackage()
+                self.sendToInternet()
+                if self.receiveAswer():
+                    self.sendAswer()
         self.physicalSocket.close()
 
 
@@ -55,11 +58,9 @@ class PhysicalServer(Thread):
         self.sendTMQ()
         print 'Connected with physical client'
         with open ('receivedBinary_.txt', "w") as self.rFile:
-            data = Layer.receiveFrom(self.physicalSocket)
-            self.rFile.write(str(data))
-            print 'File received'
-            return True
-        return False
+            data, success = Layer.receiveFrom(self.physicalSocket, self.BUFFER_SIZE)
+            self.rFile.write(data)
+        return True if data else False
 
     def translateReceivedFile (self):
         #translate received binaryFile to string pack
@@ -73,24 +74,26 @@ class PhysicalServer(Thread):
                 buff = binFile.read(self.BYTE_SIZE)
                 self.package += x
         print 'package:'
-        self.interpretPackage()
 
     def interpretPackage(self):
         self.package =  json.loads(self.package)
         preambulo =     self.package[0]
         print 'preambulo: '+ str(preambulo)
-        srcmak =        self.package[1]
-        print 'srcMak: ' + str(srcmak)
-        myMack =        self.package[2]
+        srcMAC =        self.package[1]
+        print 'srcMAC: ' + str(srcMAC)
+        myMAC =        self.package[2]
+        print 'myMAC: ' + str(myMAC)
         tamanho =       self.package[3]
-        self.package =  self.package[4]
-        #print self.package
+        self.package =  json.dumps(self.package[4])
+        print 'result = ' + str(self.package)
+
 
     def sendToInternet (self):
         self.internetSocket = socket(AF_INET, SOCK_STREAM)
+        self.internetSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.internetSocket.connect(('127.0.0.1', 5555))
-        Layer.sendTo(self.internetSocket, self.package)
         print self.space + 'package sent!'
+        return Layer.sendTo(self.internetSocket, str(self.package))
 
 
 
@@ -98,16 +101,17 @@ class PhysicalServer(Thread):
         print 'TMQ ascked. Answer = ' + str(self.BUFFER_SIZE)
         self.physicalSocket.send(str(self.BUFFER_SIZE))
 
+
+
     def receiveAswer(self):
-        self.answer = self.internetSocket.recv(1024)
+        self.answer, success = Layer.receiveFrom(self.internetSocket)
         print 'received aswer'
+        print self.answer
         return True
+        #return success
 
     def sendAswer(self):
-        self.physicalSocket.send(self.answer)
-        print 'answer:'
-        print self.answer
         print 'Answer sent to physical client'
-        return True
+        return Layer.sendTo(self.physicalSocket, self.answer)
 
 PhysicalServer('127.0.0.1', 7690)
