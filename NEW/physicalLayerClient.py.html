@@ -1,0 +1,124 @@
+<html><head>
+<title>physicalLayerClient.py</title>
+<meta name="Generator" content="htmlizer/[twisted, version 16.0.0]" />
+<link rel="alternate" href="physicalLayerClient.py" type="text/x-python" />
+
+</head>
+<body>
+<pre><span class="py-src-keyword">from</span> <span class="py-src-variable">__future__</span> <span class="py-src-keyword">import</span> <span class="py-src-variable">with_statement</span>
+<span class="py-src-keyword">import</span> <span class="py-src-variable">socket</span>
+<span class="py-src-keyword">import</span> <span class="py-src-variable">sys</span>
+<span class="py-src-keyword">import</span> <span class="py-src-variable">binascii</span>
+<span class="py-src-keyword">import</span> <span class="py-src-variable">netifaces</span> <span class="py-src-keyword">as</span> <span class="py-src-variable">ni</span>
+<span class="py-src-keyword">import</span> <span class="py-src-variable">os</span>
+<span class="py-src-keyword">from</span> <span class="py-src-variable">subprocess</span> <span class="py-src-keyword">import</span> <span class="py-src-variable">Popen</span>, <span class="py-src-variable">PIPE</span>
+<span class="py-src-keyword">import</span> <span class="py-src-variable">json</span>
+<span class="py-src-keyword">from</span> <span class="py-src-variable">threading</span> <span class="py-src-keyword">import</span> <span class="py-src-variable">Thread</span>
+<span class="py-src-comment">#TODO receive server ip from the caller</span>
+
+
+<span class="py-src-keyword">class</span> <span class="py-src-identifier">PhysicalClient</span>(<span class="py-src-parameter">Thread</span>):
+    <span class="py-src-variable">physicalSocket</span> = <span class="py-src-variable">socket</span>.<span class="py-src-variable">socket</span>(<span class="py-src-variable">socket</span>.<span class="py-src-variable">AF_INET</span>, <span class="py-src-variable">socket</span>.<span class="py-src-variable">SOCK_STREAM</span>)
+    <span class="py-src-variable">networkSocket</span> = <span class="py-src-variable">socket</span>.<span class="py-src-variable">socket</span>(<span class="py-src-variable">socket</span>.<span class="py-src-variable">AF_INET</span>, <span class="py-src-variable">socket</span>.<span class="py-src-variable">SOCK_STREAM</span>)
+    <span class="py-src-variable">fileType</span> = <span class="py-src-number">0</span> <span class="py-src-comment">#0 to text files and 1 to image files</span>
+    <span class="py-src-variable">space</span> = <span class="py-src-string">'\t\t\t'</span>
+    <span class="py-src-keyword">def</span> <span class="py-src-identifier">__init__</span>(<span class="py-src-parameter">self</span>, <span class="py-src-parameter">host</span>, <span class="py-src-parameter">port</span>):
+        <span class="py-src-keyword">print</span> <span class="py-src-variable">self</span>.<span class="py-src-variable">space</span> + <span class="py-src-string">'*'</span> * <span class="py-src-number">20</span> + <span class="py-src-string">' PHYSICAL CLIENT '</span> + <span class="py-src-string">'*'</span> * <span class="py-src-number">20</span>
+        <span class="py-src-variable">self</span>.<span class="py-src-variable">port</span> = <span class="py-src-variable">int</span>(<span class="py-src-variable">float</span>(<span class="py-src-variable">port</span>))
+        <span class="py-src-variable">self</span>.<span class="py-src-variable">host</span> = <span class="py-src-variable">host</span>
+        <span class="py-src-variable">self</span>.<span class="py-src-variable">connect</span>()
+        <span class="py-src-keyword">while</span> <span class="py-src-variable">True</span>:
+            <span class="py-src-keyword">if</span> <span class="py-src-variable">self</span>.<span class="py-src-variable">receiveFromNetwork</span>():
+                <span class="py-src-variable">self</span>.<span class="py-src-variable">toBinaryFile</span>()
+                <span class="py-src-variable">self</span>.<span class="py-src-variable">sendBinaryFile</span>()
+                <span class="py-src-keyword">if</span> <span class="py-src-variable">self</span>.<span class="py-src-variable">receiveAnswer</span>():
+                    <span class="py-src-variable">self</span>.<span class="py-src-variable">sendAnswer</span>()
+        <span class="py-src-comment">#except socket.error, exc:</span>
+         <span class="py-src-comment">#   print 'Could not connect:'</span>
+          <span class="py-src-comment">#  print exc</span>
+
+    <span class="py-src-keyword">def</span> <span class="py-src-identifier">connect</span>(<span class="py-src-parameter">self</span>):
+        <span class="py-src-keyword">print</span> <span class="py-src-variable">self</span>.<span class="py-src-variable">space</span> + <span class="py-src-string">'Connected to Physical Server'</span>
+        <span class="py-src-variable">self</span>.<span class="py-src-variable">physicalSocket</span>.<span class="py-src-variable">connect</span>((<span class="py-src-variable">self</span>.<span class="py-src-variable">host</span>, <span class="py-src-variable">self</span>.<span class="py-src-variable">port</span>))
+        <span class="py-src-variable">self</span>.<span class="py-src-variable">getIPMAC</span>()
+        <span class="py-src-comment">#if self.sendFileName():</span>
+
+    <span class="py-src-keyword">def</span> <span class="py-src-identifier">getIPMAC</span> (<span class="py-src-parameter">self</span>):
+        <span class="py-src-keyword">print</span> <span class="py-src-string">'gettingIPMAC'</span>
+        <span class="py-src-variable">self</span>.<span class="py-src-variable">ip</span> = <span class="py-src-variable">ni</span>.<span class="py-src-variable">ifaddresses</span>(<span class="py-src-string">'wlan0'</span>)[<span class="py-src-number">2</span>][<span class="py-src-number">0</span>][<span class="py-src-string">'addr'</span>]
+        <span class="py-src-variable">addrs</span> = <span class="py-src-variable">ni</span>.<span class="py-src-variable">ifaddresses</span>(<span class="py-src-string">'wlan0'</span>)
+        <span class="py-src-variable">self</span>.<span class="py-src-variable">mac</span> = <span class="py-src-variable">addrs</span>[<span class="py-src-variable">ni</span>.<span class="py-src-variable">AF_LINK</span>][<span class="py-src-number">0</span>][<span class="py-src-string">'addr'</span>]
+        <span class="py-src-variable">self</span>.<span class="py-src-variable">ipdst</span> = <span class="py-src-variable">self</span>.<span class="py-src-variable">host</span>
+        <span class="py-src-variable">self</span>.<span class="py-src-variable">macdst</span> = <span class="py-src-variable">os</span>.<span class="py-src-variable">system</span>(<span class="py-src-string">'arp -n '</span> + <span class="py-src-variable">str</span>(<span class="py-src-variable">self</span>.<span class="py-src-variable">ipdst</span>))
+        <span class="py-src-comment">#self.tmq = self.physicalSocket.getTMQ()</span>
+        <span class="py-src-keyword">print</span> <span class="py-src-variable">self</span>.<span class="py-src-variable">space</span> + <span class="py-src-string">"my ip: "</span> + <span class="py-src-variable">self</span>.<span class="py-src-variable">ip</span>
+        <span class="py-src-keyword">print</span> <span class="py-src-variable">self</span>.<span class="py-src-variable">space</span> + <span class="py-src-string">"my mac: "</span> + <span class="py-src-variable">self</span>.<span class="py-src-variable">mac</span>
+        <span class="py-src-keyword">print</span> <span class="py-src-variable">self</span>.<span class="py-src-variable">space</span> + <span class="py-src-string">"server ip: "</span> + <span class="py-src-variable">self</span>.<span class="py-src-variable">ipdst</span>
+        <span class="py-src-keyword">print</span> <span class="py-src-variable">self</span>.<span class="py-src-variable">space</span> + <span class="py-src-string">"server mac: "</span> + <span class="py-src-variable">str</span>(<span class="py-src-variable">self</span>.<span class="py-src-variable">macdst</span>)
+
+    <span class="py-src-keyword">def</span> <span class="py-src-identifier">sendFileName</span>(<span class="py-src-parameter">self</span>):
+        <span class="py-src-comment">#self.fileName = raw_input('Write the file name you want to send: ')</span>
+        <span class="py-src-keyword">try</span>:
+            <span class="py-src-variable">self</span>.<span class="py-src-variable">physicalSocket</span>.<span class="py-src-variable">send</span>(<span class="py-src-variable">self</span>.<span class="py-src-variable">package</span>)
+            <span class="py-src-keyword">print</span> <span class="py-src-string">'Sending: '</span> + <span class="py-src-variable">self</span>.<span class="py-src-variable">package</span>
+            <span class="py-src-variable">extension</span> = <span class="py-src-variable">self</span>.<span class="py-src-variable">fileName</span>.<span class="py-src-variable">split</span>(<span class="py-src-string">'.'</span>)[<span class="py-src-number">1</span>]
+            <span class="py-src-keyword">print</span> <span class="py-src-variable">extension</span>
+            <span class="py-src-keyword">if</span> <span class="py-src-variable">extension</span> == <span class="py-src-string">'txt'</span>:
+                <span class="py-src-variable">self</span>.<span class="py-src-variable">fileType</span> = <span class="py-src-number">0</span>
+            <span class="py-src-keyword">else</span>:
+                <span class="py-src-variable">self</span>.<span class="py-src-variable">fileType</span> = <span class="py-src-number">1</span>
+            <span class="py-src-keyword">return</span> <span class="py-src-variable">True</span>
+        <span class="py-src-keyword">except</span>:
+            <span class="py-src-keyword">print</span> <span class="py-src-string">'No file found'</span>
+            <span class="py-src-keyword">return</span> <span class="py-src-variable">False</span>
+
+    <span class="py-src-keyword">def</span> <span class="py-src-identifier">toBinaryFile</span>(<span class="py-src-parameter">self</span>):
+        <span class="py-src-keyword">print</span> <span class="py-src-string">'Creating binary file'</span>
+        <span class="py-src-comment">#if self.fileType == 0:</span>
+        <span class="py-src-comment">#    originalFile = open(self.package, "r")</span>
+        <span class="py-src-comment">#else:</span>
+        <span class="py-src-comment">#    originalFile = open(self.package, 'rb')</span>
+        <span class="py-src-variable">self</span>.<span class="py-src-variable">tamanho</span> = <span class="py-src-variable">sys</span>.<span class="py-src-variable">getsizeof</span>(<span class="py-src-variable">self</span>.<span class="py-src-variable">package</span>)
+        <span class="py-src-variable">packageTuple</span> = (<span class="py-src-string">'preambulo'</span>, <span class="py-src-variable">self</span>.<span class="py-src-variable">mac</span>, <span class="py-src-variable">self</span>.<span class="py-src-variable">macdst</span>, <span class="py-src-variable">self</span>.<span class="py-src-variable">tamanho</span>, <span class="py-src-variable">self</span>.<span class="py-src-variable">package</span>)
+        <span class="py-src-variable">data</span> = <span class="py-src-variable">json</span>.<span class="py-src-variable">dumps</span>(<span class="py-src-variable">packageTuple</span>)
+        <span class="py-src-keyword">with</span> <span class="py-src-variable">open</span>(<span class="py-src-string">'binary_file.txt'</span>, <span class="py-src-string">'w'</span>) <span class="py-src-keyword">as</span> <span class="py-src-variable">binaryFile</span>:
+            <span class="py-src-keyword">for</span> <span class="py-src-variable">x</span> <span class="py-src-keyword">in</span> <span class="py-src-variable">data</span>:
+                <span class="py-src-variable">binaryFile</span>.<span class="py-src-variable">write</span>(<span class="py-src-string">'{0:08b}'</span>.<span class="py-src-variable">format</span>(<span class="py-src-variable">ord</span>(<span class="py-src-variable">x</span>)))
+
+
+
+    <span class="py-src-keyword">def</span> <span class="py-src-identifier">sendBinaryFile</span>(<span class="py-src-parameter">self</span>):
+        <span class="py-src-keyword">print</span> <span class="py-src-string">'Sending binary file'</span>
+        <span class="py-src-keyword">with</span> <span class="py-src-variable">open</span>(<span class="py-src-string">'binary_file.txt'</span>, <span class="py-src-string">"r"</span>) <span class="py-src-keyword">as</span> <span class="py-src-variable">originalBinaryFile</span>:
+            <span class="py-src-keyword">print</span> <span class="py-src-string">'Asking for frame size...'</span>
+            <span class="py-src-variable">size</span> = <span class="py-src-variable">self</span>.<span class="py-src-variable">physicalSocket</span>.<span class="py-src-variable">recv</span>(<span class="py-src-number">4</span>)
+            <span class="py-src-variable">Layer</span>.<span class="py-src-variable">sendTo</span>(<span class="py-src-variable">self</span>.<span class="py-src-variable">physicalSocket</span>, <span class="py-src-variable">originalBinaryFile</span>, <span class="py-src-variable">size</span>)
+            <span class="py-src-keyword">return</span> <span class="py-src-variable">True</span>
+        <span class="py-src-keyword">return</span> <span class="py-src-variable">False</span>
+
+
+    <span class="py-src-keyword">def</span> <span class="py-src-identifier">receiveFromNetwork</span>(<span class="py-src-parameter">self</span>):
+        <span class="py-src-variable">self</span>.<span class="py-src-variable">networkSocket</span> = <span class="py-src-variable">socket</span>.<span class="py-src-variable">socket</span>(<span class="py-src-variable">socket</span>.<span class="py-src-variable">AF_INET</span>, <span class="py-src-variable">socket</span>.<span class="py-src-variable">SOCK_STREAM</span>)
+        <span class="py-src-variable">self</span>.<span class="py-src-variable">networkSocket</span>.<span class="py-src-variable">bind</span>((<span class="py-src-string">'127.0.0.1'</span>, <span class="py-src-number">4444</span>))
+        <span class="py-src-variable">self</span>.<span class="py-src-variable">networkSocket</span>.<span class="py-src-variable">listen</span>(<span class="py-src-number">1</span>)
+        <span class="py-src-variable">self</span>.<span class="py-src-variable">clientSocket</span>, <span class="py-src-variable">addr</span> = <span class="py-src-variable">self</span>.<span class="py-src-variable">networkSocket</span>.<span class="py-src-variable">accept</span>()
+        <span class="py-src-variable">self</span>.<span class="py-src-variable">package</span> = <span class="py-src-variable">self</span>.<span class="py-src-variable">clientSocket</span>.<span class="py-src-variable">recv</span>(<span class="py-src-number">1024</span>)
+        <span class="py-src-variable">self</span>.<span class="py-src-variable">package</span> = <span class="py-src-variable">json</span>.<span class="py-src-variable">loads</span>(<span class="py-src-variable">self</span>.<span class="py-src-variable">package</span>)
+        <span class="py-src-keyword">print</span> <span class="py-src-variable">self</span>.<span class="py-src-variable">space</span> + <span class="py-src-string">'Packet from network received'</span>
+        <span class="py-src-keyword">print</span> <span class="py-src-variable">self</span>.<span class="py-src-variable">space</span> + <span class="py-src-variable">str</span>(<span class="py-src-variable">self</span>.<span class="py-src-variable">package</span>)
+        <span class="py-src-keyword">return</span> <span class="py-src-variable">True</span>
+
+    <span class="py-src-keyword">def</span> <span class="py-src-identifier">receiveAnswer</span>(<span class="py-src-parameter">self</span>):
+        <span class="py-src-keyword">print</span> <span class="py-src-string">'answer'</span>
+        <span class="py-src-variable">self</span>.<span class="py-src-variable">answer</span> = <span class="py-src-variable">self</span>.<span class="py-src-variable">physicalSocket</span>.<span class="py-src-variable">recv</span>(<span class="py-src-number">1024</span>)
+        <span class="py-src-keyword">print</span> <span class="py-src-variable">self</span>.<span class="py-src-variable">answer</span>
+        <span class="py-src-keyword">return</span> <span class="py-src-variable">True</span>
+
+    <span class="py-src-keyword">def</span> <span class="py-src-identifier">sendAnswer</span>(<span class="py-src-parameter">self</span>):
+        <span class="py-src-variable">self</span>.<span class="py-src-variable">clientSocket</span>.<span class="py-src-variable">send</span>(<span class="py-src-variable">self</span>.<span class="py-src-variable">answer</span>)
+        <span class="py-src-keyword">print</span> <span class="py-src-string">'answer sent'</span>
+
+
+<span class="py-src-variable">PhysicalClient</span> (<span class="py-src-string">'127.0.0.1'</span> , <span class="py-src-number">7690</span>)
+</pre>
+</body>

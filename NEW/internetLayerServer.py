@@ -3,6 +3,7 @@ from bitstring import BitArray
 from bitstring import BitStream
 import json
 from threading import Thread
+from layer import Layer
 #class Internet:
 
 class IP:
@@ -100,35 +101,22 @@ class InternetServer(Thread):
         self.transportSocket = socket(AF_INET, SOCK_STREAM)
         self.transportSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.transportSocket.connect(('127.0.0.1', 6666))
-        self.transportSocket.send(self.package)
-        print 'sending package request to transport layer'
+        print self.space + 'Sending package request to transport layer'
+        return Layer.sendTo(self.transportSocket, self.package)
 
     def receiveFromPhysical(self):
         self.physicalSocket, addr = self.physicalSocket.accept()
         print self.space + 'connected'
-        self.package = self.physicalSocket.recv(1024)
-        #print self.package
-        print self.space +'received from physical layer'
-        return True
+        self.package = Layer.receiveFrom(self.physicalSocket)
+        return True if self.package else False
 
     def receiveAnswer(self):
-        print 'waiting answer'
-        self.answer = ''
-        self.answer = self.transportSocket.recv(1024)
-        #while data != '':
-         #   self.answer += data
-         #   data = self.transportSocket.recv(1024)
-        print 'answer'
+        print self.space + 'Waiting answer...'
+        self.answer = Layer.receiveFrom(self.transportSocket)
         print self.answer
-        return True
 
     def sendAnswerToPhysical(self):
-        try:
-            self.physicalSocket.send(self.answer)
-            print 'Answer sent to physical layer'
-            return True
-        except:
-            print 'could not send answer to physical layer'
-            return False
+        print 'Sending answer to physical layer'
+        return Layer.sendTo(self.physicalSocket, self.answer)
 
 InternetServer()

@@ -5,6 +5,7 @@ import sys
 import binascii
 import json
 from threading import Thread
+from layer import Layer
 #TODO receive server ip from the caller
 #TODO receive file name from the client
 
@@ -31,6 +32,8 @@ class PhysicalServer(Thread):
                 self.sendAswer()
         self.physicalSocket.close()
 
+
+
     def receiveFileName(self):
         data = self.physicalSocket.recv(1024)
         if not data:
@@ -44,23 +47,22 @@ class PhysicalServer(Thread):
             self.fileType = 1
         print ('filename: ' + self.receivedFileName)
 
-    def receiveFile(self):
-        self.physicalSocket, addr = self.serverSocket.accept()
-        with open ('receivedBinary_.txt', "w") as self.rFile:
-            data = self.physicalSocket.recv(self.BUFFER_SIZE)
-            while data:
-                if not data:
-                    print ("no data")
-                    break
-                self.rFile.write(data)
-                data = self.physicalSocket.recv(self.BUFFER_SIZE)
-        return True
 
+
+    def receiveFile(self):
+        #receive binary file and save as txt
+        self.physicalSocket, addr = self.serverSocket.accept()
+        self.sendTMQ()
+        print 'Connected with physical client'
+        with open ('receivedBinary_.txt', "w") as self.rFile:
+            data = Layer.receiveFrom(self.physicalSocket)
+            self.rFile.write(str(data))
+            print 'File received'
+            return True
+        return False
 
     def translateReceivedFile (self):
-        #if self.fileType == 0:
-        #    newFile = open('received_.txt', "w")
-        #else: #image
+        #translate received binaryFile to string pack
         newFile = open('received_translated.txt', 'wb')
         with open('receivedBinary_.txt', "r") as binFile:
             buff = binFile.read(self.BYTE_SIZE)
@@ -86,16 +88,15 @@ class PhysicalServer(Thread):
 
     def sendToInternet (self):
         self.internetSocket = socket(AF_INET, SOCK_STREAM)
-        self.internetSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.internetSocket.connect(('127.0.0.1', 5555))
-        print self.space + 'sending\n'
-        self.internetSocket.send(self.package)
+        Layer.sendTo(self.internetSocket, self.package)
         print self.space + 'package sent!'
 
 
-    def sendTMQ():
-        print 'asked'
-        #clientSocket.send(self.BUFFER_SIZE)
+
+    def sendTMQ(self):
+        print 'TMQ ascked. Answer = ' + str(self.BUFFER_SIZE)
+        self.physicalSocket.send(str(self.BUFFER_SIZE))
 
     def receiveAswer(self):
         self.answer = self.internetSocket.recv(1024)

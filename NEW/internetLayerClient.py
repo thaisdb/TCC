@@ -3,6 +3,7 @@ from bitstring import BitArray
 from bitstring import BitStream
 import json
 from threading import Thread
+from layer import Layer
 #class Internet:
 
 class IP:
@@ -62,17 +63,19 @@ class InternetClient(Thread):
         #    self.ip2 = IP(network2)
         #    self.ipBelongsToNetwork()
         #self.routerTable('192.168.9.0')
-        self.transportSocket = socket(AF_INET, SOCK_STREAM)
-        self.transportSocket.bind (('127.0.0.1', 3333))
+        self.transportClientSocket = socket(AF_INET, SOCK_STREAM)
+        self.transportClientSocket.bind (('127.0.0.1', 3333))
         print self.space + '*' * 20 + ' INTENERT CLIENT ' + '*' * 20
-        self.transportSocket.listen(1)
-        self.clientSocket, addr = self.transportSocket.accept()
+        self.transportClientSocket.listen(1)
+        self.transportSocket, addr = self.transportClientSocket.accept()
         print 'accepted connection'
         if self.receiveFromTransport():
             #self.belongsToNetwork()
-            self.toPhysical()
+            if self.toPhysical():
+                if self.receiveFromPhysical():
+                    self.sendToTransport()
         self.transportSocket.close()
-
+        self.physicalSocket.close()
 
     def belongsToNetwork(self):
         # ip1 AND subnetMask2
@@ -101,21 +104,38 @@ class InternetClient(Thread):
     def toPhysical(self):
         self.physicalSocket = socket(AF_INET, SOCK_STREAM)
         self.physicalSocket.connect(('127.0.0.1', 4444))
-        self.physicalSocket.send(json.dumps(self.package))
+        Layer.sendTo(self.physicalSocket, json.dumps(self.package))
+        #self.physicalSocket.send(json.dumps(self.package))
         print 'sended package to physical'
-        print  json.dumps(self.package)
+        #print  json.dumps(self.package)
 
     def receiveFromTransport(self):
-        try:
-            print 'internet receiving from transport'
+        self.package, success = Layer.receiveFrom(self.transportSocket)
+            #print 'internet receiving from transport'
             #print self.space + 'listening'
             #print self.space + 'connected'
-            self.package = self.clientSocket.recv(1024)
+            #self.package = self.transportSocket.recv(1024)
             #print self.package
-            print self.space + 'Received segment from transport layer'
+        print self.space + 'Received segment from transport layer'
+        print self.package
+        if success:
             return True
-        except:
-            print 'Did not receive request from transport'
+        else:
             return False
+        #except Exception as x:
+        #    print 'Did not receive request from transport'
+        #    print x
+        #    return False
+
+    def receiveFromPhysical(self):
+        print self.space + "Waiting answer"
+        self.answer, success = Layer.receiveFrom(self.physicalSocket)
+        print self.space + 'answer received'
+        return True
+
+    def sendToTransport(self):
+        self.transportSocket.send(self.answer)
+        print 'Answer sent'
+
 
 InternetClient()

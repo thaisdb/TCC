@@ -7,6 +7,7 @@ import os
 from subprocess import Popen, PIPE
 import json
 from threading import Thread
+from layer import Layer
 #TODO receive server ip from the caller
 
 
@@ -81,33 +82,37 @@ class PhysicalClient(Thread):
 
 
     def sendBinaryFile(self):
-        with open('binary_file.txt', "r") as originalBinaryFile:
-            fileBuffer = originalBinaryFile.read()
-            while fileBuffer:
-                self.physicalSocket.send(fileBuffer)
-                fileBuffer = originalBinaryFile.read()
-            #self.physicalSocket.close()
+        print 'Sending binary file'
+        fileName = 'binary_file.txt'
+        print 'Asking for frame size...'
+        size = self.physicalSocket.recv(4)
+        print 'Frame size = ' + str(size)
+        Layer.sendTo(self.physicalSocket, fileName, size)
         return True
+        return False
+
 
     def receiveFromNetwork(self):
         self.networkSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.networkSocket.bind(('127.0.0.1', 4444))
         self.networkSocket.listen(1)
         self.clientSocket, addr = self.networkSocket.accept()
-        self.package = self.clientSocket.recv(1024)
+        self.package, success = Layer.receiveFrom(self.clientSocket)
+        print "success + " + str(self.package)
+        #self.package = self.clientSocket.recv(1024)
         self.package = json.loads(self.package)
-        print self.space + 'Packet from network received'
-        print self.space + self.package
+        #print self.space + 'Packet from network received'
+        #print self.space + str(self.package)
         return True
 
     def receiveAnswer(self):
-        self.answer = self.physicalSocket.recv(1024)
         print 'answer'
+        self.answer = self.physicalSocket.recv(1024)
         print self.answer
         return True
 
     def sendAnswer(self):
-        self.networkSocket.send(self.answer)
+        self.clientSocket.send(self.answer)
         print 'answer sent'
 
 

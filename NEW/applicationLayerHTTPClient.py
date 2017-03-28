@@ -5,6 +5,9 @@ import os
 from socket import *
 import httplib
 from threading import Thread
+from layer import Layer
+import webbrowser
+
 #create connection
 
 class ApplicationClient(Thread):
@@ -16,6 +19,9 @@ class ApplicationClient(Thread):
         self.browserAdress = ('localhost', 1111)
         self.browserSocket.bind(self.browserAdress)
         self.browserSocket.listen(1)
+        browser = webbrowser.get('google-chrome')
+        # 2 for oppening another tab on browser
+        browser.open_new_tab('http://localhost:1111')
         if (self.listenBrowser()) :
             self.sendToTransportLayer()
             #self.receiveFromTransport()
@@ -28,7 +34,7 @@ class ApplicationClient(Thread):
         transportAddress = ('localhost', 2222)
         self.transportSocket.connect(transportAddress)
         try:
-            self.transportSocket.send(self.browserPack)
+            Layer.sendTo(self.transportSocket, self.browserPack)
             print "Data sent to transport client!"
             #self.transportSocket.close()
         except Exception, ex:

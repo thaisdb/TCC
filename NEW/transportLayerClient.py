@@ -4,6 +4,7 @@ from socket import *
 from struct import *
 import json
 from threading import Thread
+from layer import Layer
 
 class TransportClient(Thread):
     applicationPack = 'Teste de pacote, protocolo TCP'
@@ -18,18 +19,18 @@ class TransportClient(Thread):
         self.applicationSocket = socket(AF_INET, SOCK_STREAM)
         localAddress = ('localhost', 2222)
         self.applicationSocket.bind(localAddress)
-        while True:
-            self.applicationSocket.listen(1)
-            print self.space + 'listening'
-            self.receiveFromApplicationLayer()
-            #self.createTest()
-            #sendChoice = raw_input("Choose the protocol to use:\n
-            #                        [1] UDP \t [2] TCP")
-            #if int(sendChoice) == 1:
-            #    self.sendUDPPackage()
-            #else:
-            #self.physicalAddr =         #self.sendTCPPackage()
-            self.sendUDPPackage()
+        #while True:
+        self.applicationSocket.listen(1)
+        print self.space + 'listening'
+        self.receiveFromApplicationLayer()
+        #self.createTest()
+        #sendChoice = raw_input("Choose the protocol to use:\n
+        #                        [1] UDP \t [2] TCP")
+        #if int(sendChoice) == 1:
+        #    self.sendUDPPackage()
+        #else:
+        #self.physicalAddr =         #self.sendTCPPackage()
+        self.sendUDPPackage()
         self.applicationSocket.close()
 
 
@@ -39,9 +40,13 @@ class TransportClient(Thread):
             udpSocket.connect(('127.0.0.1', 3333))
             self.udpPackage = (self.srcPort, self.dstPort, 'cumprimento', 'checksum', self.applicationPack)
             print self.udpPackage
-            udpSocket.send(json.dumps(self.udpPackage))
+            pack = json.dumps(self.udpPackage)
+            if Layer.sendTo(udpSocket, pack):
+                print 'Data sent'
+            #udpSocket.send(pack)
             #self.create_PDU('UDP')
             print 'sent'
+            return True
         except Exception, ex:
             print 'ERROR! Coudn\'t send UDP package.'
             print ex
@@ -196,7 +201,7 @@ class TransportClient(Thread):
         self.clientSocket, addr = self.applicationSocket.accept()
         #self.applicationPack = ''
         #while self.clientSocket.recv(1024):
-        self.applicationPack = self.clientSocket.recv(1024)
+        self.applicationPack = Layer.receiveFrom(self.clientSocket)
         print 'received from application layer, sending to internet'
             #TODO check size of pack, while will be obsolete
             #while data:

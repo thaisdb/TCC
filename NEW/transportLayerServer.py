@@ -1,6 +1,7 @@
 from socket import *
 import json
 from threading import Thread
+from layer import Layer
 #normal server port 99999
 
 
@@ -21,17 +22,11 @@ class TransportServer (Thread):
             self.tcpServerSocket.listen(1)
             print self.space + 'Listening'
             while True:
-                    # if self.threeWayHandshake()
-                if self.receive_Data():      #        try:
-                    self.sendToApplication()
-                    if self.applicationAnswer():
-                        self.sendAnswerToInternet()
-
-                    #print 'Server Socket closed'
-            #            self.tcpServerSocket.close()
-            #        except socketError:
-            #            print 'Error closing socket'
-            #            print socketError
+                # if self.threeWayHandshake()
+                if self.receive_Data():
+                    if self.sendToApplication():
+                        if self.applicationAnswer():
+                            self.sendAnswerToInternet()
         except KeyboardInterrupt:
             print 'Shutting down transport server'
         except Exception as err:
@@ -45,11 +40,10 @@ class TransportServer (Thread):
     def receive_Data(self):
         self.internetSocket, self.addr = self.tcpServerSocket.accept()
         self.internetSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        print self.space + 'Client ' + str(self.addr) + ' connected'
-        self.package = self.internetSocket.recv(1024)
-        print self.package
+        print self.space + 'Connected!'
+        self.package, successs = Layer.receiveFrom(self.internetSocket)
+        return success
         #self.interpretSegment()
-        return True
 
     def sendAnswerToInternet(self):
         print self.answer
@@ -138,8 +132,8 @@ class TransportServer (Thread):
     def sendToApplication(self):
         self.applicationSocket = socket(AF_INET, SOCK_STREAM)
         self.applicationSocket.connect(('127.0.0.1', 7777))
-        self.applicationSocket.send(self.package)
-        print self.space + 'sent package to app'
+        Layer.sendTo(applicationSocket, self.package)
+        return self.applicationSocket.send(self.package)
 
     def applicationAnswer(self):
         self.answer = ''
