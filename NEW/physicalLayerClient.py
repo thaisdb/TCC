@@ -13,9 +13,10 @@ from layer import Layer
 
 class PhysicalClient(Thread):
     physicalSocket = socket(AF_INET, SOCK_STREAM)
-    networkSocket = socket(AF_INET, SOCK_STREAM)
     fileType = 0 #0 to text files and 1 to image files
     space = '\t\t\t'
+    tmqReceived = False
+    tmq = 0
     def __init__(self, host, port):
         print self.space + '*' * 20 + ' PHYSICAL CLIENT ' + '*' * 20
         self.port = int(float(port))
@@ -88,10 +89,11 @@ class PhysicalClient(Thread):
     def sendBinaryFile(self):
         print 'Sending binary file'
         fileName = 'binary_file.txt'
-        print 'Asking for frame size...'
-        size = self.physicalSocket.recv(4)
-        print 'Frame size = ' + str(size)
-        Layer.sendTo(self.physicalSocket, fileName, size)
+        if not self.tmqReceived:
+            self.tmq = self.physicalSocket.recv(4)
+            self.tmqReceived = True
+            print 'Frame size = ' + str(self.tmq)
+        Layer.sendTo(self.physicalSocket, fileName, self.tmq)
         return True
         return False
 
@@ -104,13 +106,14 @@ class PhysicalClient(Thread):
         self.package = json.loads(self.package)
         #print self.space + 'Packet from network received'
         #print self.space + str(self.package)
-        return True if self.package else False
+        #return True if self.package else False
+        return success
 
     def receiveAnswer(self):
         print 'answer'
         self.answer, success = Layer.receiveFrom(self.physicalSocket)
         print self.answer
-        return True
+        return success
 
     def sendAnswer(self):
         Layer.sendTo(self.clientSocket, self.answer)

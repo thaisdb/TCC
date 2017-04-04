@@ -224,6 +224,7 @@ class TransportClient(Thread):
     def receiveAnswerFromInternetLayer(self):
         print 'wainting answer'
         self.answer, success = Layer.receiveFrom(self.udpSocket)
+        print 'ANSWER: \n' + self.answer
         return True
 
     def sendAnswerToApplicationLayer(self):

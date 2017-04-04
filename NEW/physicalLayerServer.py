@@ -17,22 +17,27 @@ class PhysicalServer(Thread):
     #receivedFileName = 'default.txt'
     fileType = 0 # 0 to text files and 1 to image files
     space = '\t\t\t'
+    tmqSent = False
     def __init__(self, host, port):
         self.host = host
         self.port = int(float(port))
         self.serverSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        self.serverSocket.bind(('', self.port))
+        self.serverSocket.bind(('127.0.0.1', self.port))
         self.serverSocket.listen(1)
         print self.space + 'Listening for connections, on PORT: ' + str(self.port)
         print self.space + ("******************** PHYSICAL SERVER ********************")
         #self.receiveFileName()
+        #receive binary file and save as txt
+        #print 'another file'
+        self.physicalSocket, addr = self.serverSocket.accept()
+        self.physicalSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         while True:
             if self.receiveFile():
                 self.translateReceivedFile()
                 self.interpretPackage()
                 self.sendToInternet()
-                if self.receiveAswer():
-                    self.sendAswer()
+                if self.receiveAnswer():
+                    self.sendAnswer()
         self.physicalSocket.close()
 
 
@@ -53,9 +58,10 @@ class PhysicalServer(Thread):
 
 
     def receiveFile(self):
-        #receive binary file and save as txt
-        self.physicalSocket, addr = self.serverSocket.accept()
-        self.sendTMQ()
+        print 'connected'
+        if not self.tmqSent:
+            self.sendTMQ()
+            self.tmqSent = True
         print 'Connected with physical client'
         with open ('receivedBinary_.txt', "w") as self.rFile:
             data, success = Layer.receiveFrom(self.physicalSocket, self.BUFFER_SIZE)
@@ -103,15 +109,16 @@ class PhysicalServer(Thread):
 
 
 
-    def receiveAswer(self):
+    def receiveAnswer(self):
         self.answer, success = Layer.receiveFrom(self.internetSocket)
         print 'received aswer'
         print self.answer
         return True
         #return success
 
-    def sendAswer(self):
+    def sendAnswer(self):
+        Layer.sendTo(self.physicalSocket, self.answer)
         print 'Answer sent to physical client'
-        return Layer.sendTo(self.physicalSocket, self.answer)
+        return True
 
 PhysicalServer('127.0.0.1', 7690)

@@ -22,7 +22,7 @@ class ApplicationClient(Thread):
         self.browserSocket.listen(1)
         browser = webbrowser.get('google-chrome')
         # 2 for oppening another tab on browser
-        browser.open_new_tab('http://localhost:1111/d.html')
+        browser.open_new_tab('')
         while True:
             if (self.listenBrowser()) :
                 self.sendToTransportLayer()

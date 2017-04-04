@@ -35,6 +35,7 @@ class Layer():
 
             print 'Received data successfully!'
             return data, True
+
         except Exception as ex:
             print 'Could not receive data. ERROR:'
             print ex
@@ -48,20 +49,23 @@ class Layer():
                 socket.send(size.zfill(4))
                 socket.send(data)
                 return True
-            else:
+            elif os.path.exists(data):
+                print "sending file " + str(data)
                 # data = name of binary file (always txt)
-                if (os.path.exists(data)):
-                    size = os.stat(data).st_size
-                    socket.send(str(size))
-                    tmq = int(tmq)
-                    #tmq = self.physicalSocket.recv(4)
-                    #print 'Frame size = ' + str(size)
-                    with open(data, 'rb') as dataFile:
+                size = os.stat(data).st_size
+                socket.send(str(size))
+                tmq = int(tmq)
+                #tmq = self.physicalSocket.recv(4)
+                #print 'Frame size = ' + str(size)
+                with open(data, 'rb') as dataFile:
+                    fileBuffer = dataFile.read(tmq)
+                    while fileBuffer:
+                        socket.send(fileBuffer)
                         fileBuffer = dataFile.read(tmq)
-                        while fileBuffer:
-                            socket.send(fileBuffer)
-                            fileBuffer = dataFile.read(tmq)
-                        return True
+                return True
+            else:
+                print 'Layer ERRO! File ' + str(data) + ' not found'
+
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             numb = sys.exc_traceback.tb_lineno
@@ -71,4 +75,5 @@ class Layer():
             print 'Could not send data. ERROR:'
             print e
             return False
+
 

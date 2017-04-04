@@ -130,13 +130,13 @@ class TransportServer (Thread):
         print self.space + 'comprimento = ' + str(self.package[3])
         print self.space + 'checksum = ' + str(self.package[4])
         self.package = self.package[5]
+        print self.package
 
     def sendToApplication(self):
         self.applicationSocket = socket(AF_INET, SOCK_STREAM)
         self.applicationSocket.connect(('127.0.0.1', 7777))
-        Layer.sendTo(self.applicationSocket, self.package)
+        self.applicationSocket.send( self.package)
         print 'sent request to application'
-        print self.package
         return True
 
     def applicationAnswer(self):

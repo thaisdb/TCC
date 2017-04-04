@@ -75,7 +75,7 @@ class InternetClient(Thread):
         self.transportClientSocket.bind (('127.0.0.1', 3333))
         print self.space + '*' * 20 + ' INTENERT CLIENT ' + '*' * 20
         self.transportClientSocket.listen(1)
-        self.transportSocket, addr = self.transportClientSocket.accept()
+
         print 'accepted connection'
         while True:
             if self.receiveFromTransport():
@@ -121,6 +121,7 @@ class InternetClient(Thread):
         return True
 
     def receiveFromTransport(self):
+        self.transportSocket, addr = self.transportClientSocket.accept()
         self.package, success = Layer.receiveFrom(self.transportSocket)
             #print 'internet receiving from transport'
             #print self.space + 'listening'
@@ -129,7 +130,7 @@ class InternetClient(Thread):
             #print self.package
         print self.space + 'Received segment from transport layer'
         print self.package
-        return True if self.package else False
+        return success
 
     def createDatagram(self):
         host = re.compile('Host:(.*?):')

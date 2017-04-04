@@ -7,17 +7,34 @@ class httpHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         try:
             #if self.path.endswith('.html'):
-            #f = open (DocumentRoot + self.path)
-            self.send_response (200)
-            self.send_header('Content-type', 'text/html')
-            self.end_headers()
-            #self.wfile.write(f.read())
-            #f.close()
-            self.wfile.write('<html> do Get working </html>')
-            return
+            reqFileName = os.getcwd() + self.path;
+            print 'reqFile' + reqFileName
+
+            if os.path.exists (reqFileName):
+                self.send_response (200)
+                print 'file exists'
+                f = open (reqFileName, 'rb')
+                #else:
+                 #   f = open(os.getcwd() + self.path, 'rb')
+                mimeType = ''
+                if self.path.endswith('.html'):
+                    mimeType = 'text/html'
+                elif self.path.endswith('.jpeg') or  self.path.endswith('.jpg'):
+                    mimeType = 'image/jpeg'
+                elif self.path.endswith('.gif'):
+                    mimeType = 'image/gif'
+                elif self.path.endswith('.css'):
+                    mimeType = 'text/css'
+                elif self.path.endswith('.ico'):
+                    mimeType = 'image/x-icon'
+                self.send_header('Content-type', mimeType)
+                self.end_headers()
+                self.wfile.write(f.read())
+                f.close()
+                return
 
         except IOError:
-            print (DocumentRoot+self.path)
+            print (os.getcwd() + self.path)
             self.send_error(404, 'File not found %s' % self.path)
 
     def do_POST(self):
