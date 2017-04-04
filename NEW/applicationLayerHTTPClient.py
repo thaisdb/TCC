@@ -1,5 +1,5 @@
+#coding=utf-8
 import sys
-#import psutil
 import urllib
 import os
 from socket import *

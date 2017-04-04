@@ -1,3 +1,4 @@
+#coding=utf-8
 import sys,os
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
@@ -26,10 +27,14 @@ class httpHandler(BaseHTTPRequestHandler):
                 elif self.path.endswith('.css'):
                     mimeType = 'text/css'
                 elif self.path.endswith('.ico'):
-                    mimeType = 'image/x-icon'
-                self.send_header('Content-type', mimeType)
+                    #mimeType = 'image/x-icon'
+                    return
+                self.send_header('Content-type', mimeType + '; charset=utf-8')
                 self.end_headers()
-                self.wfile.write(f.read())
+                data = f.read()
+                while data:
+                    self.wfile.write(data)
+                    data = f.read()
                 f.close()
                 return
 
