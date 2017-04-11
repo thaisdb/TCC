@@ -137,12 +137,21 @@ class InternetServer(Thread):
 
     def receiveAnswer(self):
         print self.space + 'Waiting answer...'
-        self.answer, success = Layer.receiveFrom(self.transportSocket)
-        print self.answer
+        self.answer = ''
+        data = self.transportSocket.recv(1024)
+        while data:
+            self.answer += data
+            data = self.transportSocket.recv(1024)
+            if not data:
+                break
+        print 'Answer received'
         return True
 
     def sendAnswerToPhysical(self):
         print 'Sending answer to physical layer'
-        return Layer.sendTo(self.physicalSocket, self.answer)
-
+        while self.answer:
+            sent = self.physicalSocket.send(self.answer)
+            self.answer = self.answer[sent:]
+        self.physicalSocket.close()
+        return True
 InternetServer()

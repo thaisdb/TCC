@@ -48,8 +48,10 @@ class TransportServer (Thread):
         return success
 
     def sendAnswerToInternet(self):
-        print self.answer
-        Layer.sendTo(self.internetSocket, self.answer)
+        while self.answer:
+            sent = self.internetSocket.send(self.answer)
+            self.answer = self.answer[sent:]
+        self.internetSocket.close()
         print 'Answer sent to internet layer'
         return True
 

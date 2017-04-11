@@ -27,9 +27,27 @@ class ApplicationClient(Thread):
             if (self.listenBrowser()) :
                 self.sendToTransportLayer()
                 if self.receiveFromTransport():
+                #self.sendDirectly()
+                #if self.receiveDirectly():
                     self.sendToBrowser()
         self.browserSocket.close()
         self.transportSocket.close()
+
+    #DEBUG
+    def sendDirectly(self):
+        self.directlySocket = socket(AF_INET, SOCK_STREAM)
+        appAddr = ('localhost', 7777)
+        self.directlySocket.connect(appAddr)
+        self.directlySocket.send(self.browserPack)
+
+    def receiveDirectly(self):
+        print 'wainting answer'
+        self.answer = ''
+        data = self.directlySocket.recv(1024)
+        while data:
+            self.answer += data
+            data = self.directlySocket.recv(1024)
+        return True
 
     def sendToTransportLayer(self):
         print 'sending'
@@ -46,13 +64,20 @@ class ApplicationClient(Thread):
 
     def receiveFromTransport(self):
         print 'wainting answer'
-        self.answer, success = Layer.receiveFrom(self.transportSocket)
+        self.answer = ''
+        data = self.transportSocket.recv(1024)
+        while data:
+            self.answer += data
+            data = self.transportSocket.recv(1024)
         print self.answer
         return True
 
     def sendToBrowser(self):
         print 'sending answer to browser'
-        success = Layer.sendTo(self.connection, self.answer)
+        data = self.answer
+        while self.answer:
+            sent = self.connection.send(self.answer)
+            self.answer = self.answer[sent:]
         return True
 
     def listenBrowser(self):

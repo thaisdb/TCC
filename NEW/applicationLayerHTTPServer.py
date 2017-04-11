@@ -2,19 +2,20 @@
 import sys,os
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
+from clientWindow import Ui_ClientWindow
 
 class httpHandler(BaseHTTPRequestHandler):
     #global htmlFile
     def do_GET(self):
         try:
-            #if self.path.endswith('.html'):
+            if self.path.startswith('/favicon.ico'):
+                return
             reqFileName = os.getcwd() + self.path;
             print 'reqFile' + reqFileName
 
             if os.path.exists (reqFileName):
                 self.send_response (200)
                 print 'file exists'
-                f = open (reqFileName, 'rb')
                 #else:
                  #   f = open(os.getcwd() + self.path, 'rb')
                 mimeType = ''
@@ -26,9 +27,10 @@ class httpHandler(BaseHTTPRequestHandler):
                     mimeType = 'image/gif'
                 elif self.path.endswith('.css'):
                     mimeType = 'text/css'
-                elif self.path.endswith('.ico'):
-                    #mimeType = 'image/x-icon'
-                    return
+                elif self.path.endswith('.png'):
+                    mimeType = 'image/png'
+
+                f = open (reqFileName, 'rb')
                 self.send_header('Content-type', mimeType + '; charset=utf-8')
                 self.end_headers()
                 data = f.read()
@@ -69,6 +71,7 @@ class ApplicationServer(Thread):
             server = HTTPServer(virtualhost, httpHandler)
             print 'started HTTP server'
             server.serve_forever()
+            #self.emit(SIGNAL("doTransportServer()"))
 
         except KeyboardInterrupt:
             print 'shuting down server HTTP'

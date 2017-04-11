@@ -13,20 +13,19 @@ from layer import Layer
 
 
 class PhysicalClient(Thread):
-    physicalSocket = socket(AF_INET, SOCK_STREAM)
     fileType = 0 #0 to text files and 1 to image files
     space = '\t\t\t'
     tmqReceived = False
-    tmq = 0
     def __init__(self, host, port):
         print self.space + '*' * 20 + ' PHYSICAL CLIENT ' + '*' * 20
         self.port = int(float(port))
         self.host = host
-        self.connect()
+        #self.connect()
         self.networkSocket = socket(AF_INET, SOCK_STREAM)
         self.networkSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.networkSocket.bind(('127.0.0.1', 4444))
         self.networkSocket.listen(1)
+        self.getIPMAC()
         while True:
             if self.receiveFromNetwork():
                 self.toBinaryFile()
@@ -38,6 +37,7 @@ class PhysicalClient(Thread):
           #  print exc
 
     def connect(self):
+        self.physicalSocket = socket(AF_INET, SOCK_STREAM)
         print self.space + 'Connected to Physical Server'
         self.physicalSocket.connect((self.host, self.port))
         self.getIPMAC()
@@ -50,7 +50,6 @@ class PhysicalClient(Thread):
         self.mac = addrs[ni.AF_LINK][0]['addr']
         self.ipdst = self.host
         self.macdst = os.system('arp -n ' + str(self.ipdst))
-        #self.tmq = self.physicalSocket.getTMQ()
         print self.space + "my ip: " + self.ip
         print self.space + "my mac: " + self.mac
         print self.space + "server ip: " + self.ipdst
@@ -88,36 +87,50 @@ class PhysicalClient(Thread):
 
 
     def sendBinaryFile(self):
+        self.physicalSocket = socket(AF_INET, SOCK_STREAM)
+        self.physicalSocket.connect((self.host, self.port))
         print 'Sending binary file'
         fileName = 'binary_file.txt'
         if not self.tmqReceived:
+            #self.physicalSocket.send(str(0).zfill(4))
             self.tmq = self.physicalSocket.recv(4)
             self.tmqReceived = True
             print 'Frame size = ' + str(self.tmq)
-        Layer.sendTo(self.physicalSocket, fileName, self.tmq)
+        size = str(os.stat(fileName).st_size)
+        #print size
+        self.physicalSocket.send(size.zfill(4))
+        with open(fileName, 'r') as binFile:
+            data = binFile.read(int(self.tmq))
+            while data:
+                self.physicalSocket.send(data)
+                data = binFile.read(int(self.tmq))
         return True
-        return False
 
 
     def receiveFromNetwork(self):
         self.clientSocket, addr = self.networkSocket.accept()
-        self.package, success = Layer.receiveFrom(self.clientSocket)
+        self.package = self.clientSocket.recv(1024)
         print "success + " + str(self.package)
         #self.package = self.clientSocket.recv(1024)
         self.package = json.loads(self.package)
         #print self.space + 'Packet from network received'
         #print self.space + str(self.package)
-        #return True if self.package else False
-        return success
+        return True if self.package else False
 
     def receiveAnswer(self):
         print 'answer'
-        self.answer, success = Layer.receiveFrom(self.physicalSocket)
-        print self.answer
-        return success
+        self.answer = ''
+        data  = self.physicalSocket.recv(1024)
+        while data:
+            self.answer += data
+            data  = self.physicalSocket.recv(1024)
+        return True
 
     def sendAnswer(self):
-        Layer.sendTo(self.clientSocket, self.answer)
+        while self.answer:
+            sent = self.clientSocket.send(self.answer)
+            self.answer = self.answer[sent:]
+        self.clientSocket.close()
         print 'answer sent'
 
 

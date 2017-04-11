@@ -29,8 +29,6 @@ class PhysicalServer(Thread):
         #self.receiveFileName()
         #receive binary file and save as txt
         #print 'another file'
-        self.physicalSocket, addr = self.serverSocket.accept()
-        self.physicalSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         while True:
             if self.receiveFile():
                 self.translateReceivedFile()
@@ -38,7 +36,7 @@ class PhysicalServer(Thread):
                 self.sendToInternet()
                 if self.receiveAnswer():
                     self.sendAnswer()
-        self.physicalSocket.close()
+        #self.physicalSocket.close()
 
 
 
@@ -58,14 +56,23 @@ class PhysicalServer(Thread):
 
 
     def receiveFile(self):
-        print 'connected'
+        self.physicalSocket, addr = self.serverSocket.accept()
         if not self.tmqSent:
-            self.sendTMQ()
+            self.tmq = int(self.sendTMQ())
             self.tmqSent = True
         print 'Connected with physical client'
+        size = int(self.physicalSocket.recv(4))
+        #print 'size' + str(size)
+        receivedSize = 0
         with open ('receivedBinary_.txt', "w") as self.rFile:
-            data, success = Layer.receiveFrom(self.physicalSocket, self.BUFFER_SIZE)
-            self.rFile.write(data)
+            while size >= self.tmq :
+                data = self.physicalSocket.recv(self.tmq)
+                self.rFile.write(data)
+                size -= len(data)
+            if size > 0:
+                data = self.physicalSocket.recv(size)
+                self.rFile.write(data)
+
         return True if data else False
 
     def translateReceivedFile (self):
@@ -105,19 +112,26 @@ class PhysicalServer(Thread):
 
     def sendTMQ(self):
         print 'TMQ ascked. Answer = ' + str(self.BUFFER_SIZE)
-        self.physicalSocket.send(str(self.BUFFER_SIZE))
-
+        #self.physicalSocket.recv(4)
+        self.physicalSocket.send(str(self.BUFFER_SIZE).zfill(4))
+        return self.BUFFER_SIZE
 
 
     def receiveAnswer(self):
-        self.answer, success = Layer.receiveFrom(self.internetSocket)
+        self.answer = ''
+        data = self.internetSocket.recv(1024)
+        while data:
+            self.answer += data
+            data = self.internetSocket.recv(1024)
         print 'received aswer'
-        print self.answer
         return True
         #return success
 
     def sendAnswer(self):
-        Layer.sendTo(self.physicalSocket, self.answer)
+        while self.answer:
+            sent = self.physicalSocket.send(self.answer)
+            self.answer = self.answer[sent:]
+        self.physicalSocket.close()
         print 'Answer sent to physical client'
         return True
 

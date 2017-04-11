@@ -75,17 +75,30 @@ class InternetClient(Thread):
         self.transportClientSocket.bind (('127.0.0.1', 3333))
         print self.space + '*' * 20 + ' INTENERT CLIENT ' + '*' * 20
         self.transportClientSocket.listen(1)
-
         print 'accepted connection'
-        while True:
-            if self.receiveFromTransport():
-                self.createDatagram()
-                #self.belongsToNetwork()
-                self.toPhysical()
-                if self.receiveFromPhysical():
-                    self.sendToTransport()
-        self.transportSocket.close()
-        self.physicalSocket.close()
+        self.loadRouterTable()
+        try:
+            while True:
+                mode = raw_input('Enter a corresponding number:\n[1]To access the router table.\n'\
+                        '[2]To start the layer activity\n : ')
+                if mode == '1':
+                    self.accessRouterTable()
+                    break
+                elif mode == '2':
+                    while True:
+                        if self.receiveFromTransport():
+                            self.createDatagram()
+                            #self.belongsToNetwork()
+                            self.toPhysical()
+                            if self.receiveFromPhysical():
+                                self.sendToTransport()
+                    break
+                print 'Invalid input. Please choose between valid options.'
+        except KeyboardInterrupt:
+            print 'Shutting down Internet Layer Client'
+            self.saveRouterTable()
+            #self.transportSocket.close()
+            self.physicalSocket.close()
 
     def belongsToNetwork(self):
         # ip1 AND subnetMask2
@@ -99,12 +112,14 @@ class InternetClient(Thread):
         else:
             print "different network"
             step = self.checkRouterTable(ip1sm)
-
+            if step == 0:
+                print 'There is no match in router table'
+            else:
+                return step
 
     def checkRouterTable(self, ip):
         print 'routing'
-        rTable = {'192.168.9.0': '127.0.0.1'}
-        if ip in rTable:
+        if ip in self.routerTable:
             print rTable[ip]
             return rTable[ip]
         else:
@@ -114,15 +129,16 @@ class InternetClient(Thread):
     def toPhysical(self):
         self.physicalSocket = socket(AF_INET, SOCK_STREAM)
         self.physicalSocket.connect(('127.0.0.1', 4444))
-        Layer.sendTo(self.physicalSocket, self.datagram)
+        self.physicalSocket.send(self.datagram)
         #self.physicalSocket.send(json.dumps(self.package))
         print 'sended package to physical'
         #print  json.dumps(self.package)
         return True
 
     def receiveFromTransport(self):
+        print "waiting upper layer"
         self.transportSocket, addr = self.transportClientSocket.accept()
-        self.package, success = Layer.receiveFrom(self.transportSocket)
+        self.package = self.transportSocket.recv(1024)
             #print 'internet receiving from transport'
             #print self.space + 'listening'
             #print self.space + 'connected'
@@ -130,7 +146,7 @@ class InternetClient(Thread):
             #print self.package
         print self.space + 'Received segment from transport layer'
         print self.package
-        return success
+        return True
 
     def createDatagram(self):
         host = re.compile('Host:(.*?):')
@@ -171,13 +187,74 @@ class InternetClient(Thread):
 
     def receiveFromPhysical(self):
         print self.space + "Waiting answer"
-        self.answer, success = Layer.receiveFrom(self.physicalSocket)
+        self.answer = ''
+        data = self.physicalSocket.recv(1024)
+        while data:
+            self.answer += data
+            data = self.physicalSocket.recv(1024)
         print self.space + 'answer received'
         return True
 
     def sendToTransport(self):
-        Layer.sendTo(self.transportSocket, self.answer)
+        while self.answer:
+            sent = self.transportSocket.send(self.answer)
+            self.answer = self.answer[sent:]
+        self.transportSocket.close()
         print 'Answer sent'
+
+    def accessRouterTable(self):
+        while True:
+            mode = raw_input('Choose one option:\n\t[1]Print router table'\
+                    '\n\t[2]Remove data from router table\n\t[3]Add data to router table\n\t: ')
+            if mode == '1':
+                self.printRouterTable()
+            elif mode == '2':
+                self.printRouterTable()
+                self.deleteDataFromRouterTable()
+
+            elif mode == '3':
+                self.addDataToRouterTable()
+
+    def loadRouterTable(self):
+        try:
+            with open ('routerTable.txt', 'r') as rt:
+                for line in rt:
+                    (key, value) = line.split()
+                    self.routerTable[key] = value
+        except Exception as e:
+            print 'Did not find router table file.\n Empty router table.'
+            self.routerTable = {}
+
+    def saveRouterTable(self):
+        with open ('routerTable.txt', 'w') as rt:
+            for x in self.routerTable:
+                rt.write(x + ' ' + self.routerTable[x] + '\n')
+
+    def addDataToRouterTable(self):
+        key     = raw_input('Enter the ip you want to router: ')
+        value   = raw_input('Enter the ip do you to router it to: ')
+        #add ip validation
+        self.routerTable[str(key)] = str(value)
+
+    def printRouterTable(self):
+        try:
+            print '+---+--------------------+--------------------+'
+            for x in self.routerTable:
+                print '| '+ str(self.routerTable.keys().index(x)) + ' |   ' + x + '   |   ' + self.routerTable[x] + '   |'
+                print '+---+--------------------+--------------------+'
+        except Exception as e:
+            print 'No router table: ' + str(e)
+
+
+
+    def deleteDataFromRouterTable(self):
+        index = raw_input('Enter the number of the line you want to delete: ')
+        for i, (key, value) in enumerate(self.routerTable.items()):
+            print i
+            if i == int(index):
+                del self.routerTable[key]
+                break
+
 
 #IP('198.176.0.32/18')
 InternetClient()

@@ -33,7 +33,6 @@ class Layer():
                 dataSize -= buff
             if dataSize > 0:
                 data += socket.recv(dataSize)
-
             print 'Received data successfully!'
             return data, True
 

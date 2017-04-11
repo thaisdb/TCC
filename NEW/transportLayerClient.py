@@ -48,8 +48,8 @@ class TransportClient(Thread):
             self.udpPackage = (0, self.srcPort, self.dstPort, comprimento, 'checksum', self.applicationPack)
             print self.udpPackage
             pack = json.dumps(self.udpPackage)
-            if Layer.sendTo(self.udpSocket, pack):
-                print 'Data sent'
+            self.udpSocket.send(pack)
+            print 'Data sent'
             #udpSocket.send(pack)
             #self.create_PDU('UDP')
             print 'sent'
@@ -223,12 +223,20 @@ class TransportClient(Thread):
 
     def receiveAnswerFromInternetLayer(self):
         print 'wainting answer'
-        self.answer, success = Layer.receiveFrom(self.udpSocket)
+        self.answer = ''
+        data = self.udpSocket.recv(1024)
+        while data:
+            self.answer += data
+            data = self.udpSocket.recv(1024)
         print 'ANSWER: \n' + self.answer
         return True
 
     def sendAnswerToApplicationLayer(self):
         print 'Sending answer to app layer'
-        return Layer.sendTo(self.clientSocket, self.answer)
+        while self.answer:
+            sent = self.clientSocket.send(self.answer)
+            self.answer = self.answer[sent:]
+        self.clientSocket.close()
+        return True
 
 TransportClient()
