@@ -55,7 +55,7 @@ class ApplicationClient(Thread):
         transportAddress = ('localhost', 2222)
         self.transportSocket.connect(transportAddress)
         try:
-            Layer.sendTo(self.transportSocket, self.browserPack)
+            self.transportSocket.send(self.browserPack)
             print "Data sent to transport client!"
             #self.transportSocket.close()
         except Exception, ex:
@@ -69,7 +69,6 @@ class ApplicationClient(Thread):
         while data:
             self.answer += data
             data = self.transportSocket.recv(1024)
-        print self.answer
         return True
 
     def sendToBrowser(self):

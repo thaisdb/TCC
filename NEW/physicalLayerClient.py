@@ -73,13 +73,14 @@ class PhysicalClient(Thread):
 
     def toBinaryFile(self):
         print 'Creating binary file'
-        #if self.fileType == 0:
-        #    originalFile = open(self.package, "r")
-        #else:
-        #    originalFile = open(self.package, 'rb')
+        #TODO fix size
         self.tamanho = sys.getsizeof(self.package)
-        packageTuple = ('preambulo', self.mac, self.macdst, self.tamanho, self.package)
-        data = json.dumps(packageTuple)
+        package = {'preambulo' : 'preambulo',
+                    'mac' : self.mac,
+                    'dstMac' : self.macdst,
+                    'tamanho' : self.tamanho,
+                    'data' : self.package }
+        data = json.dumps(package)
         with open('binary_file.txt', 'w') as binaryFile:
             for x in data:
                 binaryFile.write('{0:08b}'.format(ord(x)))
@@ -91,29 +92,31 @@ class PhysicalClient(Thread):
         self.physicalSocket.connect((self.host, self.port))
         print 'Sending binary file'
         fileName = 'binary_file.txt'
+        tmq = 1024
         if not self.tmqReceived:
-            #self.physicalSocket.send(str(0).zfill(4))
-            self.tmq = self.physicalSocket.recv(4)
+            #TODO ask user
+            myTMQ = 30
+            self.physicalSocket.send(str(myTMQ).zfill(4))
+            #server sends min tmq
+            tmq = int(self.physicalSocket.recv(4))
             self.tmqReceived = True
-            print 'Frame size = ' + str(self.tmq)
+            print 'Frame size = ' + str(tmq)
         size = str(os.stat(fileName).st_size)
-        #print size
+        #send size
         self.physicalSocket.send(size.zfill(4))
         with open(fileName, 'r') as binFile:
-            data = binFile.read(int(self.tmq))
+            data = binFile.read(int(tmq))
             while data:
                 self.physicalSocket.send(data)
-                data = binFile.read(int(self.tmq))
+                data = binFile.read(int(tmq))
         return True
 
 
     def receiveFromNetwork(self):
         self.clientSocket, addr = self.networkSocket.accept()
         self.package = self.clientSocket.recv(1024)
-        print "success + " + str(self.package)
-        #self.package = self.clientSocket.recv(1024)
         self.package = json.loads(self.package)
-        #print self.space + 'Packet from network received'
+        print 'Packet from network received'
         #print self.space + str(self.package)
         return True if self.package else False
 

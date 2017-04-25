@@ -139,18 +139,20 @@ class InternetClient(Thread):
         print "waiting upper layer"
         self.transportSocket, addr = self.transportClientSocket.accept()
         self.package = self.transportSocket.recv(1024)
-            #print 'internet receiving from transport'
+        #print 'internet receiving from transport'
             #print self.space + 'listening'
             #print self.space + 'connected'
             #self.package = self.transportSocket.recv(1024)
             #print self.package
         print self.space + 'Received segment from transport layer'
-        print self.package
         return True
 
     def createDatagram(self):
         host = re.compile('Host:(.*?):')
-        m = host.search(self.package)
+        jPack = json.loads(self.package)
+        m = host.search(jPack['data'])
+        srcIP = 'localhost'
+        dstIP = 'localhost'
         if m:
             host = str(m.group(1))
             print "Host:" + host
@@ -159,18 +161,57 @@ class InternetClient(Thread):
             else:
                 dstIP = host
             print 'ip = ' + str(self.myIP())
-            srcIP = self.myIP()['addr']
-            print 'srcip = ' + str(srcIP)
-        upperProtocol = int(json.loads(self.package)[0])
-        if upperProtocol == 0:
-            transportProtocol = 'UDP'
-        else:
-            transportProtocol = 'TCP'
-        header = ('IPV4', 'ID', 'c. fragmentação', 'c. tempo', transportProtocol,'CRC', srcIP, dstIP, 'opcoes')
-        header = json.dumps(header)
-        self.datagram = ('IPV4', len(header), 'ID', 'c. fragmentação', 'c. tempo', transportProtocol,
-            'CRC', srcIP, dstIP, 'opções', json.loads(self.package))
+            #srcIP = self.myIP()['addr']
+            #print 'srcip = ' + str(srcIP)
+        package = json.loads(self.package)
+        transportProtocol = jPack['transportProtocol']
+        #IHL = Internet Header Length
+        #TOS = Type Of Service
+        #TL = Total Length
+        #TTL = Time To Live
+        #HD = Header Checksum
+        self.datagram = {'version':'IPV4',
+                        'headerLength':5,
+                        'TOS': 'Diferentiated Service',
+                        'TL':'calc tamanho',
+                        'ID':'ID',
+                        'DF':0,
+                        'MF':1,
+                        'fragOffset':'fragment offset',
+                        'TTL':'time to live',
+                        'transportProtocol': transportProtocol,
+                        'checksum':'header checksum',
+                        'srcIP': srcIP,
+                        'dstIP': dstIP,
+                        'options':'options',
+                        'padding':'padding',
+                        'Data':self.package}
+
+        #header = ('IPV4', 'ID', 'c. fragmentação', 'c. tempo', transportProtocol,'CRC', srcIP, dstIP, 'opcoes')
+        #header = json.dumps(header)
+        #self.datagram = ('IPV4', len(header), 'ID', 'c. fragmentação', 'c. tempo', transportProtocol,
+        #    'CRC', srcIP, dstIP, 'opções', json.loads(self.package))
+        self.printFormated()
         self.datagram = json.dumps(self.datagram)
+
+
+    def printFormated(self):
+        print ('|' + '*' * 80 + '|\n' \
+               '| Versão ={0[version]:^6} | IHL ={0[headerLength]:^3} | Tipo de Serviço ={0[TOS]:^20} '\
+               '| Tamanho total ={0[TL]:^20} |\n'\
+               '|' + '*' * 80 + '|\n' \
+               '| ID = {0[ID]:^5} | DF ={0[DF]:^3} | MF ={0[MF]:^3} | Fragmento Offset ={0[fragOffset]:^20} |\n' \
+               '|' + '*' * 80 + '|\n' \
+               '| Tempo de Vida ={0[TTL]:^20} | Protocolo ={0[transportProtocol]:^5} | Checksum do cabecalho = {0[checksum]:^5} |\n'\
+               '|' + '*' * 80 + '|\n' \
+               '| Endereço de Origem = {0[srcIP]:^20} |\n' \
+               '|' + '*' * 80 + '|\n' \
+               '| Endereço de Destino = {0[dstIP]:^20} |\n' \
+               '|' + '*' * 80 + '|\n' \
+               '| Opcoes = {0[options]:^20} |\n' \
+               '|' + '*' * 80 + '|\n' \
+               '| Data = segmento de transport |\n' \
+               '|' + '*' * 80 + '|\n' ).format(self.datagram)
 
 
     def myIP(self):

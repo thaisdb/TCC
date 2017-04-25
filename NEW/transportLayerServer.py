@@ -1,4 +1,5 @@
 #coding=utf-8
+import sys
 from socket import *
 import json
 from threading import Thread
@@ -20,11 +21,11 @@ class TransportServer (Thread):
         try:
             self.tcpServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
             self.tcpServerSocket.bind(('localhost', 6666))
-            print self.space + '********************** TRANSPORT SERVER **********************'
+            print '********************** TRANSPORT SERVER **********************'
             self.tcpServerSocket.listen(1)
-            print self.space + 'Listening'
+            print 'Listening'
             while True:
-                # if self.threeWayHandshake()
+                #self.threeWayHandshake()
                 if self.receive_Data():
                     self.interpretSegment()
                     if self.sendToApplication():
@@ -32,8 +33,13 @@ class TransportServer (Thread):
                             self.sendAnswerToInternet()
         except KeyboardInterrupt:
             print 'Shutting down transport server'
-        except Exception as err:
-            print self.space + "not binded: " + str(err)
+        except Exception as exc:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            error = exc_tb.tb_frame
+            line = exc_tb.tb_lineno
+            fileName = error.f_code.co_filename
+            print self.space + "not binded: " + str(exc)
+            print 'error line = ' + str(line)
         self.tcpServerSocket.close()
 
     def threeWayHandshake(self):
@@ -43,9 +49,9 @@ class TransportServer (Thread):
     def receive_Data(self):
         self.internetSocket, self.addr = self.tcpServerSocket.accept()
         print self.space + 'Connected!'
-        self.package, success = Layer.receiveFrom(self.internetSocket)
-        print str(self.package)
-        return success
+        self.package = self.internetSocket.recv(1024)
+        #print str(self.package)
+        return True
 
     def sendAnswerToInternet(self):
         while self.answer:
@@ -56,6 +62,8 @@ class TransportServer (Thread):
         return True
 
     def receive_SYN(self):
+        self.internetSocket, self.addr = self.tcpServerSocket.accept()
+        print self.space + 'Connected!'
         print self.space + "Expecting SYN"
         expectSyn = self.internetSocket.recv(1024)
         self.clientPort, self.serverPort, self.seq, self.ackSeq, self.offsetRes,jFlags, window, checksum, urgPtr = json.loads(expectSyn)
@@ -126,19 +134,27 @@ class TransportServer (Thread):
                 print self.space + 'Flag', k, ': received ', self.flags[k], '-> expected ', self.ACK[k]
 
     def interpretSegment(self):
-        self.package = json.loads(self.package)
-        print self.space + 'type trasnport = ' + str(self.package[0])
-        print self.space + 'porta de origem = ' + str(self.package[1])
-        print self.space + 'porta de destino = ' + str(self.package[2])
-        print self.space + 'comprimento = ' + str(self.package[3])
-        print self.space + 'checksum = ' + str(self.package[4])
-        self.package = self.package[5]
-        print self.package
+        try:
+            self.package = json.loads(self.package)
+            print 'type transport = ' + str(self.package['transportProtocol'])
+            print 'porta de origem = ' + str(self.package['srcPort'])
+            print 'porta de destino = ' + str(self.package['dstPort'])
+            #print self.space + 'comprimento = ' + str(self.package[3])
+            #print self.space + 'checksum = ' + str(self.package[4])
+            self.package = self.package['data']
+            print 'request send to Application Server'
+        except Exception as exc:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            error = exc_tb.tb_frame
+            line = exc_tb.tb_lineno
+            fileName = error.f_code.co_filename
+            print self.space + "Couldn't interpret package: " + str(exc)
+            print 'error line = ' + str(line)
 
     def sendToApplication(self):
         self.applicationSocket = socket(AF_INET, SOCK_STREAM)
         self.applicationSocket.connect(('127.0.0.1', 7777))
-        self.applicationSocket.send( self.package)
+        self.applicationSocket.send(self.package)
         print 'sent request to application'
         return True
 

@@ -105,34 +105,35 @@ class InternetServer(Thread):
         self.transportSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.transportSocket.connect(('127.0.0.1', 6666))
         print self.space + 'Sending package request to transport layer'
-        return Layer.sendTo(self.transportSocket, self.package)
+        self.transportSocket.send(self.package)
+        return True
 
     def receiveFromPhysical(self):
         self.physicalSocket, addr = self.internetServerSocket.accept()
         print self.space + 'connected'
-        self.package, success = Layer.receiveFrom(self.physicalSocket)
+        self.package = self.physicalSocket.recv(1024)
         return True if self.package else False
         #print 'received: ' + str(self.package)
         #return success
 
     def interpretPackage(self):
         self.package = json.loads(str(self.package))
-        version = self.package[0]
+        version = self.package['version']
         print 'version = ' + str(version)
-        size = self.package[1]
+        size = self.package['headerLength']
         print 'package size = ' + str(size)
-        packId = self.package[2]
-        cFrag = self.package[3]
-        cTemp = self.package[4]
-        transportProtocol = self.package[5]
+        packId = self.package['ID']
+        cFrag = self.package['FragOffset']
+        cTemp = self.package['TTL']
+        transportProtocol = self.package['Transport Protocol']
         print 'transport protocol = ' + str(transportProtocol)
-        crc = self.package[6]
-        srcIP = self.package[7]
-        dstIP = self.package[8]
+        crc = self.package['checksum']
+        srcIP = self.package['srcIP']
+        dstIP = self.package['dstIP']
         print 'srcIP = ' + str(srcIP)
-        print 'dstIP + ' + str(dstIP)
-        opcoes = self.package[9]
-        self.package = json.dumps(self.package[10])
+        print 'dstIP = ' + str(dstIP)
+        opcoes = self.package['options']
+        self.package = self.package['Data']
         #print 'result = ' + str(self.package)
 
     def receiveAnswer(self):

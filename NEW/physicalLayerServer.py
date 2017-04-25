@@ -58,7 +58,7 @@ class PhysicalServer(Thread):
     def receiveFile(self):
         self.physicalSocket, addr = self.serverSocket.accept()
         if not self.tmqSent:
-            self.tmq = int(self.sendTMQ())
+            self.tmq = int(self.setTMQ())
             self.tmqSent = True
         print 'Connected with physical client'
         size = int(self.physicalSocket.recv(4))
@@ -90,15 +90,15 @@ class PhysicalServer(Thread):
 
     def interpretPackage(self):
         self.package =  json.loads(self.package)
-        preambulo =     self.package[0]
+        preambulo =     self.package['preambulo']
         print 'preambulo: '+ str(preambulo)
-        srcMAC =        self.package[1]
+        srcMAC =        self.package['dstMac']
         print 'srcMAC: ' + str(srcMAC)
-        myMAC =        self.package[2]
+        myMAC =        self.package['mac']
         print 'myMAC: ' + str(myMAC)
-        tamanho =       self.package[3]
-        self.package =  json.dumps(self.package[4])
-        print 'result = ' + str(self.package)
+        tamanho =       self.package['tamanho']
+        self.package =  json.dumps(self.package['data'])
+        #print 'result = ' + str(self.package)
 
 
     def sendToInternet (self):
@@ -106,13 +106,16 @@ class PhysicalServer(Thread):
         self.internetSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.internetSocket.connect(('127.0.0.1', 5555))
         print self.space + 'package sent!'
-        return Layer.sendTo(self.internetSocket, str(self.package))
+        self.internetSocket.send(self.package)
+        #return Layer.sendTo(self.internetSocket, str(self.package))
+        return True
 
 
-
-    def sendTMQ(self):
-        print 'TMQ ascked. Answer = ' + str(self.BUFFER_SIZE)
-        #self.physicalSocket.recv(4)
+    def setTMQ(self):
+        clientTMQ = self.physicalSocket.recv(4)
+        print 'TMQ received = ' + str(clientTMQ)
+        myTMQ = self.BUFFER_SIZE
+        self.physicalSocket.send(str(min(int(myTMQ), int(clientTMQ))))
         self.physicalSocket.send(str(self.BUFFER_SIZE).zfill(4))
         return self.BUFFER_SIZE
 
