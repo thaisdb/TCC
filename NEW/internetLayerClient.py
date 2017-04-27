@@ -7,7 +7,7 @@ import re
 from threading import Thread
 from layer import Layer
 import netifaces
-
+from utils import Addresses as addr
 
 class IP:
     def __init__(self, network):
@@ -62,6 +62,7 @@ class IP:
 
 class InternetClient(Thread):
     space = '\t\t'
+    routerTable = {'ip_destino':'ip_roteado'}
     def __init__(self):
         #network = raw_input("Enter an IP/mask(xxx.xxx.xxx.xxx/mmm): ")
         #self.ip1 = IP(network)
@@ -70,17 +71,18 @@ class InternetClient(Thread):
         #    self.ip2 = IP(network2)
         #    self.ipBelongsToNetwork()
         #self.routerTable('192.168.9.0')
-        self.transportClientSocket = socket(AF_INET, SOCK_STREAM)
-        self.transportClientSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        self.transportClientSocket.bind (('127.0.0.1', 3333))
-        print self.space + '*' * 20 + ' INTENERT CLIENT ' + '*' * 20
-        self.transportClientSocket.listen(1)
+        self.networkClientSocket = socket(AF_INET, SOCK_STREAM)
+        self.networkClientSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        self.networkClientSocket.bind (addr.NetworkClient)
+        print '*' * 20 + ' INTENERT CLIENT ' + '*' * 20
+        self.networkClientSocket.listen(1)
         print 'accepted connection'
         self.loadRouterTable()
         try:
             while True:
-                mode = raw_input('Enter a corresponding number:\n[1]To access the router table.\n'\
-                        '[2]To start the layer activity\n : ')
+                #mode = raw_input('Enter a corresponding number:\n[1]To access the router table.\n'\
+                #        '[2]To start the layer activity\n : ')
+                mode = '2'
                 if mode == '1':
                     self.accessRouterTable()
                     break
@@ -92,7 +94,6 @@ class InternetClient(Thread):
                             self.toPhysical()
                             if self.receiveFromPhysical():
                                 self.sendToTransport()
-                    break
                 print 'Invalid input. Please choose between valid options.'
         except KeyboardInterrupt:
             print 'Shutting down Internet Layer Client'
@@ -127,72 +128,72 @@ class InternetClient(Thread):
             return 0
 
     def toPhysical(self):
-        self.physicalSocket = socket(AF_INET, SOCK_STREAM)
-        self.physicalSocket.connect(('127.0.0.1', 4444))
-        self.physicalSocket.send(self.datagram)
-        #self.physicalSocket.send(json.dumps(self.package))
+        networkSender = socket(AF_INET, SOCK_STREAM)
+        networkSender.connect(addr.PhysicalClient)
+        while self.datagram:
+            sent = networkSender.send(self.datagram)
+            self.datagram = self.datagram[sent:]
+        networkSender.close()
         print 'sended package to physical'
-        #print  json.dumps(self.package)
         return True
 
     def receiveFromTransport(self):
         print "waiting upper layer"
-        self.transportSocket, addr = self.transportClientSocket.accept()
-        self.package = self.transportSocket.recv(1024)
-        #print 'internet receiving from transport'
-            #print self.space + 'listening'
-            #print self.space + 'connected'
-            #self.package = self.transportSocket.recv(1024)
-            #print self.package
-        print self.space + 'Received segment from transport layer'
+        networkReceiver, _ = self.networkClientSocket.accept()
+        self.package = ''
+        data = networkReceiver.recv(1024)
+        while data:
+            self.package += data
+            data = networkReceiver.recv(1024)
+        networkReceiver.close()
+        print 'Received segment from transport layer'
         return True
 
     def createDatagram(self):
         host = re.compile('Host:(.*?):')
         jPack = json.loads(self.package)
         m = host.search(jPack['data'])
+        print str(m.group(1))
         srcIP = 'localhost'
         dstIP = 'localhost'
         if m:
-            host = str(m.group(1))
-            print "Host:" + host
-            if host == 'localhost':
-                dstIP = '127.0.0.1'
-            else:
-                dstIP = host
-            print 'ip = ' + str(self.myIP())
-            #srcIP = self.myIP()['addr']
-            #print 'srcip = ' + str(srcIP)
-        package = json.loads(self.package)
-        transportProtocol = jPack['transportProtocol']
-        #IHL = Internet Header Length
-        #TOS = Type Of Service
-        #TL = Total Length
-        #TTL = Time To Live
-        #HD = Header Checksum
-        self.datagram = {'version':'IPV4',
-                        'headerLength':5,
-                        'TOS': 'Diferentiated Service',
-                        'TL':'calc tamanho',
-                        'ID':'ID',
-                        'DF':0,
-                        'MF':1,
-                        'fragOffset':'fragment offset',
-                        'TTL':'time to live',
-                        'transportProtocol': transportProtocol,
-                        'checksum':'header checksum',
-                        'srcIP': srcIP,
-                        'dstIP': dstIP,
-                        'options':'options',
-                        'padding':'padding',
-                        'Data':self.package}
+            dstIP = str(m.group(1))
+            if dstIP in [' localhost', ' 127.0.0.1']:
+                dstIP = self.myIP()['addr']
+        try:
+            srcIP = self.myIP()['addr']
+            transportProtocol = jPack['transportProtocol']
+            #IHL = Internet Header Length
+            #TOS = Type Of Service
+            #TL = Total Length
+            #TTL = Time To Live
+            #HD = Header Checksum
+            self.header = {'version':'IPV4',
+                            'headerLength':5, #min
+                            'TOS': 'Diferentiated Service',
+                            'ID':'ID',
+                            'DF':0,
+                            'MF':1,
+                            'fragOffset':'fragment offset',
+                            'TTL':'time to live',
+                            'transportProtocol': transportProtocol,
+                            'checksum':'header checksum',
+                            'srcIP': srcIP,
+                            'dstIP': dstIP,
+                            'options':'options',
+                            'padding':'padding'}
+            self.datagram = self.header
+            self.datagram['TL'] = len(self.header)
+            self.datagram['data'] = self.package
 
-        #header = ('IPV4', 'ID', 'c. fragmentação', 'c. tempo', transportProtocol,'CRC', srcIP, dstIP, 'opcoes')
-        #header = json.dumps(header)
-        #self.datagram = ('IPV4', len(header), 'ID', 'c. fragmentação', 'c. tempo', transportProtocol,
-        #    'CRC', srcIP, dstIP, 'opções', json.loads(self.package))
-        self.printFormated()
-        self.datagram = json.dumps(self.datagram)
+            #header = ('IPV4', 'ID', 'c. fragmentação', 'c. tempo', transportProtocol,'CRC', srcIP, dstIP, 'opcoes')
+            #header = json.dumps(header)
+            #self.datagram = ('IPV4', len(header), 'ID', 'c. fragmentação', 'c. tempo', transportProtocol,
+            #    'CRC', srcIP, dstIP, 'opções', json.loads(self.package))
+            self.printFormated()
+            self.datagram = json.dumps(self.datagram)
+        except Exception as exc:
+            print "Couldn't find any active connection"
 
 
     def printFormated(self):
@@ -223,24 +224,28 @@ class InternetClient(Thread):
             if iface != None:
                 for j in iface:
                     return j
-         #           print j['addr']
         #return True
 
     def receiveFromPhysical(self):
-        print self.space + "Waiting answer"
+        networkReceiver, _ = self.networkClientSocket.accept()
+        print "Waiting answer"
         self.answer = ''
-        data = self.physicalSocket.recv(1024)
+        data = networkReceiver.recv(1024)
         while data:
             self.answer += data
-            data = self.physicalSocket.recv(1024)
-        print self.space + 'answer received'
+            data = networkReceiver.recv(1024)
+        networkReceiver.close()
+        print 'answer received'
         return True
 
     def sendToTransport(self):
+        networkSender = socket(AF_INET, SOCK_STREAM)
+        networkSender.connect(addr.TransportClient)
         while self.answer:
-            sent = self.transportSocket.send(self.answer)
+            sent = networkSender.send(self.answer)
             self.answer = self.answer[sent:]
-        self.transportSocket.close()
+        networkSender.close()
+        return True
         print 'Answer sent'
 
     def accessRouterTable(self):
@@ -264,7 +269,6 @@ class InternetClient(Thread):
                     self.routerTable[key] = value
         except Exception as e:
             print 'Did not find router table file.\n Empty router table.'
-            self.routerTable = {}
 
     def saveRouterTable(self):
         with open ('routerTable.txt', 'w') as rt:
@@ -281,7 +285,7 @@ class InternetClient(Thread):
         try:
             print '+---+--------------------+--------------------+'
             for x in self.routerTable:
-                print '| '+ str(self.routerTable.keys().index(x)) + ' |   ' + x + '   |   ' + self.routerTable[x] + '   |'
+                print '| {0} |{1:^20}|{2:^20}|'.format(str(self.routerTable.keys().index(x)), x, self.routerTable[x])
                 print '+---+--------------------+--------------------+'
         except Exception as e:
             print 'No router table: ' + str(e)

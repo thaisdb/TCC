@@ -7,31 +7,33 @@ import httplib
 from threading import Thread
 from layer import Layer
 import webbrowser
-
+from utils import Addresses as addr
 #create connection
 
 class ApplicationClient(Thread):
     # na verdade um server que escuta o browser
-    browserPack = ' '
+    browserMsg = ''
+    package = ''
+    answer = ''
     def __init__(self):
         print '*' * 20 + ' APPLICATION CLIENT ' + '*' * 20
-        self.browserSocket = socket(AF_INET, SOCK_STREAM)
-        self.browserAdress = ('localhost', 1111)
-        self.browserSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        self.browserSocket.bind(self.browserAdress)
-        self.browserSocket.listen(1)
-        browser = webbrowser.get('google-chrome')
+        self.applicationSocket = socket(AF_INET, SOCK_STREAM)
+        self.applicationSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        self.applicationSocket.bind(addr.ApplicationClient)
+        self.applicationSocket.listen(1)
+        self.browser = webbrowser.get('google-chrome')
         # 2 for oppening another tab on browser
-        browser.open_new_tab('')
+        self.browser.open_new_tab('')
         while True:
-            if (self.listenBrowser()) :
+            if self.listenBrowser() :
                 self.sendToTransportLayer()
                 if self.receiveFromTransport():
                 #self.sendDirectly()
                 #if self.receiveDirectly():
                     self.sendToBrowser()
-        self.browserSocket.close()
-        self.transportSocket.close()
+                self.package = ''
+                self.answer = ''
+        self.applicationSocket.close()
 
     #DEBUG
     def sendDirectly(self):
@@ -51,40 +53,40 @@ class ApplicationClient(Thread):
 
     def sendToTransportLayer(self):
         print 'sending'
-        self.transportSocket = socket(AF_INET, SOCK_STREAM)
-        transportAddress = ('localhost', 2222)
-        self.transportSocket.connect(transportAddress)
+        self.transportSock = socket(AF_INET, SOCK_STREAM)
+        self.transportSock.connect(addr.TransportClient)
         try:
-            self.transportSocket.send(self.browserPack)
+            self.transportSock.send(self.browserMsg)
             print "Data sent to transport client!"
-            #self.transportSocket.close()
         except Exception, ex:
             print 'ERROR! Could not sand package'
             print ex
+        return True
 
     def receiveFromTransport(self):
         print 'wainting answer'
         self.answer = ''
-        data = self.transportSocket.recv(1024)
+        data = self.transportSock.recv(1024)
         while data:
             self.answer += data
-            data = self.transportSocket.recv(1024)
+            data = self.transportSock.recv(1024)
         return True
 
     def sendToBrowser(self):
         print 'sending answer to browser'
-        data = self.answer
         while self.answer:
             sent = self.connection.send(self.answer)
             self.answer = self.answer[sent:]
+        self.connection.close()
         return True
 
     def listenBrowser(self):
         print "Wainting browser..."
-        self.connection, browserAddr = self.browserSocket.accept()
+        self.connection, _ = self.applicationSocket.accept()
+        self.browserMsg = ''
         try:
-            self.browserPack = self.connection.recv(1024)
-            print self.browserPack
+            self.browserMsg = self.connection.recv(1024)
+            print self.browserMsg
             return True
         except Exception, ex:
             print 'ERROR!' + str(ex)

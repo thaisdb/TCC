@@ -4,6 +4,8 @@ from socket import *
 import json
 from threading import Thread
 from layer import Layer
+import hashlib
+from utils import Addresses as addr
 #normal server port 99999
 
 
@@ -11,26 +13,29 @@ class TransportServer (Thread):
     SYN = {'cwr':0, 'ece':0, 'fin':0, 'syn':1, 'rst':0, 'psh':0, 'ack':0, 'urg':0}
     ACK = {'cwr':0, 'ece':0, 'fin':0, 'syn':0, 'rst':0, 'psh':0, 'ack':1, 'urg':0}
     space = '\t'
+
+    answer = ''
+
     def __init__(self):
         self.srcPort = 9999
         self.dstPort = 2222
         self.receiveFromInternet()
 
     def receiveFromInternet(self):
-        self.tcpServerSocket = socket(AF_INET, SOCK_STREAM)
         try:
-            self.tcpServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-            self.tcpServerSocket.bind(('localhost', 6666))
+            self.transportServerSocket = socket(AF_INET, SOCK_STREAM)
+            self.transportServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+            self.transportServerSocket.bind(addr.TransportServer)
             print '********************** TRANSPORT SERVER **********************'
-            self.tcpServerSocket.listen(1)
+            self.transportServerSocket.listen(1)
             print 'Listening'
             while True:
                 #self.threeWayHandshake()
                 if self.receive_Data():
                     self.interpretSegment()
                     if self.sendToApplication():
-                        if self.applicationAnswer():
-                            self.sendAnswerToInternet()
+                        if self.receiveAnswer():
+                            self.sendAnswerToNetwork()
         except KeyboardInterrupt:
             print 'Shutting down transport server'
         except Exception as exc:
@@ -40,29 +45,36 @@ class TransportServer (Thread):
             fileName = error.f_code.co_filename
             print self.space + "not binded: " + str(exc)
             print 'error line = ' + str(line)
-        self.tcpServerSocket.close()
+        self.transportServerSocket.close()
 
     def threeWayHandshake(self):
         if self.receive_SYN():
             self.send_SYN_ACK()
 
     def receive_Data(self):
-        self.internetSocket, self.addr = self.tcpServerSocket.accept()
-        print self.space + 'Connected!'
-        self.package = self.internetSocket.recv(1024)
-        #print str(self.package)
+        networkReceiver, _ = self.transportServerSocket.accept()
+        self.package = ''
+        data = networkReceiver.recv(1024)
+        while data:
+            self.package += data
+            data = networkReceiver.recv(1024)
+        networkReceiver.close()
+        print 'Received request from network'
         return True
 
-    def sendAnswerToInternet(self):
+    def sendAnswerToNetwork(self):
+        transportSender = socket(AF_INET, SOCK_STREAM)
+        transportSender.connect(addr.NetworkServer)
+        print "ANSWER = \n" + str(self.answer)
         while self.answer:
-            sent = self.internetSocket.send(self.answer)
+            sent = transportSender.send(self.answer)
             self.answer = self.answer[sent:]
-        self.internetSocket.close()
+        transportSender.close()
         print 'Answer sent to internet layer'
         return True
 
     def receive_SYN(self):
-        self.internetSocket, self.addr = self.tcpServerSocket.accept()
+        self.internetSocket, _ = self.tcpServerSocket.accept()
         print self.space + 'Connected!'
         print self.space + "Expecting SYN"
         expectSyn = self.internetSocket.recv(1024)
@@ -136,12 +148,19 @@ class TransportServer (Thread):
     def interpretSegment(self):
         try:
             self.package = json.loads(self.package)
+            self.checksum = self.package['checksum']
+            print 'checksum = ' + str(self.checksum)
+            del self.package['checksum']
+            self.verifyChecksum()
             print 'type transport = ' + str(self.package['transportProtocol'])
+
             print 'porta de origem = ' + str(self.package['srcPort'])
+
             print 'porta de destino = ' + str(self.package['dstPort'])
-            #print self.space + 'comprimento = ' + str(self.package[3])
+            print 'comprimento = ' + str(self.package['comprimento'])
             #print self.space + 'checksum = ' + str(self.package[4])
-            self.package = self.package['data']
+            self.package = json.loads(self.package['data'])
+            print self.package
             print 'request send to Application Server'
         except Exception as exc:
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -151,19 +170,38 @@ class TransportServer (Thread):
             print self.space + "Couldn't interpret package: " + str(exc)
             print 'error line = ' + str(line)
 
+    def verifyChecksum(self):
+        try:
+            values = sorted(self.package.values())
+            m = hashlib.md5()
+            for value in values:
+                m.update(str(value))
+            print m.hexdigest()
+        except Exception as exc:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            error = exc_tb.tb_frame
+            line = exc_tb.tb_lineno
+            fileName = error.f_code.co_filename
+            print self.space + "Couldn't verify checksum: " + str(exc)
+            print 'error line = ' + str(line)
+
+
     def sendToApplication(self):
         self.applicationSocket = socket(AF_INET, SOCK_STREAM)
-        self.applicationSocket.connect(('127.0.0.1', 7777))
-        self.applicationSocket.send(self.package)
+        self.applicationSocket.connect(addr.ApplicationServer)
+        while self.package:
+            sent = self.applicationSocket.send(self.package)
+            self.package = self.package[sent:]
         print 'sent request to application'
         return True
 
-    def applicationAnswer(self):
+    def receiveAnswer(self):
         self.answer = ''
         data = self.applicationSocket.recv(1024)
         while data:
             self.answer += data
             data = self.applicationSocket.recv(1024)
+        self.applicationSocket.close()
         print 'Received aswer from application'
         return True
 

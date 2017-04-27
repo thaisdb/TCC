@@ -5,7 +5,25 @@ from bitstring import BitStream
 import json
 from threading import Thread
 from layer import Layer
+from utils import Addresses as addr
+from utils import RouterTable
+import netifaces
 #class Internet:
+
+class NetworkLayer():
+
+    @staticmethod
+    def myIP():
+        interfaces = netifaces.interfaces()
+        for i in interfaces:
+            if i == 'lo':
+                continue
+            iface = netifaces.ifaddresses(i).get(netifaces.AF_INET)
+            if iface != None:
+                for j in iface:
+                    return j
+
+
 
 class IP:
     def __init__(self, network):
@@ -54,8 +72,8 @@ class IP:
 
 
 
-class InternetServer(Thread):
-    space = "\t\t"
+class InternetServer(NetworkLayer):
+
     def __init__(self):
         #network = raw_input("Enter an IP/mask(xxx.xxx.xxx.xxx/mmm): ")
         #self.ip1 = IP(network)
@@ -64,12 +82,12 @@ class InternetServer(Thread):
         #    self.ip2 = IP(network2)
         #    self.ipBelongsToNetwork()
         #self.routerTable('192.168.9.0')
-        print self.space + '******************** INTERNET SERVER ********************'
-        self.internetServerSocket = socket(AF_INET, SOCK_STREAM)
-        self.internetServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        self.internetServerSocket.bind (('127.0.0.1', 5555))
-        self.internetServerSocket.listen(1)
-        print self.space + 'listening'
+        print '******************** INTERNET SERVER ********************'
+        self.networkServerSocket = socket(AF_INET, SOCK_STREAM)
+        self.networkServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        self.networkServerSocket.bind (addr.NetworkServer)
+        self.networkServerSocket.listen(1)
+        print 'listening'
         while True:
             if self.receiveFromPhysical():
                 self.interpretPackage()
@@ -92,7 +110,6 @@ class InternetServer(Thread):
 
     def checkRouterTable(self, ip):
         print 'routing'
-        rTable = {'192.168.9.0': '127.0.0.1'}
         if ip in rTable:
             print rTable[ip]
             return rTable[ip]
@@ -101,58 +118,77 @@ class InternetServer(Thread):
             return 0
 
     def sendToTransport(self):
-        self.transportSocket = socket(AF_INET, SOCK_STREAM)
-        self.transportSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        self.transportSocket.connect(('127.0.0.1', 6666))
-        print self.space + 'Sending package request to transport layer'
-        self.transportSocket.send(self.package)
+        transportSender = socket(AF_INET, SOCK_STREAM)
+        transportSender.connect(addr.TransportServer)
+        print 'Sending package request to transport layer'
+        while self.package:
+            sent = transportSender.send(self.package)
+            self.package = self.package[sent:]
+        transportSender.close()
         return True
 
     def receiveFromPhysical(self):
-        self.physicalSocket, addr = self.internetServerSocket.accept()
-        print self.space + 'connected'
-        self.package = self.physicalSocket.recv(1024)
-        return True if self.package else False
-        #print 'received: ' + str(self.package)
-        #return success
+        physicalReceiver, _ = self.networkServerSocket.accept()
+        self.package = ''
+        data = physicalReceiver.recv(1024)
+        while data:
+            self.package += data
+            data = physicalReceiver.recv(1024)
+        print 'received request from physical server '
+        physicalReceiver.close()
+        return True
 
     def interpretPackage(self):
-        self.package = json.loads(str(self.package))
-        version = self.package['version']
-        print 'version = ' + str(version)
-        size = self.package['headerLength']
-        print 'package size = ' + str(size)
-        packId = self.package['ID']
-        cFrag = self.package['FragOffset']
-        cTemp = self.package['TTL']
-        transportProtocol = self.package['Transport Protocol']
-        print 'transport protocol = ' + str(transportProtocol)
-        crc = self.package['checksum']
+        self.package = json.loads(self.package)
+        #src = client
         srcIP = self.package['srcIP']
+        #dst = server
         dstIP = self.package['dstIP']
-        print 'srcIP = ' + str(srcIP)
         print 'dstIP = ' + str(dstIP)
-        opcoes = self.package['options']
-        self.package = self.package['Data']
+        thisIP = NetworkLayer.myIP()['addr']
+        print 'thisIP = ' + str(thisIP)
+        if str(dstIP) == str('nao'):
+            print 'Right server'
+            print 'dstIP = ' + str(dstIP)
+            version = self.package['version']
+            print 'version = ' + str(version)
+            size = self.package['headerLength']
+            print 'package size = ' + str(size)
+            packId = self.package['ID']
+            cFrag = self.package['fragOffset']
+            cTemp = self.package['TTL']
+            transportProtocol = self.package['transportProtocol']
+            print 'transport protocol = ' + str(transportProtocol)
+            crc = self.package['checksum']
+            opcoes = self.package['options']
+            self.package = self.package['data']
+        else :
+            print 'Not this server. Checking router table'
+            rt = RouterTable('serverRouterTable.txt')
+            rt.printRouterTable()
         #print 'result = ' + str(self.package)
 
+                                                                                                                                                  #return Tru
+
     def receiveAnswer(self):
-        print self.space + 'Waiting answer...'
+        networkReceiver, _ = self.networkServerSocket.accept()
+        print 'Waiting answer...'
         self.answer = ''
-        data = self.transportSocket.recv(1024)
+        data = networkReceiver.recv(1024)
         while data:
             self.answer += data
-            data = self.transportSocket.recv(1024)
-            if not data:
-                break
+            data = networkReceiver.recv(1024)
+        networkReceiver.close()
         print 'Answer received'
         return True
 
     def sendAnswerToPhysical(self):
-        print 'Sending answer to physical layer'
+        networkSender = socket(AF_INET, SOCK_STREAM)
+        networkSender.connect(addr.PhysicalServer)
         while self.answer:
-            sent = self.physicalSocket.send(self.answer)
+            sent = networkSender.send(self.answer)
             self.answer = self.answer[sent:]
-        self.physicalSocket.close()
+        networkSender.close()
+        print 'Answer sent to physical layer'
         return True
 InternetServer()

@@ -3,6 +3,7 @@ import sys,os
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
 from clientWindow import Ui_ClientWindow
+from utils import Addresses as addr
 
 class httpHandler(BaseHTTPRequestHandler):
     #global htmlFile
@@ -68,7 +69,7 @@ class ApplicationServer(Thread):
             #    virtualhost[0] = ''
             #print virtualhost
             #serverAddr = (virtualhost[0], int(virtualhost[1]))
-            server = HTTPServer(virtualhost, httpHandler)
+            server = HTTPServer(addr.ApplicationServer, httpHandler)
             print 'started HTTP server'
             server.serve_forever()
             #self.emit(SIGNAL("doTransportServer()"))

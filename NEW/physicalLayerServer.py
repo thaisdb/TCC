@@ -7,25 +7,25 @@ import binascii
 import json
 from threading import Thread
 from layer import Layer
+from utils import Addresses as addr
 #TODO receive server ip from the caller
 #TODO receive file name from the client
 
 class PhysicalServer(Thread):
-    serverSocket = socket(AF_INET, SOCK_STREAM)
     BUFFER_SIZE = 1024
     BYTE_SIZE = 8
-    #receivedFileName = 'default.txt'
-    fileType = 0 # 0 to text files and 1 to image files
-    space = '\t\t\t'
+
     tmqSent = False
+
     def __init__(self, host, port):
         self.host = host
         self.port = int(float(port))
-        self.serverSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        self.serverSocket.bind(('127.0.0.1', self.port))
-        self.serverSocket.listen(1)
-        print self.space + 'Listening for connections, on PORT: ' + str(self.port)
-        print self.space + ("******************** PHYSICAL SERVER ********************")
+        self.physicalServerSocket = socket(AF_INET, SOCK_STREAM)
+        self.physicalServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        self.physicalServerSocket.bind(addr.PhysicalServer)
+        self.physicalServerSocket.listen(1)
+        print  'Listening for connections, on PORT: ' + str(self.port)
+        print  ("******************** PHYSICAL SERVER ********************")
         #self.receiveFileName()
         #receive binary file and save as txt
         #print 'another file'
@@ -33,10 +33,9 @@ class PhysicalServer(Thread):
             if self.receiveFile():
                 self.translateReceivedFile()
                 self.interpretPackage()
-                self.sendToInternet()
+                self.sendToNetwork()
                 if self.receiveAnswer():
                     self.sendAnswer()
-        #self.physicalSocket.close()
 
 
 
@@ -56,24 +55,19 @@ class PhysicalServer(Thread):
 
 
     def receiveFile(self):
-        self.physicalSocket, addr = self.serverSocket.accept()
+        physicalReceiver, _ = self.physicalServerSocket.accept()
         if not self.tmqSent:
-            self.tmq = int(self.setTMQ())
+            self.tmq = int(self.setTMQ(physicalReceiver))
             self.tmqSent = True
         print 'Connected with physical client'
-        size = int(self.physicalSocket.recv(4))
-        #print 'size' + str(size)
-        receivedSize = 0
         with open ('receivedBinary_.txt', "w") as self.rFile:
-            while size >= self.tmq :
-                data = self.physicalSocket.recv(self.tmq)
+            data = physicalReceiver.recv(self.tmq)
+            while data:
                 self.rFile.write(data)
-                size -= len(data)
-            if size > 0:
-                data = self.physicalSocket.recv(size)
-                self.rFile.write(data)
-
-        return True if data else False
+                data = physicalReceiver.recv(self.tmq)
+        physicalReceiver.close()
+        print 'received frame'
+        return True
 
     def translateReceivedFile (self):
         #translate received binaryFile to string pack
@@ -97,44 +91,48 @@ class PhysicalServer(Thread):
         myMAC =        self.package['mac']
         print 'myMAC: ' + str(myMAC)
         tamanho =       self.package['tamanho']
-        self.package =  json.dumps(self.package['data'])
+        self.package =  self.package['data']
         #print 'result = ' + str(self.package)
 
 
-    def sendToInternet (self):
-        self.internetSocket = socket(AF_INET, SOCK_STREAM)
-        self.internetSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        self.internetSocket.connect(('127.0.0.1', 5555))
-        print self.space + 'package sent!'
-        self.internetSocket.send(self.package)
-        #return Layer.sendTo(self.internetSocket, str(self.package))
+    def sendToNetwork (self):
+        networkSender = socket(AF_INET, SOCK_STREAM)
+        networkSender.connect(addr.NetworkServer)
+        print 'package sent!'
+        networkSender.send(self.package)
+        networkSender.close()
         return True
 
 
-    def setTMQ(self):
-        clientTMQ = self.physicalSocket.recv(4)
+    def setTMQ(self, clientSocket):
+        clientTMQ = int(clientSocket.recv(4))
         print 'TMQ received = ' + str(clientTMQ)
         myTMQ = self.BUFFER_SIZE
-        self.physicalSocket.send(str(min(int(myTMQ), int(clientTMQ))))
-        self.physicalSocket.send(str(self.BUFFER_SIZE).zfill(4))
-        return self.BUFFER_SIZE
+        tmq = str(min(myTMQ, clientTMQ)).zfill(4)
+        clientSocket.send(tmq)
+        return tmq
 
 
     def receiveAnswer(self):
+        print 'Waiting answer'
+        networkReceiver, _ = self.physicalServerSocket.accept()
         self.answer = ''
-        data = self.internetSocket.recv(1024)
+        data = networkReceiver.recv(1024)
         while data:
             self.answer += data
-            data = self.internetSocket.recv(1024)
+            data = networkReceiver.recv(1024)
         print 'received aswer'
+        networkReceiver.close()
         return True
         #return success
 
     def sendAnswer(self):
+        self.physicalSender = socket(AF_INET, SOCK_STREAM)
+        self.physicalSender.connect(addr.PhysicalClient)
         while self.answer:
-            sent = self.physicalSocket.send(self.answer)
+            sent = self.physicalSender.send(self.answer)
             self.answer = self.answer[sent:]
-        self.physicalSocket.close()
+        self.physicalSender.close()
         print 'Answer sent to physical client'
         return True
 
