@@ -147,7 +147,7 @@ class InternetServer(NetworkLayer):
         print 'dstIP = ' + str(dstIP)
         thisIP = NetworkLayer.myIP()['addr']
         print 'thisIP = ' + str(thisIP)
-        if str(dstIP) == str('nao'):
+        if str(dstIP) == str(thisIP):
             print 'Right server'
             print 'dstIP = ' + str(dstIP)
             version = self.package['version']
