@@ -6,6 +6,7 @@ from threading import Thread
 from layer import Layer
 import hashlib
 from utils import Addresses as addr
+from utils import PDUPrinter
 #normal server port 99999
 
 
@@ -43,7 +44,7 @@ class TransportServer (Thread):
             error = exc_tb.tb_frame
             line = exc_tb.tb_lineno
             fileName = error.f_code.co_filename
-            print self.space + "not binded: " + str(exc)
+            print "Error! " + str(exc)
             print 'error line = ' + str(line)
         self.transportServerSocket.close()
 
@@ -53,10 +54,10 @@ class TransportServer (Thread):
 
     def receive_Data(self):
         networkReceiver, _ = self.transportServerSocket.accept()
-        self.package = ''
+        self.segment = ''
         data = networkReceiver.recv(1024)
         while data:
-            self.package += data
+            self.segment += data
             data = networkReceiver.recv(1024)
         networkReceiver.close()
         print 'Received request from network'
@@ -147,21 +148,23 @@ class TransportServer (Thread):
 
     def interpretSegment(self):
         try:
-            self.package = json.loads(self.package)
-            self.checksum = self.package['checksum']
-            print 'checksum = ' + str(self.checksum)
-            del self.package['checksum']
-            self.verifyChecksum()
-            print 'type transport = ' + str(self.package['transportProtocol'])
+            self.segment = json.loads(self.segment)
 
-            print 'porta de origem = ' + str(self.package['srcPort'])
+            #self.segment = {'transportProtocol' : self.package['transportProtocol']}
+            #self.segment['srcPort']              = self.package['srcPort']
+            #self.segment['dstPort']              = self.package['dstPort']
+            #self.segment['comprimento']          = self.package['comprimento']
+            self.segment['data']                 = json.loads(self.segment['data'])
+            #self.segment['checksum']             = self.package['checksum']
 
-            print 'porta de destino = ' + str(self.package['dstPort'])
-            print 'comprimento = ' + str(self.package['comprimento'])
-            #print self.space + 'checksum = ' + str(self.package[4])
-            self.package = json.loads(self.package['data'])
-            print self.package
+            #print 'Received UDP Segment:'
+            PDUPrinter.UDP(self.segment)
+            checksum = self.segment['checksum']
+            del self.segment['checksum']
+            self.verifyChecksum(checksum)
+
             print 'request send to Application Server'
+
         except Exception as exc:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             error = exc_tb.tb_frame
@@ -170,13 +173,15 @@ class TransportServer (Thread):
             print self.space + "Couldn't interpret package: " + str(exc)
             print 'error line = ' + str(line)
 
-    def verifyChecksum(self):
+    def verifyChecksum(self, receivedChecksum):
         try:
-            values = sorted(self.package.values())
+            values = sorted(self.segment.values())
             m = hashlib.md5()
             for value in values:
                 m.update(str(value))
-            print m.hexdigest()
+            if m.hexdigest() == receivedChecksum:
+                print 'Checksum verificated successfully'
+                return True
         except Exception as exc:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             error = exc_tb.tb_frame
@@ -186,14 +191,23 @@ class TransportServer (Thread):
             print 'error line = ' + str(line)
 
 
+
     def sendToApplication(self):
-        self.applicationSocket = socket(AF_INET, SOCK_STREAM)
-        self.applicationSocket.connect(addr.ApplicationServer)
-        while self.package:
-            sent = self.applicationSocket.send(self.package)
-            self.package = self.package[sent:]
-        print 'sent request to application'
-        return True
+        try:
+            self.applicationSocket = socket(AF_INET, SOCK_STREAM)
+            self.applicationSocket.connect(addr.ApplicationServer)
+            while self.segment['data']:
+                sent = self.applicationSocket.send(self.segment['data'])
+                self.segment['data'] = self.segment['data'][sent:]
+            print 'sent request to application'
+            return True
+        except Exception as exc:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            error = exc_tb.tb_frame
+            line = exc_tb.tb_lineno
+            fileName = error.f_code.co_filename
+            print "Error! " + str(exc)
+            print 'error line = ' + str(line)
 
     def receiveAnswer(self):
         self.answer = ''

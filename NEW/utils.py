@@ -1,3 +1,5 @@
+#coding: utf-8
+
 class Addresses(object):
 
     ApplicationServer   = ('localhost', 8888)
@@ -69,4 +71,62 @@ class RouterTable(object):
             if i == int(index):
                 del self.routerTable[key]
                 break
+
+
+class PDUPrinter():
+
+    @staticmethod
+    def TCP():
+        print   ('|' + '*' * 80 + '|\n' \
+                '| Porta de Origem = {0[srcPort]:^10} | Porta de Destino = {0[dstPort]:^10} |\n' \
+                '|' + '*' * 80 + '|\n' \
+                '| Numero de sequencia = {0[seq]:^10} |\n' \
+                '|' + '*' * 80 + '|\n' \
+                '| Numero de confirmação = {0[ackSeq]:^10} |\n' \
+                '|' + '*' * 80 + '|\n' \
+                #TODO comprimento cabeçalho fixo
+                #TODO add flags
+                '| Comprimento do Cabeçalho = {0[offsetRes]:^5} | Tamanho da Janela = {0[window]:^10} !\n' \
+                '|' + '*' * 80 + '|\n' \
+                '| Checksum = checksum | Ponteiro para urgente = {0[urgPtr]:^10} |\n' \
+                '|' + '*' * 80 + '|\n' \
+                '| Opções = {0[opcoes]:^10} |\n' \
+                '|' + '*' * 80 + '|\n' \
+                #TODO formatar requisição http
+                '| Dados = Requisição HTTP |\n' \
+                '|' + '*' * 80 + '|').format(self.tcpHeader)
+
+
+    @staticmethod
+    def UDP(segment):
+        print  ('|' + '*' * 80 + '|\n' \
+                '| Porta de Origem = {0[srcPort]:^20} | Porta de Destino = {0[dstPort]:^20} |\n' \
+                '|' + '*' * 80 + '|\n' \
+                '| Comprimento do UDP = {0[comprimento]:^20} | Checksum do UDP = {0[checksum]:^20} |\n' \
+                '|' + '*' * 80 + '|\n' \
+                #todo formatar requisição http
+                '| Dados = Requisição HTTP |\n' \
+                '|' + '*' * 80 + '|').format(segment)
+
+
+    @staticmethod
+    def Datagram(datagram):
+        print ('|' + '*' * 80 + '|\n' \
+               '| Versão ={0[version]:^6} | IHL ={0[headerLength]:^3} | Tipo de Serviço ={0[TOS]:^20} '\
+               '| Tamanho total ={0[TL]:^20} |\n'\
+               '|' + '*' * 80 + '|\n' \
+               '| ID = {0[ID]:^5} | DF ={0[DF]:^3} | MF ={0[MF]:^3} | Fragmento Offset ={0[fragOffset]:^20} |\n' \
+               '|' + '*' * 80 + '|\n' \
+               '| Tempo de Vida ={0[TTL]:^20} | Protocolo ={0[transportProtocol]:^5} | Checksum do cabecalho = {0[checksum]:^5} |\n'\
+               '|' + '*' * 80 + '|\n' \
+               '| Endereço de Origem = {0[srcIP]:^20} |\n' \
+               '|' + '*' * 80 + '|\n' \
+               '| Endereço de Destino = {0[dstIP]:^20} |\n' \
+               '|' + '*' * 80 + '|\n' \
+               '| Opcoes = {0[options]:^20} |\n' \
+               '|' + '*' * 80 + '|\n' \
+               '| Data = segmento de transport |\n' \
+               '|' + '*' * 80 + '|\n' ).format(datagram)
+
+
 

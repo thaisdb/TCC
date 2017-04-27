@@ -1,4 +1,5 @@
 #coding=utf-8
+import sys
 from socket import *
 from bitstring import BitArray
 from bitstring import BitStream
@@ -8,6 +9,7 @@ from threading import Thread
 from layer import Layer
 import netifaces
 from utils import Addresses as addr
+from utils import PDUPrinter
 
 class IP:
     def __init__(self, network):
@@ -140,10 +142,10 @@ class InternetClient(Thread):
     def receiveFromTransport(self):
         print "waiting upper layer"
         networkReceiver, _ = self.networkClientSocket.accept()
-        self.package = ''
+        self.frame = ''
         data = networkReceiver.recv(1024)
         while data:
-            self.package += data
+            self.frame += data
             data = networkReceiver.recv(1024)
         networkReceiver.close()
         print 'Received segment from transport layer'
@@ -151,7 +153,7 @@ class InternetClient(Thread):
 
     def createDatagram(self):
         host = re.compile('Host:(.*?):')
-        jPack = json.loads(self.package)
+        jPack = json.loads(self.frame)
         m = host.search(jPack['data'])
         print str(m.group(1))
         srcIP = 'localhost'
@@ -184,35 +186,21 @@ class InternetClient(Thread):
                             'padding':'padding'}
             self.datagram = self.header
             self.datagram['TL'] = len(self.header)
-            self.datagram['data'] = self.package
+            self.datagram['data'] = self.frame
 
             #header = ('IPV4', 'ID', 'c. fragmentação', 'c. tempo', transportProtocol,'CRC', srcIP, dstIP, 'opcoes')
             #header = json.dumps(header)
             #self.datagram = ('IPV4', len(header), 'ID', 'c. fragmentação', 'c. tempo', transportProtocol,
             #    'CRC', srcIP, dstIP, 'opções', json.loads(self.package))
-            self.printFormated()
+            PDUPrinter.Datagram(self.datagram)
             self.datagram = json.dumps(self.datagram)
         except Exception as exc:
-            print "Couldn't find any active connection"
-
-
-    def printFormated(self):
-        print ('|' + '*' * 80 + '|\n' \
-               '| Versão ={0[version]:^6} | IHL ={0[headerLength]:^3} | Tipo de Serviço ={0[TOS]:^20} '\
-               '| Tamanho total ={0[TL]:^20} |\n'\
-               '|' + '*' * 80 + '|\n' \
-               '| ID = {0[ID]:^5} | DF ={0[DF]:^3} | MF ={0[MF]:^3} | Fragmento Offset ={0[fragOffset]:^20} |\n' \
-               '|' + '*' * 80 + '|\n' \
-               '| Tempo de Vida ={0[TTL]:^20} | Protocolo ={0[transportProtocol]:^5} | Checksum do cabecalho = {0[checksum]:^5} |\n'\
-               '|' + '*' * 80 + '|\n' \
-               '| Endereço de Origem = {0[srcIP]:^20} |\n' \
-               '|' + '*' * 80 + '|\n' \
-               '| Endereço de Destino = {0[dstIP]:^20} |\n' \
-               '|' + '*' * 80 + '|\n' \
-               '| Opcoes = {0[options]:^20} |\n' \
-               '|' + '*' * 80 + '|\n' \
-               '| Data = segmento de transport |\n' \
-               '|' + '*' * 80 + '|\n' ).format(self.datagram)
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            error = exc_tb.tb_frame
+            line = exc_tb.tb_lineno
+            fileName = error.f_code.co_filename
+            print self.space + "Couldn't create datagram " + str(exc)
+            print 'error line = ' + str(line)
 
 
     def myIP(self):

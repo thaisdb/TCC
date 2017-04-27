@@ -8,6 +8,7 @@ from threading import Thread
 from layer import Layer
 import hashlib
 from utils import Addresses as addr
+from utils import PDUPrinter
 
 class TransportClient(Thread):
     applicationPack = 'Teste de pacote, protocolo TCP'
@@ -62,7 +63,7 @@ class TransportClient(Thread):
             #(0, self.srcPort, self.dstPort, comprimento, 'checksum', self.applicationPack)
             #print self.udpPackage
             self.udpPackage['checksum'] = self.calculateChecksum(self.udpPackage)
-            self.create_PDU('UDP')
+            PDUPrinter.UDP(self.udpPackage)
             self.package = json.dumps(self.udpPackage)
             while self.package:
                 sent = transportSender.send(self.package)
@@ -209,36 +210,6 @@ class TransportClient(Thread):
         else: #SYN-ACK
             self.flags['syn'] = 1
             self.flags['ack'] = 1
-
-    def create_PDU(self, mode):
-        if mode == 'TCP':
-            print   ('|' + '*' * 80 + '|\n' \
-                    '| Porta de Origem = {0[srcPort]:^10} | Porta de Destino = {0[dstPort]:^10} |\n' \
-                    '|' + '*' * 80 + '|\n' \
-                    '| Numero de sequencia = {0[seq]:^10} |\n' \
-                    '|' + '*' * 80 + '|\n' \
-                    '| Numero de confirmação = {0[ackSeq]:^10} |\n' \
-                    '|' + '*' * 80 + '|\n' \
-                    #TODO comprimento cabeçalho fixo
-                    #TODO add flags
-                    '| Comprimento do Cabeçalho = {0[offsetRes]:^5} | Tamanho da Janela = {0[window]:^10} !\n' \
-                    '|' + '*' * 80 + '|\n' \
-                    '| Checksum = checksum | Ponteiro para urgente = {0[urgPtr]:^10} |\n' \
-                    '|' + '*' * 80 + '|\n' \
-                    '| Opções = {0[opcoes]:^10} |\n' \
-                    '|' + '*' * 80 + '|\n' \
-                    #TODO formatar requisição http
-                    '| Dados = Requisição HTTP |\n' \
-                    '|' + '*' * 80 + '|').format(self.tcpHeader)
-        else: #UDP
-            print  ('|' + '*' * 80 + '|\n' \
-                    '| Porta de Origem = {0[srcPort]:^20} | Porta de Destino = {0[dstPort]:^20} |\n' \
-                    '|' + '*' * 80 + '|\n' \
-                    '| Comprimento do UDP = {0[comprimento]:^20} | Checksum do UDP = {0[checksum]:^20} |\n' \
-                    '|' + '*' * 80 + '|\n' \
-                    #todo formatar requisição http
-                    '| Dados = Requisição HTTP |\n' \
-                    '|' + '*' * 80 + '|').format(self.udpPackage)
 
 
 

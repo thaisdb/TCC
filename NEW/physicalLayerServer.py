@@ -99,6 +99,7 @@ class PhysicalServer(Thread):
         networkSender = socket(AF_INET, SOCK_STREAM)
         networkSender.connect(addr.NetworkServer)
         print 'package sent!'
+        print self.package
         networkSender.send(self.package)
         networkSender.close()
         return True

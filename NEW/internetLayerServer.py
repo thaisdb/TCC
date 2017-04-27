@@ -87,7 +87,6 @@ class InternetServer(NetworkLayer):
         self.networkServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.networkServerSocket.bind (addr.NetworkServer)
         self.networkServerSocket.listen(1)
-        print 'listening'
         while True:
             if self.receiveFromPhysical():
                 self.interpretPackage()
@@ -129,6 +128,7 @@ class InternetServer(NetworkLayer):
 
     def receiveFromPhysical(self):
         physicalReceiver, _ = self.networkServerSocket.accept()
+        print 'listening'
         self.package = ''
         data = physicalReceiver.recv(1024)
         while data:
@@ -139,6 +139,7 @@ class InternetServer(NetworkLayer):
         return True
 
     def interpretPackage(self):
+        print self.package
         self.package = json.loads(self.package)
         #src = client
         srcIP = self.package['srcIP']
