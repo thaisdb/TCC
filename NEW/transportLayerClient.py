@@ -52,7 +52,6 @@ class TransportClient(Thread):
             transportSender = socket(AF_INET, SOCK_STREAM)
             transportSender.connect(addr.NetworkClient)
             #comprimento da mensagem http
-            print str(self.applicationPack)
             comprimento = len(self.applicationPack)
             self.dstPort = self.findPort()
             self.udpPackage = { 'transportProtocol' : 'UDP',
@@ -85,7 +84,7 @@ class TransportClient(Thread):
 	#self.udpHeaderTuple = (self.srcPort, self.dstPort, self.udpChecksum)
 
     def findPort(self):
-        print self.applicationPack.split('Host:', 1)[1].split(':', 1)[1].split('\n')[0]
+        return self.applicationPack.split('Host:', 1)[1].split(':', 1)[1].split('\n')[0]
 
     def sendTCPPackage(self):
         try:
@@ -217,7 +216,6 @@ class TransportClient(Thread):
         try:
 
             values = sorted(package.values()) #vector dict of values
-            print 'values = ' + str(values)
             # loop taking 2 characters at a time
             m = hashlib.md5()
             for value in values:
@@ -256,7 +254,6 @@ class TransportClient(Thread):
             data = transportReceiver.recv(1024)
         transportReceiver.close()
         print 'Received answer'
-        print self.answer
         return True
 
     def sendAnswerToApplicationLayer(self):

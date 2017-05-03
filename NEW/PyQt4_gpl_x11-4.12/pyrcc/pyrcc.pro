@@ -1,0 +1,12 @@
+TARGET = pyrcc4
+TEMPLATE = app
+QT -= gui
+QT += xml
+CONFIG += warn_on release
+CONFIG -= android_install
+target.path = /home/thais/Faculdade/TCC/NEW/pyenv/bin
+INSTALLS += target
+INCLUDEPATH += /home/thais/Faculdade/TCC/NEW/PyQt4_gpl_x11-4.12/pyrcc
+VPATH = /home/thais/Faculdade/TCC/NEW/PyQt4_gpl_x11-4.12/pyrcc
+HEADERS = rcc.h
+SOURCES = main.cpp rcc.cpp

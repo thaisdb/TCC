@@ -8,15 +8,22 @@ from threading import Thread
 from layer import Layer
 import webbrowser
 from utils import Addresses as addr
+from PyQt4 import QtCore
+from PyQt4.QtCore import QThread
 #create connection
 
-class ApplicationClient(Thread):
+class ApplicationClient(QtCore.QObject):
     # na verdade um server que escuta o browser
     browserMsg = ''
     package = ''
     answer = ''
-    def __init__(self):
-        print '*' * 20 + ' APPLICATION CLIENT ' + '*' * 20
+    def __init__(self, parent=None):
+        super(ApplicationClient, self).__init__(parent)
+
+    appMsg = QtCore.pyqtSignal(str)
+
+    def run(self):
+        self.appMsg.emit('*' * 20 + ' APPLICATION CLIENT ' + '*' * 20)
         self.applicationSocket = socket(AF_INET, SOCK_STREAM)
         self.applicationSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.applicationSocket.bind(addr.ApplicationClient)
@@ -81,12 +88,12 @@ class ApplicationClient(Thread):
         return True
 
     def listenBrowser(self):
-        print "Wainting browser..."
+        self.appMsg.emit('Wainting browser...')
         self.connection, _ = self.applicationSocket.accept()
         self.browserMsg = ''
         try:
             self.browserMsg = self.connection.recv(1024)
-            print self.browserMsg
+            self.appMsg.emit(self.browserMsg)
             return True
         except Exception, ex:
             print 'ERROR!' + str(ex)

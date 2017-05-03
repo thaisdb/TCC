@@ -66,7 +66,6 @@ class TransportServer (Thread):
     def sendAnswerToNetwork(self):
         transportSender = socket(AF_INET, SOCK_STREAM)
         transportSender.connect(addr.NetworkServer)
-        print "ANSWER = \n" + str(self.answer)
         while self.answer:
             sent = transportSender.send(self.answer)
             self.answer = self.answer[sent:]
@@ -149,20 +148,13 @@ class TransportServer (Thread):
     def interpretSegment(self):
         try:
             self.segment = json.loads(self.segment)
-
-            #self.segment = {'transportProtocol' : self.package['transportProtocol']}
-            #self.segment['srcPort']              = self.package['srcPort']
-            #self.segment['dstPort']              = self.package['dstPort']
-            #self.segment['comprimento']          = self.package['comprimento']
-            self.segment['data']                 = json.loads(self.segment['data'])
-            #self.segment['checksum']             = self.package['checksum']
-
-            #print 'Received UDP Segment:'
             PDUPrinter.UDP(self.segment)
+
             checksum = self.segment['checksum']
             del self.segment['checksum']
             self.verifyChecksum(checksum)
 
+            self.segment['data'] = json.loads(self.segment['data'])
             print 'request send to Application Server'
 
         except Exception as exc:

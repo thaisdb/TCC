@@ -136,11 +136,11 @@ class InternetClient(Thread):
             sent = networkSender.send(self.datagram)
             self.datagram = self.datagram[sent:]
         networkSender.close()
-        print 'sended package to physical'
+        print 'Sent datagram to physical layer'
         return True
 
     def receiveFromTransport(self):
-        print "waiting upper layer"
+        print 'Listening...\nWaiting upper layer'
         networkReceiver, _ = self.networkClientSocket.accept()
         self.frame = ''
         data = networkReceiver.recv(1024)
@@ -155,7 +155,6 @@ class InternetClient(Thread):
         host = re.compile('Host:(.*?):')
         jPack = json.loads(self.frame)
         m = host.search(jPack['data'])
-        print str(m.group(1))
         srcIP = 'localhost'
         dstIP = 'localhost'
         if m:

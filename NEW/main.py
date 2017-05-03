@@ -5,20 +5,30 @@ from PyQt4 import QtGui, QtCore
 from clientWindow import Ui_ClientWindow
 
 
-from applicationLayerHTTPServer import ApplicationServer
+#from applicationLayerHTTPServer import ApplicationServer
 #from transportLayerServer       import TransportServer
 #from internetLayerServer        import InternetServer
 #from physicalLayerServer        import PhysicalServer
 #from physicalLayerClient        import PhysicalClient
 #from internetLayerClient        import InternetClient
 #from transportLayerClient       import TransportClient
-#from applicationLayerHTTPClient import ApplicationClient
+from applicationLayerHTTPClient import ApplicationClient
 
 class Client(QtGui.QMainWindow, Ui_ClientWindow):
     def __init__(self, parent=None):
         super(Client, self).__init__(parent)
         self.setupUi(self)
-        applicationServer = ApplicationServer()
+        appClient  = ApplicationClient()
+        appClient.appMsg.connect(self.doMsg)
+        appClient.run()
+
+
+    def doMsg (self, msg):
+        self.applicationLOut.setText(msg)
+
+
+
+
 def main():
     app = QtGui.QApplication(sys.argv)
     form = Client()

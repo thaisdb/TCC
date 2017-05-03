@@ -6,7 +6,7 @@ import json
 from threading import Thread
 from layer import Layer
 from utils import Addresses as addr
-from utils import RouterTable
+from utils import RouterTable, PDUPrinter
 import netifaces
 #class Internet:
 
@@ -120,9 +120,9 @@ class InternetServer(NetworkLayer):
         transportSender = socket(AF_INET, SOCK_STREAM)
         transportSender.connect(addr.TransportServer)
         print 'Sending package request to transport layer'
-        while self.package:
-            sent = transportSender.send(self.package)
-            self.package = self.package[sent:]
+        while self.datagram['data']:
+            sent = transportSender.send(self.datagram['data'])
+            self.datagram['data'] = self.datagram['data'][sent:]
         transportSender.close()
         return True
 
@@ -139,30 +139,28 @@ class InternetServer(NetworkLayer):
         return True
 
     def interpretPackage(self):
-        print self.package
-        self.package = json.loads(self.package)
+        self.datagram = json.loads(self.package)
         #src = client
-        srcIP = self.package['srcIP']
+        #srcIP = self.datagram['srcIP']
         #dst = server
-        dstIP = self.package['dstIP']
+        dstIP = self.datagram['dstIP']
         print 'dstIP = ' + str(dstIP)
         thisIP = NetworkLayer.myIP()['addr']
         print 'thisIP = ' + str(thisIP)
         if str(dstIP) == str(thisIP):
             print 'Right server'
-            print 'dstIP = ' + str(dstIP)
-            version = self.package['version']
-            print 'version = ' + str(version)
-            size = self.package['headerLength']
-            print 'package size = ' + str(size)
-            packId = self.package['ID']
-            cFrag = self.package['fragOffset']
-            cTemp = self.package['TTL']
-            transportProtocol = self.package['transportProtocol']
-            print 'transport protocol = ' + str(transportProtocol)
-            crc = self.package['checksum']
-            opcoes = self.package['options']
-            self.package = self.package['data']
+            #version = self.package['version']
+            #print 'version = ' + str(version)
+            #size = self.package['headerLength']
+            #print 'package size = ' + str(size)
+            #packId = self.package['ID']
+            #cFrag = self.package['fragOffset']
+            #cTemp = self.package['TTL']
+            #transportProtocol = self.package['transportProtocol']
+            #print 'transport protocol = ' + str(transportProtocol)
+            #crc = self.package['checksum']
+            #opcoes = self.package['options']
+            PDUPrinter.Datagram(self.datagram)
         else :
             print 'Not this server. Checking router table'
             rt = RouterTable('serverRouterTable.txt')
