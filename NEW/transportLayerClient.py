@@ -9,30 +9,40 @@ from layer import Layer
 import hashlib
 from utils import Addresses as addr
 from utils import PDUPrinter
+from PyQt4 import QtCore
 
-class TransportClient(Thread):
+
+
+class TransportClient(QtCore.QThread):
     applicationPack = 'Teste de pacote, protocolo TCP'
     updPackage = ''
     tcpPackage = ''
     space = '\t'
-    def __init__(self):
+
+    msg = QtCore.pyqtSignal(str)
+
+    def __init__(self, parent = None):
+        super(TransportClient, self).__init__()
+
+
+    def run(self):
         #TODO change ip
         self.dstPort = 3333
         self.srcPort = 2222
-        print self.space + '*' * 20 + ' TRANSPORT CLIENT ' + '*' * 20
+        self.msg.emit( '*' * 20 + ' TRANSPORT CLIENT ' + '*' * 20)
         self.transportClientSocket = socket(AF_INET, SOCK_STREAM)
         self.transportClientSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.transportClientSocket.bind(addr.TransportClient)
         #while True:
         self.transportClientSocket.listen(1)
-        print self.space + 'listening'
+        self.msg.emit ('listening')
         try:
             while True:
                 #mode = raw_input('Choose a transport protocol\n'
                 #        '[0] UDP \n[1] TCP\n: ')
                 mode = '0'
                 if mode == '0':
-                    print 'UDP Protocol selected'
+                    self.msg.emit( 'UDP Protocol selected')
                     break
                 elif mode == '1':
                     print 'TCP Protocol selected'

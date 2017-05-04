@@ -10,15 +10,21 @@ import json
 from threading import Thread
 from layer import Layer
 from utils import Addresses as addr
+from PyQt4 import QtCore
 #TODO receive server ip from the caller
 
 
-class PhysicalClient(Thread):
+class PhysicalClient(QtCore.QThread):
     fileType = 0 #0 to text files and 1 to image files
     tmqReceived = False
 
-    def __init__(self, host, port):
-        print '*' * 20 + ' PHYSICAL CLIENT ' + '*' * 20
+    msg = QtCore.pyqtSignal(str)
+
+    def __init__(self, parent = None ):
+        super(PhysicalClient, self).__init__()
+
+    def run(self):
+        self.msg.emit('*' * 20 + ' PHYSICAL CLIENT ' + '*' * 20)
         self.port = int(float(port))
         self.host = host
         #self.connect()
@@ -146,4 +152,3 @@ class PhysicalClient(Thread):
         print 'answer sent'
 
 
-PhysicalClient ('127.0.0.1' , 7690)

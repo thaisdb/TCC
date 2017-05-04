@@ -12,25 +12,27 @@ from PyQt4 import QtCore
 from PyQt4.QtCore import QThread
 #create connection
 
-class ApplicationClient(QtCore.QObject):
+class ApplicationClient(QtCore.QThread):
     # na verdade um server que escuta o browser
     browserMsg = ''
     package = ''
     answer = ''
+    msg = QtCore.pyqtSignal(str)
+
     def __init__(self, parent=None):
-        super(ApplicationClient, self).__init__(parent)
+        super(ApplicationClient, self).__init__()
 
-    appMsg = QtCore.pyqtSignal(str)
 
-    def run(self):
-        self.appMsg.emit('*' * 20 + ' APPLICATION CLIENT ' + '*' * 20)
+
+    def run(self, wait = False):
+        self.msg.emit('*' * 20 + ' APPLICATION CLIENT ' + '*' * 20)
         self.applicationSocket = socket(AF_INET, SOCK_STREAM)
         self.applicationSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.applicationSocket.bind(addr.ApplicationClient)
         self.applicationSocket.listen(1)
         self.browser = webbrowser.get('google-chrome')
+        self.msg.emit('Wainting browser...')
         # 2 for oppening another tab on browser
-        self.browser.open_new_tab('')
         while True:
             if self.listenBrowser() :
                 self.sendToTransportLayer()
@@ -88,12 +90,12 @@ class ApplicationClient(QtCore.QObject):
         return True
 
     def listenBrowser(self):
-        self.appMsg.emit('Wainting browser...')
+        self.browser.open_new_tab('')
         self.connection, _ = self.applicationSocket.accept()
         self.browserMsg = ''
         try:
             self.browserMsg = self.connection.recv(1024)
-            self.appMsg.emit(self.browserMsg)
+            self.msg.emit(self.browserMsg)
             return True
         except Exception, ex:
             print 'ERROR!' + str(ex)
