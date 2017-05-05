@@ -5,19 +5,22 @@ from socket import error as socket_error
 import sys
 import binascii
 import json
-from threading import Thread
+from PyQt4 import QtCore
 from layer import Layer
 from utils import Addresses as addr
 #TODO receive server ip from the caller
 #TODO receive file name from the client
 
-class PhysicalServer(Thread):
+class PhysicalServer(QtCore.QThread):
     BUFFER_SIZE = 1024
     BYTE_SIZE = 8
 
     tmqSent = False
 
-    def __init__(self, host, port):
+    def __init__(self, parent=None):
+        super(PhysicalServer, self).__init__()
+
+    def run(self):
         self.host = host
         self.port = int(float(port))
         self.physicalServerSocket = socket(AF_INET, SOCK_STREAM)
@@ -137,4 +140,3 @@ class PhysicalServer(Thread):
         print 'Answer sent to physical client'
         return True
 
-PhysicalServer('127.0.0.1', 7690)

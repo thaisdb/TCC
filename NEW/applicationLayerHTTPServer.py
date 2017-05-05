@@ -2,7 +2,8 @@
 import sys,os
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
-from clientWindow import Ui_ClientWindow
+from clientWidget import Ui_ClientWidget
+from PyQt4  import QtCore
 from utils import Addresses as addr
 
 class httpHandler(BaseHTTPRequestHandler):
@@ -61,21 +62,16 @@ class httpHandler(BaseHTTPRequestHandler):
         except:
             pass
 
-class ApplicationServer(Thread):
+class ApplicationServer(QtCore.QThread):
     def pyserver(self):
         try:
             virtualhost = ('', 7777)
-            #if virtualhost[0] == '*':
-            #    virtualhost[0] = ''
-            #print virtualhost
-            #serverAddr = (virtualhost[0], int(virtualhost[1]))
             server = HTTPServer(addr.ApplicationServer, httpHandler)
-            print 'started HTTP server'
+            self.msg.emit('started HTTP server')
             server.serve_forever()
-            #self.emit(SIGNAL("doTransportServer()"))
 
         except KeyboardInterrupt:
-            print 'shuting down server HTTP'
+            self.msg.emit('shuting down server HTTP')
             server.server_close()
 
 
@@ -88,8 +84,13 @@ class ApplicationServer(Thread):
      #   self.package = clientSocket.recv(1024)
      #   print 'RECEIVED = \n' + self.package
 
-    def __init__(self):
-        print '******************** APPLICATION SERVER ********************'
+    msg = QtCore.pyqtSignal(str)
+
+    def __init__(self, parent=None):
+        super(ApplicationServer, self).__init__()
+
+    def run(self):
+        self.msg.emit('******************** APPLICATION SERVER ********************')
         DocumentRoot = '/home/thais/Faculdade/TCC/NEW/'
         PORT = '8000'
         HOST = 'localhost'
@@ -98,7 +99,7 @@ class ApplicationServer(Thread):
             self.pyserver()
 
         except Exception as err:
-            print 'error' + str(err)
+            self.msg.emit('error' + str(err))
             #pyserver('%s:%s' % (HOST, PORT))
 
 
@@ -106,4 +107,3 @@ class ApplicationServer(Thread):
         print 'deleting'
         #i = application()
 
-ApplicationServer()

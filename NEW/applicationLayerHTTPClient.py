@@ -52,7 +52,7 @@ class ApplicationClient(QtCore.QThread):
         self.directlySocket.send(self.browserPack)
 
     def receiveDirectly(self):
-        print 'wainting answer'
+        self.msg.emit('Waiting answer...')
         self.answer = ''
         data = self.directlySocket.recv(1024)
         while data:
@@ -61,19 +61,18 @@ class ApplicationClient(QtCore.QThread):
         return True
 
     def sendToTransportLayer(self):
-        print 'sending'
         self.transportSock = socket(AF_INET, SOCK_STREAM)
         self.transportSock.connect(addr.TransportClient)
         try:
             self.transportSock.send(self.browserMsg)
-            print "Data sent to transport client!"
+            self.msg.emit('Request sent to Transport Layer')
         except Exception, ex:
-            print 'ERROR! Could not sand package'
+            self.msg.emit ('ERROR! Could not sand package')
             print ex
         return True
 
     def receiveFromTransport(self):
-        print 'wainting answer'
+        self.msg.emit('Waiting answer...')
         self.answer = ''
         data = self.transportSock.recv(1024)
         while data:
@@ -82,10 +81,10 @@ class ApplicationClient(QtCore.QThread):
         return True
 
     def sendToBrowser(self):
-        print 'sending answer to browser'
         while self.answer:
             sent = self.connection.send(self.answer)
             self.answer = self.answer[sent:]
+        self.msg.emit('Answer sent to browser')
         self.connection.close()
         return True
 
@@ -98,7 +97,7 @@ class ApplicationClient(QtCore.QThread):
             self.msg.emit(self.browserMsg)
             return True
         except Exception, ex:
-            print 'ERROR!' + str(ex)
+            self.msg.emit('ERROR!' + str(ex))
             return False
 
 ApplicationClient()

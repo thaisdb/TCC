@@ -3,30 +3,17 @@ from socket import *
 from bitstring import BitArray
 from bitstring import BitStream
 import json
-from threading import Thread
+from PyQt4 import QtCore
 from layer import Layer
 from utils import Addresses as addr
 from utils import RouterTable, PDUPrinter
 import netifaces
 #class Internet:
 
-class NetworkLayer():
-
-    @staticmethod
-    def myIP():
-        interfaces = netifaces.interfaces()
-        for i in interfaces:
-            if i == 'lo':
-                continue
-            iface = netifaces.ifaddresses(i).get(netifaces.AF_INET)
-            if iface != None:
-                for j in iface:
-                    return j
-
-
 
 class IP:
     def __init__(self, network):
+
         ip, self.maskLen = network.split('/')
         self.ipInt = [int(x) for x in ip.split('.')]
         print 'ipInt =\t\t' + '.'.join(str(x) for x in self.ipInt)
@@ -72,9 +59,12 @@ class IP:
 
 
 
-class InternetServer(NetworkLayer):
+class NetworkServer(QtCore.QThread):
 
-    def __init__(self):
+    def __init__(self, parent=None):
+        super(NetworkServer, self).__init__()
+
+    def run(self):
         #network = raw_input("Enter an IP/mask(xxx.xxx.xxx.xxx/mmm): ")
         #self.ip1 = IP(network)
         #network2 = raw_input("Enter an IP/mask(xxx.xxx.xxx.xxx/mmm): ")
@@ -190,4 +180,3 @@ class InternetServer(NetworkLayer):
         networkSender.close()
         print 'Answer sent to physical layer'
         return True
-InternetServer()

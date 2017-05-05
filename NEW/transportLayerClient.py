@@ -45,7 +45,7 @@ class TransportClient(QtCore.QThread):
                     self.msg.emit( 'UDP Protocol selected')
                     break
                 elif mode == '1':
-                    print 'TCP Protocol selected'
+                    self.msg.emit( 'TCP Protocol selected')
                     self.sendTCPPackage()
                     break
             while True:
@@ -72,13 +72,13 @@ class TransportClient(QtCore.QThread):
             #(0, self.srcPort, self.dstPort, comprimento, 'checksum', self.applicationPack)
             #print self.udpPackage
             self.udpPackage['checksum'] = self.calculateChecksum(self.udpPackage)
-            PDUPrinter.UDP(self.udpPackage)
+            self.msg.emit(PDUPrinter.UDP(self.udpPackage))
             self.package = json.dumps(self.udpPackage)
             while self.package:
                 sent = transportSender.send(self.package)
                 self.package = self.package[sent:]
             transportSender.close()
-            print 'Data sent'
+            self.msg.emit('Data sent')
             #internetSocket.send(pack)
             return True
         except Exception, exc:
@@ -86,9 +86,9 @@ class TransportClient(QtCore.QThread):
             error = exc_tb.tb_frame
             line = exc_tb.tb_lineno
             fileName = error.f_code.co_filename
-            print 'ERROR! Coudn\'t send UDP package.'
-            print exc
-            print 'line = ' + str(line)
+            self.msg.emit('ERROR! Coudn\'t send UDP package.')
+            self.msg.emit( exc)
+            self.msg.emit ('line = ' + str(line))
             return False
         #self.udpChecksum = 0
 	#self.udpHeaderTuple = (self.srcPort, self.dstPort, self.udpChecksum)
@@ -102,10 +102,10 @@ class TransportClient(QtCore.QThread):
             #internetAddress = ('localhost', 3333)
             self.internetSocket.connect(('localhost', self.dstPort))
             if self.threeWayHandshake():
-        	print 'Conection estabilished'
+        	self.msg.emit('Conection estabilished')
         except error, msg:
-            print "Couldn't estabilishe connection"
-            print msg
+            self.msg.emit("Couldn't estabilishe connection")
+            self.msg.emit(msg)
 
 
     def threeWayHandshake(self):
@@ -114,7 +114,7 @@ class TransportClient(QtCore.QThread):
                 self.send_ACK()
 
     def send_SYN(self):
-        print 'sending SYN'
+        self.msg.emit('sending SYN')
         self.seq = 1
         self.ackSeq = 0
         #size of tcp header in 32bit word
@@ -150,17 +150,17 @@ class TransportClient(QtCore.QThread):
         self.create_PDU('TCP')
         try:
             self.internetSocket.send(self.jTCPHeader)
-            print 'TCPHeader sent'
+            self.msg.emit('TCPHeader sent')
             return True
         except:
-            print 'Error sending SYN'
+            self.msg.emit('Error sending SYN')
             return False
 
     def receive_SYN_ACK (self):
         self.expected_SYN_ACK = self.internetSocket.recv(1024)
         if self.expected_SYN_ACK:
             jFlags = self.flags
-            print "Received SYN_ACK"
+            self.msg.emit('Received SYN_ACK')
             package = json.loads(self.expected_SYN_ACK)
             self.tcpHeader = {'transportProtocol' : 'TCP',
                     'srcPort' : package['srcPort'],
@@ -179,11 +179,11 @@ class TransportClient(QtCore.QThread):
             self.create_PDU('TCP')
             return True
         else:
-            print "DID NOT Receive SYN_ACK"
+            self.msg.emit('DID NOT Receive SYN_ACK')
             return False
 
     def send_ACK (self):
-        print 'Sending ACK'
+        self.msg.emit('Sending ACK')
         self.setFlags('ACK')
         self.create_PDU('TCP')
         jFlags = json.dumps(self.flags)
@@ -201,9 +201,9 @@ class TransportClient(QtCore.QThread):
         self.jTCPHeader = json.dumps(self.tcpHeader)
         try:
             self.internetSocket.send(self.jTCPHeader)
-            print 'ACK sent'
+            self.msg.emit('ACK sent')
         except:
-            print 'could not send ACK message'
+            self.msg.emit( 'could not send ACK message')
 
     def setFlags (self, mode):
         #reboot tcp flags
@@ -234,14 +234,14 @@ class TransportClient(QtCore.QThread):
         except Exception as exc:
             exc_type, exc_object, exc_tb = sys.exc_info()
             line = exc_tb.tb_lineno
-            print 'Error calculating checksum = ' + str(exc) + '\nLine = ' + str(line)
+            self.msg.emit('Error calculating checksum = ' + str(exc) + '\nLine = ' + str(line))
 
     def receiveFromApplicationLayer(self):
         self.applicationSock , _ = self.transportClientSocket.accept()
         #self.applicationPack = ''
         #while self.clientSocket.recv(1024):
         self.applicationPack  = self.applicationSock.recv(1024)
-        print 'received from application layer, sending to internet'
+        self.msg.emit( 'received from application layer, sending to internet')
         return True
         #TODO check size of pack, while will be obsolete
             #while data:
@@ -256,23 +256,23 @@ class TransportClient(QtCore.QThread):
 
     def receiveAnswerFromInternetLayer(self):
         transportReceiver , _ = self.transportClientSocket.accept()
-        print 'wainting answer'
+        self.msg.emit( 'wainting answer')
         self.answer = ''
         data = transportReceiver.recv(1024)
         while data:
             self.answer += data
             data = transportReceiver.recv(1024)
         transportReceiver.close()
-        print 'Received answer'
+        self.msg.emit( 'Received answer')
         return True
 
     def sendAnswerToApplicationLayer(self):
-        print 'Sending answer to app layer'
+        self.msg.emit ('Sending answer to app layer')
         while self.answer:
             sent = self.applicationSock.send(self.answer)
             self.answer = self.answer[sent:]
         self.applicationSock.close()
-        print 'answer sent'
+        self.msg.emit('answer sent')
         return True
 
 TransportClient()

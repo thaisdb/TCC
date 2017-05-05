@@ -5,19 +5,23 @@ import json
 from threading import Thread
 from layer import Layer
 import hashlib
+from PyQt4 import QtCore
 from utils import Addresses as addr
 from utils import PDUPrinter
 #normal server port 99999
 
 
-class TransportServer (Thread):
+class TransportServer (QtCore.QThread):
     SYN = {'cwr':0, 'ece':0, 'fin':0, 'syn':1, 'rst':0, 'psh':0, 'ack':0, 'urg':0}
     ACK = {'cwr':0, 'ece':0, 'fin':0, 'syn':0, 'rst':0, 'psh':0, 'ack':1, 'urg':0}
     space = '\t'
 
     answer = ''
 
-    def __init__(self):
+    def __init__(self, parent=None):
+        super(TransportServer, self).__init__()
+
+    def run(self):
         self.srcPort = 9999
         self.dstPort = 2222
         self.receiveFromInternet()

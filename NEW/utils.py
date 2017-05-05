@@ -1,4 +1,6 @@
 #coding: utf-8
+import netifaces
+
 
 class Addresses(object):
 
@@ -13,6 +15,21 @@ class Addresses(object):
     ApplicationClient   = ('localhost', 1111)
 
     Browser             = ('localhost', 9999)
+
+class Common():
+    @staticmethod
+    def myIP():
+        print 'in common'
+        interfaces = netifaces.interfaces()
+        for i in interfaces:
+            if i == 'lo':
+                continue
+            iface = netifaces.ifaddresses(i).get(netifaces.AF_INET)
+            if iface != None:
+                for j in iface:
+                    return j
+
+
 
 
 class RouterTable(object):
@@ -77,7 +94,7 @@ class PDUPrinter():
 
     @staticmethod
     def TCP():
-        print   ('|' + '*' * 80 + '|\n' \
+        return   ('|' + '*' * 80 + '|\n' \
                 '| Porta de Origem = {0[srcPort]:^10} | Porta de Destino = {0[dstPort]:^10} |\n' \
                 '|' + '*' * 80 + '|\n' \
                 '| Numero de sequencia = {0[seq]:^10} |\n' \
@@ -99,7 +116,7 @@ class PDUPrinter():
 
     @staticmethod
     def UDP(segment):
-        print  ('|' + '*' * 80 + '|\n' \
+        return  ('|' + '*' * 80 + '|\n' \
                 '| Porta de Origem = {0[srcPort]:^20} | Porta de Destino = {0[dstPort]:^20} |\n' \
                 '|' + '*' * 80 + '|\n' \
                 '| Comprimento do UDP = {0[comprimento]:^20} | Checksum do UDP = {0[checksum]:^20} |\n' \
@@ -111,7 +128,7 @@ class PDUPrinter():
 
     @staticmethod
     def Datagram(datagram):
-        print ('|' + '*' * 80 + '|\n' \
+        return ('|' + '*' * 80 + '|\n' \
                '| Versão ={0[version]:^6} | IHL ={0[headerLength]:^3} | Tipo de Serviço ={0[TOS]:^20} '\
                '| Tamanho total ={0[TL]:^20} |\n'\
                '|' + '*' * 80 + '|\n' \
