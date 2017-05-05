@@ -83,12 +83,14 @@ class PhysicalClient(QtCore.QThread):
         print 'Creating binary file'
         #TODO fix size
         self.tamanho = sys.getsizeof(self.package)
-        package = {'preambulo' : 'preambulo',
-                    'mac' : self.mac,
-                    'dstMac' : self.macdst,
-                    'tamanho' : self.tamanho,
-                    'data' : self.package }
+        package = {'preambulo' : '7x(10101010) + 10101011',
+                    'srcMAC' : self.mac,
+                    'dstMAC' : self.macdst,
+                    #'tamanho' : self.tamanho,
+                    'data' : self.package,
+                    'checksum' : 'checksum'}
         data = json.dumps(package)
+        self.msg.emit(PDUPrinter.Frame(package))
         with open('binary_file.txt', 'w') as binaryFile:
             for x in data:
                 binaryFile.write('{0:08b}'.format(ord(x)))

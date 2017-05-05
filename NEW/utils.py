@@ -145,5 +145,11 @@ class PDUPrinter():
                '| Data = segmento de transport |\n' \
                '|' + '*' * 80 + '|\n' ).format(datagram)
 
+    @staticmethod
+    def Frame(frame):
+        return ('|' + '*' * 80 + '|\n' \
+                '|        Preambulo        |  Destination MAC  |     Source MAC     |  Type  | Data | Checksum |\n' \
+                '|{0[preambulo]:^24}  |{0[dstMAC]:^20}|{0[srcMAC]:^20}|  IPv4  | .... | ........ | \n' \
+                ' + '*' * 80 + |\n' ).format(frame)
 
 

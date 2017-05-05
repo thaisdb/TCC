@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>615</width>
-    <height>544</height>
+    <width>1330</width>
+    <height>683</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,10 +16,10 @@
   <widget class="QToolBox" name="toolBox">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>20</y>
-     <width>561</width>
-     <height>481</height>
+     <x>30</x>
+     <y>10</y>
+     <width>1271</width>
+     <height>651</height>
     </rect>
    </property>
    <property name="sizePolicy">
@@ -27,6 +27,12 @@
      <horstretch>0</horstretch>
      <verstretch>0</verstretch>
     </sizepolicy>
+   </property>
+   <property name="autoFillBackground">
+    <bool>false</bool>
+   </property>
+   <property name="midLineWidth">
+    <number>0</number>
    </property>
    <property name="currentIndex">
     <number>1</number>
@@ -36,8 +42,8 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>561</width>
-      <height>419</height>
+      <width>1271</width>
+      <height>589</height>
      </rect>
     </property>
     <property name="accessibleName">
@@ -49,37 +55,68 @@
     <attribute name="label">
      <string>Configuration</string>
     </attribute>
-    <widget class="QWidget" name="verticalLayoutWidget">
+    <widget class="Line" name="line_2">
      <property name="geometry">
       <rect>
-       <x>-2</x>
-       <y>1</y>
-       <width>561</width>
-       <height>241</height>
+       <x>0</x>
+       <y>50</y>
+       <width>681</width>
+       <height>16</height>
       </rect>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_5">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>70</y>
+       <width>59</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Options:</string>
+     </property>
+    </widget>
+    <widget class="QWidget" name="layoutWidget">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>100</y>
+       <width>671</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
       <item>
-       <widget class="Line" name="line_3">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_3">
+       <widget class="QCheckBox" name="checkBox_2">
         <property name="text">
-         <string>Server configuration:</string>
+         <string>Simulação de colisão</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="Line" name="line">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+       <widget class="QCheckBox" name="checkBox">
+        <property name="text">
+         <string>Step-by-step</string>
         </property>
        </widget>
       </item>
+     </layout>
+    </widget>
+    <widget class="QWidget" name="layoutWidget">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>20</y>
+       <width>411</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <widget class="QLabel" name="label_4">
         <property name="text">
@@ -87,60 +124,37 @@
         </property>
        </widget>
       </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item alignment="Qt::AlignHCenter">
-         <widget class="QRadioButton" name="radUDP">
-          <property name="text">
-           <string>UDP</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item alignment="Qt::AlignHCenter">
-         <widget class="QRadioButton" name="radTCP">
-          <property name="text">
-           <string>TCP</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="Line" name="line_2">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_5">
+      <item alignment="Qt::AlignHCenter">
+       <widget class="QRadioButton" name="radTCP">
         <property name="text">
-         <string>Options:</string>
+         <string>TCP</string>
         </property>
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <item>
-         <widget class="QCheckBox" name="checkBox_2">
-          <property name="text">
-           <string>Simulação de colisão</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="checkBox">
-          <property name="text">
-           <string>Step-by-step</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       <widget class="QRadioButton" name="radUDP">
+        <property name="text">
+         <string>UDP</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
+    </widget>
+    <widget class="Line" name="line_3">
+     <property name="geometry">
+      <rect>
+       <x>1</x>
+       <y>1</y>
+       <width>681</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
     </widget>
    </widget>
    <widget class="QWidget" name="displayPage">
@@ -148,178 +162,256 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>561</width>
-      <height>419</height>
+      <width>1271</width>
+      <height>589</height>
      </rect>
     </property>
     <attribute name="label">
      <string>Display output</string>
     </attribute>
-    <widget class="QWidget" name="layoutWidget">
+    <widget class="Line" name="line">
      <property name="geometry">
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>561</width>
-       <height>411</height>
+       <width>1261</width>
+       <height>16</height>
       </rect>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+    <widget class="Line" name="line_4">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>50</y>
+       <width>1261</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+    <widget class="QWidget" name="layoutWidget">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>20</y>
+       <width>1271</width>
+       <height>29</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_4">
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_4">
-        <item>
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>Server IP:</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="serverIPInput">
-          <property name="inputMask">
-           <string/>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-          <property name="maxLength">
-           <number>3333</number>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_2">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>Porta:</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="portaInput">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pingButton">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>Ping</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <widget class="QPushButton" name="clearButton">
-          <property name="text">
-           <string>Clear</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="startButton">
-          <property name="text">
-           <string>Start</string>
-          </property>
-          <property name="checkable">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_6">
+       <widget class="QLabel" name="label">
         <property name="text">
-         <string>Application Layer</string>
+         <string>Server IP:</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QTextEdit" name="applicationLOut">
-        <property name="documentTitle">
+       <widget class="QLineEdit" name="serverIPInput">
+        <property name="inputMask">
          <string/>
         </property>
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-        <property name="html">
-         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_7">
         <property name="text">
-         <string>Transport Layer</string>
+         <string/>
+        </property>
+        <property name="maxLength">
+         <number>3333</number>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QTextEdit" name="transportLOut">
-        <property name="readOnly">
-         <bool>true</bool>
+       <widget class="QLabel" name="label_2">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
-        <property name="html">
-         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_8">
         <property name="text">
-         <string>Network Layer</string>
+         <string>Porta:</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QTextEdit" name="networkLOut">
-        <property name="readOnly">
-         <bool>true</bool>
+       <widget class="QLineEdit" name="portaInput">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_9">
+       <widget class="QPushButton" name="pingButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="text">
-         <string>Physical Layer</string>
+         <string>Ping</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QTextEdit" name="physicalLOut">
-        <property name="readOnly">
-         <bool>true</bool>
+       <widget class="QPushButton" name="startButton">
+        <property name="text">
+         <string>Start</string>
+        </property>
+        <property name="checkable">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
      </layout>
+    </widget>
+    <widget class="QLabel" name="label_6">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>80</y>
+       <width>120</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Application Layer</string>
+     </property>
+    </widget>
+    <widget class="QTextEdit" name="applicationLOut">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>100</y>
+       <width>630</width>
+       <height>200</height>
+      </rect>
+     </property>
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOn</enum>
+     </property>
+     <property name="documentTitle">
+      <string/>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+     <property name="html">
+      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_7">
+     <property name="geometry">
+      <rect>
+       <x>650</x>
+       <y>80</y>
+       <width>108</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Transport Layer</string>
+     </property>
+    </widget>
+    <widget class="QTextEdit" name="transportLOut">
+     <property name="geometry">
+      <rect>
+       <x>640</x>
+       <y>100</y>
+       <width>630</width>
+       <height>200</height>
+      </rect>
+     </property>
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOn</enum>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+     <property name="html">
+      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_8">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>320</y>
+       <width>102</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Network Layer</string>
+     </property>
+    </widget>
+    <widget class="QTextEdit" name="networkLOut">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>340</y>
+       <width>630</width>
+       <height>200</height>
+      </rect>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_9">
+     <property name="geometry">
+      <rect>
+       <x>650</x>
+       <y>320</y>
+       <width>97</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Physical Layer</string>
+     </property>
+    </widget>
+    <widget class="QTextEdit" name="physicalLOut">
+     <property name="geometry">
+      <rect>
+       <x>640</x>
+       <y>340</y>
+       <width>630</width>
+       <height>200</height>
+      </rect>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="clearButton">
+     <property name="geometry">
+      <rect>
+       <x>1130</x>
+       <y>560</y>
+       <width>85</width>
+       <height>27</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Clear</string>
+     </property>
     </widget>
    </widget>
   </widget>
