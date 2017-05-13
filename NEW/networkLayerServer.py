@@ -139,17 +139,6 @@ class NetworkServer(QtCore.QThread):
         print 'thisIP = ' + str(thisIP)
         if str(dstIP) == str(thisIP):
             print 'Right server'
-            #version = self.package['version']
-            #print 'version = ' + str(version)
-            #size = self.package['headerLength']
-            #print 'package size = ' + str(size)
-            #packId = self.package['ID']
-            #cFrag = self.package['fragOffset']
-            #cTemp = self.package['TTL']
-            #transportProtocol = self.package['transportProtocol']
-            #print 'transport protocol = ' + str(transportProtocol)
-            #crc = self.package['checksum']
-            #opcoes = self.package['options']
             PDUPrinter.Datagram(self.datagram)
         else :
             print 'Not this server. Checking router table'

@@ -1,6 +1,6 @@
 #coding: utf-8
 import netifaces
-
+from PyQt4 import QtCore
 
 class Addresses(object):
 
@@ -19,7 +19,6 @@ class Addresses(object):
 class Common():
     @staticmethod
     def myIP():
-        print 'in common'
         interfaces = netifaces.interfaces()
         for i in interfaces:
             if i == 'lo':
@@ -32,11 +31,13 @@ class Common():
 
 
 
-class RouterTable(object):
+class RouterTable(QtCore.QObject):
 
-    routerTable = {'fromIP': 'toIP'}
-    def __init__(self, fileName):
-        self.loadRouterTable(fileName)
+    update = QtCore.pyqtSignal()
+    routerTable = {}
+    def __init__(self):
+        super(RouterTable, self).__init__()
+        self.loadRouterTable()
 
     def accessRouterTable(self):
         while True:
@@ -51,46 +52,40 @@ class RouterTable(object):
                 self.addDataToRouterTable()
 
 
-    def loadRouterTable(self, fileName):
+    def loadRouterTable(self):
         try:
-            with open (fileName, 'r') as rt:
+            with open ('routerTable.txt', 'r') as rt:
                 for line in rt:
                     (key, value) = line.split()
                     self.routerTable[key] = value
         except Exception as e:
-            print 'Did not find router table file.\nFile Name' + str(fileName)
+            print 'Did not find router table file.'
 
 
     def saveRouterTable(self):
-        with open (fileName, 'w') as rt:
+        with open ('routerTable.txt', 'w') as rt:
             for x in self.routerTable:
                 rt.write(x + ' ' + self.routerTable[x] + '\n')
 
-    def addDataToRouterTable(self):
-         key     = raw_input('Enter the ip you want to router: ')
-         value   = raw_input('Enter the ip do you to router it to: ')
-         #add ip validation
-         self.routerTable[str(key)] = str(value)
 
-    def printRouterTable(self):
-        try:
-            print '+---+--------------------+--------------------+'
-            for x in self.routerTable:
-                print '| {0} |{1:^20}|{2:^20}|'.format(str(self.routerTable.keys().index(x)), x, self.routerTable[x])
-                print '+---+--------------------+--------------------+'
-        except Exception as e:
-            print 'No router table: ' + str(e)
+    def addDataToRouterTable(self, key, value):
+        #add ip validation
+        self.routerTable[str(key)] = str(value)
+        self.saveRouterTable()
+        self.update.emit()
 
-    def deleteDataFromRouterTable(self):
-        index = raw_input('Enter the number of the line you want to delete: ')
+
+    def deleteDataFromRouterTable(self, index):
         for i, (key, value) in enumerate(self.routerTable.items()):
             print i
             if i == int(index):
                 del self.routerTable[key]
+                self.saveRouterTable()
                 break
 
 
 class PDUPrinter():
+
 
     @staticmethod
     def TCP():
@@ -128,22 +123,29 @@ class PDUPrinter():
 
     @staticmethod
     def Datagram(datagram):
-        return ('|' + '*' * 80 + '|\n' \
-               '| Versão ={0[version]:^6} | IHL ={0[headerLength]:^3} | Tipo de Serviço ={0[TOS]:^20} '\
-               '| Tamanho total ={0[TL]:^20} |\n'\
-               '|' + '*' * 80 + '|\n' \
-               '| ID = {0[ID]:^5} | DF ={0[DF]:^3} | MF ={0[MF]:^3} | Fragmento Offset ={0[fragOffset]:^20} |\n' \
-               '|' + '*' * 80 + '|\n' \
-               '| Tempo de Vida ={0[TTL]:^20} | Protocolo ={0[transportProtocol]:^5} | Checksum do cabecalho = {0[checksum]:^5} |\n'\
-               '|' + '*' * 80 + '|\n' \
-               '| Endereço de Origem = {0[srcIP]:^20} |\n' \
-               '|' + '*' * 80 + '|\n' \
-               '| Endereço de Destino = {0[dstIP]:^20} |\n' \
-               '|' + '*' * 80 + '|\n' \
-               '| Opcoes = {0[options]:^20} |\n' \
-               '|' + '*' * 80 + '|\n' \
-               '| Data = segmento de transport |\n' \
-               '|' + '*' * 80 + '|\n' ).format(datagram)
+        #create html file
+        with open('/home/thais/Faculdade/TCC/NEW/datagramHtml.html', 'w') as html:
+            html.write('<table><tr>'\
+                    '<td>Version =' + str(datagram['version']) + '</th>'\
+                    '<td>IHL =' + str(datagram['headerLength']) + '</th>'\
+                    '<td>TOS =' + str(datagram['TOS']) + '</th>'\
+                    '<td colspan="2">Total Length =' + str(datagram['TL']) + '</th>'\
+                '</tr><tr>'\
+                    '<th colspan="3">ID =' + str(datagram['ID']) + '</th>'\
+                    '<td>DF =' + str(datagram['DF']) + '</td>'\
+                    '<td>MF =' + str(datagram['MF']) + '</td>'\
+                    '<td>Offset =' + str(datagram['fragOffset']) + '</td>'\
+                '</tr><tr>'\
+                    '<td colspan="2">TTL =' + str(datagram['TTL']) + '</td>'\
+                    '<td>Protocol =' + str(datagram['transportProtocol']) + '</td>'\
+                    '<th colspan="2">Header Checksum =' + str(datagram['checksum']) + '</th>'\
+                '</tr><tr>'\
+                    '<th colspan="5">Source Address =' + str(datagram['srcIP']) + '</th>'\
+                '</tr><tr>'\
+                    '<th colspan="5">Destination Address =' + str(datagram['dstIP']) + '</th>'\
+                '</tr><tr>'\
+                    '<th colspan="5">IP Option =' + str(datagram['options']) + '</th>'\
+                '</tr></table>')
 
     @staticmethod
     def Frame(frame):

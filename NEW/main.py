@@ -3,12 +3,12 @@ import threading
 import time
 import sys
 import netifaces as nt
-from utils import Common
+from utils import Common, RouterTable
 from PyQt4 import QtGui, QtCore
 from newWindow      import Ui_NewMainWindow
 from clientWidget   import Ui_ClientWidget
-from myMainWindow   import Ui_MyMainWindow
 from serverWidget   import Ui_ServerWidget
+from routerWidget   import Ui_RouterWidget
 import os
 
 #Server modules
@@ -30,6 +30,7 @@ class Main(QtGui.QMainWindow, Ui_NewMainWindow):
 
         self.clientButton.clicked.connect(self.runClient)
         self.serverButton.clicked.connect(self.runServer)
+        self.routerButton.clicked.connect(self.runRouter)
 
         self.client = Client(self)
         self.stackedWidget.addWidget(self.client)
@@ -37,6 +38,8 @@ class Main(QtGui.QMainWindow, Ui_NewMainWindow):
         self.server = Server(self)
         self.stackedWidget.addWidget(self.server)
 
+        self.router = Router(self)
+        self.stackedWidget.addWidget(self.router)
 
     def runClient(self):
         self.stackedWidget.setCurrentIndex(self.stackedWidget.indexOf(self.client))
@@ -44,6 +47,46 @@ class Main(QtGui.QMainWindow, Ui_NewMainWindow):
     def runServer(self):
         self.stackedWidget.setCurrentIndex(self.stackedWidget.indexOf(self.server))
 
+    def runRouter(self):
+        self.stackedWidget.setCurrentIndex(self.stackedWidget.indexOf(self.router))
+
+class Router(QtGui.QWidget, Ui_RouterWidget):
+    def __init__(self, parent=None):
+        super(Router, self).__init__(parent)
+        self.setupUi(self)
+        self.rt = RouterTable()
+        self.displayTable()
+
+        self.addButton.clicked.connect(self.newRow)
+        self.removeButton.clicked.connect(self.removeRow)
+        self.rt.update.connect(self.displayTable)
+
+
+    def displayTable(self):
+        try:
+            self.routerTable.setRowCount(0)
+            for key, route in self.rt.routerTable.iteritems():
+                self.addRow(key, route)
+        except Exception as error:
+            print 'Error loading router table: ' + str(error)
+
+
+
+    def addRow(self, key, route):
+        rowPosition = self.routerTable.rowCount()
+        self.routerTable.insertRow(rowPosition)
+        self.routerTable.setItem(rowPosition, 0, QtGui.QTableWidgetItem(key))
+        self.routerTable.setItem(rowPosition, 1, QtGui.QTableWidgetItem(route))
+
+    def newRow(self):
+        ip = self.ipLine.text()
+        route = self.routeLine.text()
+        self.rt.addDataToRouterTable(ip, route)
+
+    def removeRow(self):
+        row = self.routerTable.currentRow()
+        self.routerTable.removeRow(row)
+        self.rt.deleteDataFromRouterTable(row)
 
 class Client(QtGui.QWidget, Ui_ClientWidget):
     def __init__(self, parent=None):
@@ -72,6 +115,7 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
 
         self.networkClient = NetworkClient(self)
         self.networkClient.msg.connect(self.doMsg)
+        self.networkClient.html.connect(self.doHtml)
         self.networkClient.start()
 
         self.physicalClient = PhysicalClient(self)
@@ -88,12 +132,19 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
             self.transportLOut.append(str(dt.now()))
             self.transportLOut.append(msg)
         elif sender == 'NetworkClient':
+            print 'in msg' + str(msg)
             self.networkLOut.append(str(dt.now()))
             self.networkLOut.append(msg)
         elif sender == 'PhysicalClient':
             self.physicalLOut.append(str(dt.now()))
             self.physicalLOut.append(msg)
 
+    def doHtml(self):
+        print 'in html'
+        tableUrl = QtCore.QUrl('/home/thais/Faculdade/TCC/NEW/datagram.html')
+        table = QtGui.QTextDocument( 1, tableUrl)
+        self.networkLOut.loadResource(table)
+        print 'end html'
 
     def ping (self):
         #TODO nmap -p <port> <ip>
@@ -144,6 +195,9 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
 
 def main():
     app = QtGui.QApplication(sys.argv)
+    css = open('style.css', 'r')
+    style = css.read()
+    app.setStyleSheet(style)
     form = Main()
     form.show()
     app.exec_()

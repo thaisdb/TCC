@@ -53,9 +53,6 @@ class Ui_NewMainWindow(object):
         sizePolicy.setHeightForWidth(self.serverButton.sizePolicy().hasHeightForWidth())
         self.serverButton.setSizePolicy(sizePolicy)
         self.serverButton.setMaximumSize(QtCore.QSize(16777215, 16777215))
-        self.serverButton.setStyleSheet(_fromUtf8("background-color: rgb(255,255, 255 );\n"
-"selection-background-color: rgb(200, 200, 200);\n"
-"font:  30pt \"Latin Modern Mono Caps\";"))
         self.serverButton.setObjectName(_fromUtf8("serverButton"))
         self.verticalLayout_3.addWidget(self.serverButton)
         spacerItem2 = QtGui.QSpacerItem(50, 50, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Maximum)
@@ -71,8 +68,6 @@ class Ui_NewMainWindow(object):
         self.clientButton.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.clientButton.setToolTip(_fromUtf8(""))
         self.clientButton.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.clientButton.setStyleSheet(_fromUtf8("background-color: rgb(255,255, 255 );\n"
-"font:  30pt \"Latin Modern Mono Caps\";"))
         self.clientButton.setObjectName(_fromUtf8("clientButton"))
         self.verticalLayout_3.addWidget(self.clientButton)
         spacerItem3 = QtGui.QSpacerItem(20, 50, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Maximum)
@@ -83,8 +78,6 @@ class Ui_NewMainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.routerButton.sizePolicy().hasHeightForWidth())
         self.routerButton.setSizePolicy(sizePolicy)
-        self.routerButton.setStyleSheet(_fromUtf8("background-color: rgb(255,255, 255 );\n"
-"font:  30pt \"Latin Modern Mono Caps\";"))
         self.routerButton.setObjectName(_fromUtf8("routerButton"))
         self.verticalLayout_3.addWidget(self.routerButton)
         self.horizontalLayout.addLayout(self.verticalLayout_3)
