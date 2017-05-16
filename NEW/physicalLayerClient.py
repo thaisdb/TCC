@@ -88,7 +88,7 @@ class PhysicalClient(QtCore.QThread):
         package = {'preambulo' : '7x(10101010) + 10101011',
                     'srcMAC' : self.mac,
                     'dstMAC' : self.macdst,
-                    #'tamanho' : self.tamanho,
+                    'tamanho' : self.tamanho,
                     'data' : self.package,
                     'checksum' : 'checksum'}
         data = json.dumps(package)

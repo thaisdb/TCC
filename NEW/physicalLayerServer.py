@@ -8,6 +8,7 @@ import json
 from PyQt4 import QtCore
 from layer import Layer
 from utils import Addresses as addr
+from utils import PDUPrinter
 #TODO receive server ip from the caller
 #TODO receive file name from the client
 
@@ -18,6 +19,7 @@ class PhysicalServer(QtCore.QThread):
     tmqSent = False
 
     msg = QtCore.pyqtSignal(str)
+    html = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
         super(PhysicalServer, self).__init__()
@@ -95,13 +97,15 @@ class PhysicalServer(QtCore.QThread):
 
     def interpretPackage(self):
         self.package =  json.loads(self.package)
-        preambulo =     self.package['preambulo']
-        print 'preambulo: '+ str(preambulo)
-        srcMAC =        self.package['dstMac']
-        print 'srcMAC: ' + str(srcMAC)
-        myMAC =        self.package['mac']
-        print 'myMAC: ' + str(myMAC)
-        tamanho =       self.package['tamanho']
+        #preambulo =     self.package['preambulo']
+        #print 'preambulo: '+ str(preambulo)
+        #srcMAC =        self.package['srcMAC']
+        #print 'srcMAC: ' + str(srcMAC)
+        #myMAC =        self.package['dstMAC']
+        #TODO verificar se meu mac == meu mac
+        #print 'myMAC: ' + str(myMAC)
+        #tamanho =       self.package['tamanho']
+        self.html.emit(PDUPrinter.Frame(self.package))
         self.package =  self.package['data']
         #print 'result = ' + str(self.package)
 

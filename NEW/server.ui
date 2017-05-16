@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1340</width>
-    <height>629</height>
+    <height>683</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,8 +16,8 @@
   <widget class="QPushButton" name="clearButton">
    <property name="geometry">
     <rect>
-     <x>1120</x>
-     <y>580</y>
+     <x>1040</x>
+     <y>600</y>
      <width>176</width>
      <height>27</height>
     </rect>
@@ -29,8 +29,8 @@
   <widget class="Line" name="line">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>70</y>
+     <x>50</x>
+     <y>100</y>
      <width>1271</width>
      <height>20</height>
     </rect>
@@ -42,8 +42,8 @@
   <widget class="Line" name="line_2">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>10</y>
+     <x>50</x>
+     <y>40</y>
      <width>1271</width>
      <height>20</height>
     </rect>
@@ -55,9 +55,9 @@
   <widget class="QTextEdit" name="transportLOut">
    <property name="geometry">
     <rect>
-     <x>680</x>
-     <y>120</y>
-     <width>630</width>
+     <x>650</x>
+     <y>150</y>
+     <width>571</width>
      <height>200</height>
     </rect>
    </property>
@@ -75,8 +75,8 @@ p, li { white-space: pre-wrap; }
   <widget class="QLabel" name="label_9">
    <property name="geometry">
     <rect>
-     <x>690</x>
-     <y>340</y>
+     <x>660</x>
+     <y>370</y>
      <width>97</width>
      <height>17</height>
     </rect>
@@ -88,9 +88,9 @@ p, li { white-space: pre-wrap; }
   <widget class="QTextEdit" name="physicalLOut">
    <property name="geometry">
     <rect>
-     <x>680</x>
-     <y>360</y>
-     <width>630</width>
+     <x>650</x>
+     <y>390</y>
+     <width>571</width>
      <height>200</height>
     </rect>
    </property>
@@ -101,8 +101,8 @@ p, li { white-space: pre-wrap; }
   <widget class="QLabel" name="label_7">
    <property name="geometry">
     <rect>
-     <x>690</x>
-     <y>100</y>
+     <x>660</x>
+     <y>130</y>
      <width>108</width>
      <height>17</height>
     </rect>
@@ -114,9 +114,9 @@ p, li { white-space: pre-wrap; }
   <widget class="QTextEdit" name="applicationLOut">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>120</y>
-     <width>630</width>
+     <x>50</x>
+     <y>150</y>
+     <width>571</width>
      <height>200</height>
     </rect>
    </property>
@@ -137,8 +137,8 @@ p, li { white-space: pre-wrap; }
   <widget class="QLabel" name="label_8">
    <property name="geometry">
     <rect>
-     <x>51</x>
-     <y>341</y>
+     <x>61</x>
+     <y>371</y>
      <width>102</width>
      <height>17</height>
     </rect>
@@ -150,9 +150,9 @@ p, li { white-space: pre-wrap; }
   <widget class="QTextEdit" name="networkLOut">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>360</y>
-     <width>630</width>
+     <x>50</x>
+     <y>390</y>
+     <width>571</width>
      <height>200</height>
     </rect>
    </property>
@@ -163,8 +163,8 @@ p, li { white-space: pre-wrap; }
   <widget class="QLabel" name="label_6">
    <property name="geometry">
     <rect>
-     <x>50</x>
-     <y>100</y>
+     <x>60</x>
+     <y>130</y>
      <width>120</width>
      <height>17</height>
     </rect>
@@ -198,8 +198,8 @@ p, li { white-space: pre-wrap; }
   <widget class="QWidget" name="horizontalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>430</x>
-     <y>10</y>
+     <x>440</x>
+     <y>40</y>
      <width>571</width>
      <height>80</height>
     </rect>

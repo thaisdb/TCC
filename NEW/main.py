@@ -34,12 +34,15 @@ class Main(QtGui.QMainWindow, Ui_NewMainWindow):
 
         self.client = Client(self)
         self.stackedWidget.addWidget(self.client)
+        self.client.toolButton.clicked.connect(self.backToMain)
 
         self.server = Server(self)
         self.stackedWidget.addWidget(self.server)
+        self.server.toolButton.clicked.connect(self.backToMain)
 
         self.router = Router(self)
         self.stackedWidget.addWidget(self.router)
+        self.router.toolButton.clicked.connect(self.backToMain)
 
     def runClient(self):
         self.stackedWidget.setCurrentIndex(self.stackedWidget.indexOf(self.client))
@@ -50,7 +53,13 @@ class Main(QtGui.QMainWindow, Ui_NewMainWindow):
     def runRouter(self):
         self.stackedWidget.setCurrentIndex(self.stackedWidget.indexOf(self.router))
 
+    def backToMain(self):
+        self.stackedWidget.setCurrentIndex(0)
+
+
 class Router(QtGui.QWidget, Ui_RouterWidget):
+
+
     def __init__(self, parent=None):
         super(Router, self).__init__(parent)
         self.setupUi(self)
@@ -60,7 +69,6 @@ class Router(QtGui.QWidget, Ui_RouterWidget):
         self.addButton.clicked.connect(self.newRow)
         self.removeButton.clicked.connect(self.removeRow)
         self.rt.update.connect(self.displayTable)
-
 
     def displayTable(self):
         try:
@@ -88,7 +96,11 @@ class Router(QtGui.QWidget, Ui_RouterWidget):
         self.routerTable.removeRow(row)
         self.rt.deleteDataFromRouterTable(row)
 
+
+
 class Client(QtGui.QWidget, Ui_ClientWidget):
+
+
     def __init__(self, parent=None):
         super(Client, self).__init__(parent)
         self.setupUi(self)
@@ -107,10 +119,12 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
     def startClient(self):
         self.applicationClient = ApplicationClient(self)
         self.applicationClient.msg.connect(self.doMsg)
+        self.applicationClient.html.connect(self.doHtml)
         self.applicationClient.start()
 
         self.transportClient = TransportClient(self)
         self.transportClient.msg.connect(self.doMsg)
+        self.transportClient.html.connect(self.doHtml)
         self.transportClient.start()
 
         self.networkClient = NetworkClient(self)
@@ -120,6 +134,7 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
 
         self.physicalClient = PhysicalClient(self)
         self.physicalClient.msg.connect(self.doMsg)
+        self.physicalClient.html.connect(self.doHtml)
         self.physicalClient.start()
 
 
@@ -148,7 +163,6 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
             self.transportLOut.append(str(dt.now()))
             self.transportLOut.insertHtml(msg)
         elif sender == 'NetworkClient':
-            print 'in msg' + str(msg)
             self.networkLOut.append(str(dt.now()))
             self.networkLOut.insertHtml(msg)
         elif sender == 'PhysicalClient':
@@ -164,6 +178,8 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
 
 
 class Server(QtGui.QWidget, Ui_ServerWidget):
+
+
     def __init__(self, parent=None):
         super(Server, self).__init__(parent)
         self.setupUi(self)
@@ -190,6 +206,7 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         self.physicalServer = PhysicalServer(self)
         self.physicalServer.msg.connect(self.printMsg)
         #self.physicalServer.configure(self.myIP, port)
+        self.physicalServer.html.connect(self.printHtml)
         self.physicalServer.start()
 
     def printMsg (self, msg):
@@ -207,6 +224,20 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
             self.physicalLOut.append(str(dt.now()))
             self.physicalLOut.append(msg)
 
+    def printHtml(self, msg):
+        sender =  self.sender().__class__.__name__
+        if sender == 'ApplicationServer':
+            self.applicationLOut.append(str(dt.now()))
+            self.applicationLOut.insertHtml(msg)
+        elif sender == 'TransportServer':
+            self.transportLOut.append(str(dt.now()))
+            self.transportLOut.insertHtml(msg)
+        elif sender == 'NetworkServer':
+            self.networkLOut.append(str(dt.now()))
+            self.networkLOut.insertHtml(msg)
+        elif sender == 'PhysicalServer':
+            self.physicalLOut.append(str(dt.now()))
+            self.physicalLOut.insertHtml(msg)
 
     def getPort(self):
         try:
@@ -215,6 +246,7 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
             return  port
         except exc:
             print exc
+
 
 
 def main():

@@ -18,7 +18,7 @@ class ApplicationClient(QtCore.QThread):
     package = ''
     answer = ''
     msg = QtCore.pyqtSignal(str)
-
+    html = QtCore.pyqtSignal(str)
     def __init__(self, parent=None):
         super(ApplicationClient, self).__init__()
 
@@ -33,6 +33,7 @@ class ApplicationClient(QtCore.QThread):
         self.browser = webbrowser.get('google-chrome')
         self.msg.emit('Wainting browser...')
         # 2 for oppening another tab on browser
+        self.browser.open_new_tab('')
         while True:
             if self.listenBrowser() :
                 self.sendToTransportLayer()
@@ -89,7 +90,6 @@ class ApplicationClient(QtCore.QThread):
         return True
 
     def listenBrowser(self):
-        self.browser.open_new_tab('')
         self.connection, _ = self.applicationSocket.accept()
         self.browserMsg = ''
         try:

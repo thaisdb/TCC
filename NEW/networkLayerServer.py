@@ -3,6 +3,7 @@ from socket import *
 from bitstring import BitArray
 from bitstring import BitStream
 import json
+from utils import Common
 from PyQt4 import QtCore
 from layer import Layer
 from utils import Addresses as addr
@@ -136,7 +137,7 @@ class NetworkServer(QtCore.QThread):
         #dst = server
         dstIP = self.datagram['dstIP']
         print 'dstIP = ' + str(dstIP)
-        thisIP = NetworkLayer.myIP()['addr']
+        thisIP = Common.myIP()['addr']
         print 'thisIP = ' + str(thisIP)
         if str(dstIP) == str(thisIP):
             print 'Right server'

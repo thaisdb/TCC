@@ -161,8 +161,8 @@ class PDUPrinter():
                 '<tr><td>Preambulo = ' + str(frame['preambulo']) + '</td>'\
                     '<td>Destination MAC = ' + str(frame['dstMAC']) + '</td>'\
                     '<td>Source MAC = ' + str(frame['srcMAC']) + '</td>'\
-                    '<td>Type = ' + str(frame['type']) + '</td>'\
-                    '<td>Data = ' + str(frame['data']) + '</td>'\
+                    #'<td>Type = ' + str(frame['type']) + '</td>'\
+                    '<td>Data = data </td>'\
                     '<td>Checksum = ' + str(frame['checksum']) + '</td>'\
                 '</tr></table></body></html>')
 
