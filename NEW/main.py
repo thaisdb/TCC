@@ -139,12 +139,22 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
             self.physicalLOut.append(str(dt.now()))
             self.physicalLOut.append(msg)
 
-    def doHtml(self):
-        print 'in html'
-        tableUrl = QtCore.QUrl('/home/thais/Faculdade/TCC/NEW/datagram.html')
-        table = QtGui.QTextDocument( 1, tableUrl)
-        self.networkLOut.loadResource(table)
-        print 'end html'
+    def doHtml(self, msg):
+        sender =  self.sender().__class__.__name__
+        if sender == 'ApplicationClient':
+            self.applicationLOut.append(str(dt.now()))
+            self.applicationLOut.insertHtml(msg)
+        elif sender == 'TransportClient':
+            self.transportLOut.append(str(dt.now()))
+            self.transportLOut.insertHtml(msg)
+        elif sender == 'NetworkClient':
+            print 'in msg' + str(msg)
+            self.networkLOut.append(str(dt.now()))
+            self.networkLOut.insertHtml(msg)
+        elif sender == 'PhysicalClient':
+            self.physicalLOut.append(str(dt.now()))
+            self.physicalLOut.insertHtml(msg)
+
 
     def ping (self):
         #TODO nmap -p <port> <ip>
@@ -158,7 +168,9 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         super(Server, self).__init__(parent)
         self.setupUi(self)
 
-        self.serverIPLabel.setText(self.serverIPLabel.text() + ' ' + Common.myIP()['addr'])
+        self.myIP = Common.myIP()['addr']
+
+        self.serverIPLabel.setText('Server IP: ' + self.myIP)
         self.startButton.clicked.connect(self.startServer)
 
     def startServer(self):
@@ -166,16 +178,18 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         self.applicationServer.msg.connect(self.printMsg)
         self.applicationServer.start()
 
-        self.transportServer = TransportClient(self)
+        self.transportServer = TransportServer(self)
         self.transportServer.msg.connect(self.printMsg)
         self.transportServer.start()
 
-        self.networkServer = NetworkClient(self)
+        self.networkServer = NetworkServer(self)
         self.networkServer.msg.connect(self.printMsg)
         self.networkServer.start()
 
-        self.physicalServer = PhysicalClient(self)
+        port = self.getPort
+        self.physicalServer = PhysicalServer(self)
         self.physicalServer.msg.connect(self.printMsg)
+        #self.physicalServer.configure(self.myIP, port)
         self.physicalServer.start()
 
     def printMsg (self, msg):
@@ -192,6 +206,16 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         elif sender == 'PhysicalServer':
             self.physicalLOut.append(str(dt.now()))
             self.physicalLOut.append(msg)
+
+
+    def getPort(self):
+        try:
+            port = self.portEdit.text()
+            self.physicalLOut.append('port Selected = ' + str(port))
+            return  port
+        except exc:
+            print exc
+
 
 def main():
     app = QtGui.QApplication(sys.argv)

@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>708</width>
+    <width>720</width>
     <height>540</height>
    </rect>
   </property>
@@ -37,10 +37,10 @@
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>29</x>
-     <y>84</y>
+     <x>39</x>
+     <y>74</y>
      <width>651</width>
-     <height>421</height>
+     <height>441</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -167,8 +167,8 @@ color: rgb(255, 255, 255);</string>
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>30</x>
-     <y>40</y>
+     <x>40</x>
+     <y>30</y>
      <width>241</width>
      <height>31</height>
     </rect>
@@ -178,6 +178,28 @@ color: rgb(255, 255, 255);</string>
    </property>
    <property name="text">
     <string>Router Table</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="toolButton">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>30</y>
+     <width>24</width>
+     <height>491</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>...</string>
+   </property>
+   <property name="popupMode">
+    <enum>QToolButton::InstantPopup</enum>
+   </property>
+   <property name="autoRaise">
+    <bool>true</bool>
+   </property>
+   <property name="arrowType">
+    <enum>Qt::LeftArrow</enum>
    </property>
   </widget>
  </widget>

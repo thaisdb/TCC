@@ -10,6 +10,7 @@ import json
 from threading import Thread
 from layer import Layer
 from utils import Addresses as addr
+from utils import PDUPrinter
 from PyQt4 import QtCore
 #TODO receive server ip from the caller
 
@@ -19,14 +20,15 @@ class PhysicalClient(QtCore.QThread):
     tmqReceived = False
 
     msg = QtCore.pyqtSignal(str)
+    html = QtCore.pyqtSignal(str)
 
     def __init__(self, parent = None ):
         super(PhysicalClient, self).__init__()
 
     def run(self):
         self.msg.emit('*' * 20 + ' PHYSICAL CLIENT ' + '*' * 20)
-        self.port = int(float(port))
-        self.host = host
+        self.port = 9753
+        self.host = '127.0.0.1'
         #self.connect()
         self.getIPMAC()
         self.physicalClientSocket = socket(AF_INET, SOCK_STREAM)
@@ -90,7 +92,7 @@ class PhysicalClient(QtCore.QThread):
                     'data' : self.package,
                     'checksum' : 'checksum'}
         data = json.dumps(package)
-        self.msg.emit(PDUPrinter.Frame(package))
+        self.html.emit(PDUPrinter.Frame(package))
         with open('binary_file.txt', 'w') as binaryFile:
             for x in data:
                 binaryFile.write('{0:08b}'.format(ord(x)))

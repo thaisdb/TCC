@@ -20,6 +20,7 @@ class TransportClient(QtCore.QThread):
     space = '\t'
 
     msg = QtCore.pyqtSignal(str)
+    html = QtCore.pyqtSignal(str)
 
     def __init__(self, parent = None):
         super(TransportClient, self).__init__()
@@ -71,8 +72,8 @@ class TransportClient(QtCore.QThread):
                                 'data' : json.dumps(self.applicationPack) }
             #(0, self.srcPort, self.dstPort, comprimento, 'checksum', self.applicationPack)
             #print self.udpPackage
-            self.udpPackage['checksum'] = self.calculateChecksum(self.udpPackage)
-            self.msg.emit(PDUPrinter.UDP(self.udpPackage))
+            self.udpPackage['checksum'] = bin(self.calculateChecksum(json.dumps(self.udpPackage)))[2:]
+            self.html.emit(PDUPrinter.UDP(self.udpPackage))
             self.package = json.dumps(self.udpPackage)
             while self.package:
                 sent = transportSender.send(self.package)
@@ -87,7 +88,7 @@ class TransportClient(QtCore.QThread):
             line = exc_tb.tb_lineno
             fileName = error.f_code.co_filename
             self.msg.emit('ERROR! Coudn\'t send UDP package.')
-            self.msg.emit( exc)
+            self.msg.emit( str(exc))
             self.msg.emit ('line = ' + str(line))
             return False
         #self.udpChecksum = 0
@@ -224,13 +225,12 @@ class TransportClient(QtCore.QThread):
 
     def calculateChecksum(self, package):
         try:
-
-            values = sorted(package.values()) #vector dict of values
-            # loop taking 2 characters at a time
-            m = hashlib.md5()
-            for value in values:
-                m.update(str(value))
-            return m.hexdigest()
+            s = 0
+            for i in range(0, len(package), 2):
+                w = ord(package[i]) + (ord(package[i+1]) << 8)
+                s += w
+                s = (s >> 16) + (s & 0xffff)
+                return ~s & 0xffff
         except Exception as exc:
             exc_type, exc_object, exc_tb = sys.exc_info()
             line = exc_tb.tb_lineno

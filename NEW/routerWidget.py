@@ -26,7 +26,7 @@ class Ui_RouterWidget(object):
     def setupUi(self, RouterWidget):
         RouterWidget.setObjectName(_fromUtf8("RouterWidget"))
         RouterWidget.setWindowModality(QtCore.Qt.NonModal)
-        RouterWidget.resize(708, 540)
+        RouterWidget.resize(720, 540)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -34,9 +34,10 @@ class Ui_RouterWidget(object):
         RouterWidget.setSizePolicy(sizePolicy)
         RouterWidget.setFocusPolicy(QtCore.Qt.NoFocus)
         RouterWidget.setAutoFillBackground(False)
+        RouterWidget.setStyleSheet(_fromUtf8("background-color: rgb(255, 255, 255);"))
         RouterWidget.setInputMethodHints(QtCore.Qt.ImhNone)
         self.verticalLayoutWidget = QtGui.QWidget(RouterWidget)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(29, 84, 651, 421))
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(39, 74, 651, 441))
         self.verticalLayoutWidget.setObjectName(_fromUtf8("verticalLayoutWidget"))
         self.verticalLayout = QtGui.QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout.setMargin(0)
@@ -62,8 +63,9 @@ class Ui_RouterWidget(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.routerTable.sizePolicy().hasHeightForWidth())
         self.routerTable.setSizePolicy(sizePolicy)
-        self.routerTable.setStyleSheet(_fromUtf8("color: rgb(0, 0, 0);\n"
+        self.routerTable.setStyleSheet(_fromUtf8("color: rgb(255, 255, 255);\n"
 "gridline-color: rgb(0, 0, 0);\n"
+"alternate-background-color: rgb(240, 240, 240);\n"
 "border-color: rgb(0, 0, 0);\n"
 "font: bold 11pt \"Latin Modern Roman Caps\";"))
         self.routerTable.setLineWidth(1)
@@ -87,10 +89,6 @@ class Ui_RouterWidget(object):
         self.routerTable.horizontalHeader().setHighlightSections(False)
         self.routerTable.horizontalHeader().setMinimumSectionSize(57)
         self.routerTable.horizontalHeader().setStretchLastSection(False)
-        style = "::section { font: 11pt \"Latin Modern Roman Caps\";"\
-"background-color: rgb(0, 0, 0);"\
-"color: rgb(255, 255, 255); }"
-        self.routerTable.horizontalHeader().setStyleSheet(style)
         self.routerTable.verticalHeader().setSortIndicatorShown(False)
         self.routerTable.verticalHeader().setStretchLastSection(False)
         self.verticalLayout.addWidget(self.routerTable)
@@ -105,9 +103,15 @@ class Ui_RouterWidget(object):
         self.horizontalLayout.addWidget(self.removeButton)
         self.verticalLayout.addLayout(self.horizontalLayout)
         self.label = QtGui.QLabel(RouterWidget)
-        self.label.setGeometry(QtCore.QRect(30, 40, 241, 31))
+        self.label.setGeometry(QtCore.QRect(40, 30, 241, 31))
         self.label.setStyleSheet(_fromUtf8("font: 26pt \"Latin Modern Mono Caps\";"))
         self.label.setObjectName(_fromUtf8("label"))
+        self.toolButton = QtGui.QToolButton(RouterWidget)
+        self.toolButton.setGeometry(QtCore.QRect(10, 30, 24, 491))
+        self.toolButton.setPopupMode(QtGui.QToolButton.InstantPopup)
+        self.toolButton.setAutoRaise(True)
+        self.toolButton.setArrowType(QtCore.Qt.LeftArrow)
+        self.toolButton.setObjectName(_fromUtf8("toolButton"))
 
         self.retranslateUi(RouterWidget)
         QtCore.QMetaObject.connectSlotsByName(RouterWidget)
@@ -121,4 +125,5 @@ class Ui_RouterWidget(object):
         item.setText(_translate("RouterWidget", "Gateway", None))
         self.removeButton.setText(_translate("RouterWidget", "Remove", None))
         self.label.setText(_translate("RouterWidget", "Router Table", None))
+        self.toolButton.setText(_translate("RouterWidget", "...", None))
 

@@ -17,18 +17,26 @@ class PhysicalServer(QtCore.QThread):
 
     tmqSent = False
 
+    msg = QtCore.pyqtSignal(str)
+
     def __init__(self, parent=None):
         super(PhysicalServer, self).__init__()
 
-    def run(self):
+    def configure(self, host, port):
         self.host = host
-        self.port = int(float(port))
+        self.port = port
+        self.msg.emit("Server setup:\nIP = " + str(self.host) + '\tPort = ' + str(self.port) + '\nListening...')
+
+
+    def run(self):
+        self.port = 9753
+        self.host = '127.0.0.1'
         self.physicalServerSocket = socket(AF_INET, SOCK_STREAM)
         self.physicalServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.physicalServerSocket.bind(addr.PhysicalServer)
         self.physicalServerSocket.listen(1)
-        print  'Listening for connections, on PORT: ' + str(self.port)
-        print  ("******************** PHYSICAL SERVER ********************")
+        self.msg.emit  ("******************** PHYSICAL SERVER ********************")
+        self.msg.emit ("Listening")
         #self.receiveFileName()
         #receive binary file and save as txt
         #print 'another file'

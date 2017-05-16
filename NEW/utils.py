@@ -36,6 +36,7 @@ class RouterTable(QtCore.QObject):
     update = QtCore.pyqtSignal()
     routerTable = {}
     def __init__(self):
+        print 'router obj'
         super(RouterTable, self).__init__()
         self.loadRouterTable()
 
@@ -111,47 +112,60 @@ class PDUPrinter():
 
     @staticmethod
     def UDP(segment):
-        return  ('|' + '*' * 80 + '|\n' \
-                '| Porta de Origem = {0[srcPort]:^20} | Porta de Destino = {0[dstPort]:^20} |\n' \
-                '|' + '*' * 80 + '|\n' \
-                '| Comprimento do UDP = {0[comprimento]:^20} | Checksum do UDP = {0[checksum]:^20} |\n' \
-                '|' + '*' * 80 + '|\n' \
-                #todo formatar requisição http
-                '| Dados = Requisição HTTP |\n' \
-                '|' + '*' * 80 + '|').format(segment)
+        return ('<html><head><link rel="stylesheet" href="style.css"></head><body>'\
+                '<table border="1" style="width:100%" cellpadding="5">'\
+                '<caption> UDP SEGMENT </caption>'\
+                '<tr><td>Source Port = ' + str(segment['srcPort']) + '</td>'\
+                    '<td>Destination Port = ' + str(segment['dstPort']) + '</td>'\
+                '</tr><tr>'\
+                    '<td>Comprimento do UDP = ' + str(segment['comprimento']) + '</td>'\
+                    '<td>Checksum = ' + str(segment['checksum']) + '</td>'\
+                '</tr><tr>'\
+                    '<td colspan="2">Data = Application Data</td>'\
+                '</tr></table></body></html>')
 
 
     @staticmethod
     def Datagram(datagram):
-        #create html file
-        with open('/home/thais/Faculdade/TCC/NEW/datagramHtml.html', 'w') as html:
-            html.write('<table><tr>'\
-                    '<td>Version =' + str(datagram['version']) + '</th>'\
-                    '<td>IHL =' + str(datagram['headerLength']) + '</th>'\
-                    '<td>TOS =' + str(datagram['TOS']) + '</th>'\
-                    '<td colspan="2">Total Length =' + str(datagram['TL']) + '</th>'\
+        return ('<html><head><link rel="stylesheet" href="style.css"></head><body>'\
+                '<table border="1" style="width:100%" cellpadding="5">'\
+                '<caption> Datagram </caption>'\
+                '<tr>'
+                '<td>Version = ' + str(datagram['version']) + '</td>'\
+                    '<td>IHL = ' + str(datagram['headerLength']) + '</td>'\
+                    '<td>TOS = ' + str(datagram['TOS']) + '</td>'\
+                    '<td colspan="2">Total Length =' + str(datagram['TL']) + '</td>'\
                 '</tr><tr>'\
-                    '<th colspan="3">ID =' + str(datagram['ID']) + '</th>'\
-                    '<td>DF =' + str(datagram['DF']) + '</td>'\
-                    '<td>MF =' + str(datagram['MF']) + '</td>'\
-                    '<td>Offset =' + str(datagram['fragOffset']) + '</td>'\
+                    '<td colspan="3">ID = ' + str(datagram['ID']) + '</td>'\
+                    '<td>DF = ' + str(datagram['DF']) + '</td>'\
+                    '<td>MF = ' + str(datagram['MF']) + '</td>'\
+                    '<td>Offset = ' + str(datagram['fragOffset']) + '</td>'\
                 '</tr><tr>'\
-                    '<td colspan="2">TTL =' + str(datagram['TTL']) + '</td>'\
-                    '<td>Protocol =' + str(datagram['transportProtocol']) + '</td>'\
-                    '<th colspan="2">Header Checksum =' + str(datagram['checksum']) + '</th>'\
+                    '<td colspan="2">TTL = ' + str(datagram['TTL']) + '</td>'\
+                    '<td>Protocol = ' + str(datagram['transportProtocol']) + '</td>'\
+                    '<td colspan="2">Header Checksum = ' + str(datagram['checksum']) + '</td>'\
                 '</tr><tr>'\
-                    '<th colspan="5">Source Address =' + str(datagram['srcIP']) + '</th>'\
+                    '<td colspan="5">Source Address = ' + str(datagram['srcIP']) + '</td>'\
                 '</tr><tr>'\
-                    '<th colspan="5">Destination Address =' + str(datagram['dstIP']) + '</th>'\
+                    '<td colspan="5">Destination Address = ' + str(datagram['dstIP']) + '</td>'\
                 '</tr><tr>'\
-                    '<th colspan="5">IP Option =' + str(datagram['options']) + '</th>'\
-                '</tr></table>')
+                    '<td colspan="5">IP Option =' + str(datagram['options']) + '</td>'\
+                '</tr></table></body></html>')
+
 
     @staticmethod
     def Frame(frame):
-        return ('|' + '*' * 80 + '|\n' \
-                '|        Preambulo        |  Destination MAC  |     Source MAC     |  Type  | Data | Checksum |\n' \
-                '|{0[preambulo]:^24}  |{0[dstMAC]:^20}|{0[srcMAC]:^20}|  IPv4  | .... | ........ | \n' \
-                ' + '*' * 80 + |\n' ).format(frame)
+        return ('<html><head><link rel="stylesheet" href="style.css"></head><body>'\
+                '<table border="1" style="width:100%" cellpadding="5">'\
+                '<caption> Frame </caption>'\
+                '<tr><td>Preambulo = ' + str(frame['preambulo']) + '</td>'\
+                    '<td>Destination MAC = ' + str(frame['dstMAC']) + '</td>'\
+                    '<td>Source MAC = ' + str(frame['srcMAC']) + '</td>'\
+                    '<td>Type = ' + str(frame['type']) + '</td>'\
+                    '<td>Data = ' + str(frame['data']) + '</td>'\
+                    '<td>Checksum = ' + str(frame['checksum']) + '</td>'\
+                '</tr></table></body></html>')
+
+
 
 

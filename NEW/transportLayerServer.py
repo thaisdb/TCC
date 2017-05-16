@@ -17,6 +17,7 @@ class TransportServer (QtCore.QThread):
     space = '\t'
 
     answer = ''
+    msg = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
         super(TransportServer, self).__init__()
@@ -31,7 +32,7 @@ class TransportServer (QtCore.QThread):
             self.transportServerSocket = socket(AF_INET, SOCK_STREAM)
             self.transportServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
             self.transportServerSocket.bind(addr.TransportServer)
-            print '********************** TRANSPORT SERVER **********************'
+            self.msg.emit('********************** TRANSPORT SERVER **********************')
             self.transportServerSocket.listen(1)
             print 'Listening'
             while True:

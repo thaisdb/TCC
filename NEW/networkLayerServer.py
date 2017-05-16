@@ -60,6 +60,7 @@ class IP:
 
 
 class NetworkServer(QtCore.QThread):
+    msg = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
         super(NetworkServer, self).__init__()
@@ -72,7 +73,7 @@ class NetworkServer(QtCore.QThread):
         #    self.ip2 = IP(network2)
         #    self.ipBelongsToNetwork()
         #self.routerTable('192.168.9.0')
-        print '******************** INTERNET SERVER ********************'
+        self.msg.emit('******************** NETWORK SERVER ********************')
         self.networkServerSocket = socket(AF_INET, SOCK_STREAM)
         self.networkServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.networkServerSocket.bind (addr.NetworkServer)

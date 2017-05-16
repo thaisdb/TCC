@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1330</width>
-    <height>631</height>
+    <width>1340</width>
+    <height>629</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,7 +16,7 @@
   <widget class="QPushButton" name="clearButton">
    <property name="geometry">
     <rect>
-     <x>510</x>
+     <x>1120</x>
      <y>580</y>
      <width>176</width>
      <height>27</height>
@@ -29,9 +29,9 @@
   <widget class="Line" name="line">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>40</x>
      <y>70</y>
-     <width>671</width>
+     <width>1271</width>
      <height>20</height>
     </rect>
    </property>
@@ -42,9 +42,9 @@
   <widget class="Line" name="line_2">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>20</y>
-     <width>671</width>
+     <x>40</x>
+     <y>10</y>
+     <width>1271</width>
      <height>20</height>
     </rect>
    </property>
@@ -55,8 +55,8 @@
   <widget class="QTextEdit" name="transportLOut">
    <property name="geometry">
     <rect>
-     <x>660</x>
-     <y>130</y>
+     <x>680</x>
+     <y>120</y>
      <width>630</width>
      <height>200</height>
     </rect>
@@ -75,8 +75,8 @@ p, li { white-space: pre-wrap; }
   <widget class="QLabel" name="label_9">
    <property name="geometry">
     <rect>
-     <x>670</x>
-     <y>350</y>
+     <x>690</x>
+     <y>340</y>
      <width>97</width>
      <height>17</height>
     </rect>
@@ -88,8 +88,8 @@ p, li { white-space: pre-wrap; }
   <widget class="QTextEdit" name="physicalLOut">
    <property name="geometry">
     <rect>
-     <x>660</x>
-     <y>370</y>
+     <x>680</x>
+     <y>360</y>
      <width>630</width>
      <height>200</height>
     </rect>
@@ -98,59 +98,11 @@ p, li { white-space: pre-wrap; }
     <bool>true</bool>
    </property>
   </widget>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>40</y>
-     <width>671</width>
-     <height>29</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_4">
-    <item>
-     <widget class="QLabel" name="serverIPLabel">
-      <property name="text">
-       <string>Server IP:</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QLabel" name="portLabel">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Port:</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="startButton">
-      <property name="maximumSize">
-       <size>
-        <width>219</width>
-        <height>27</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>Start</string>
-      </property>
-      <property name="checkable">
-       <bool>false</bool>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
   <widget class="QLabel" name="label_7">
    <property name="geometry">
     <rect>
-     <x>670</x>
-     <y>110</y>
+     <x>690</x>
+     <y>100</y>
      <width>108</width>
      <height>17</height>
     </rect>
@@ -162,8 +114,8 @@ p, li { white-space: pre-wrap; }
   <widget class="QTextEdit" name="applicationLOut">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>130</y>
+     <x>40</x>
+     <y>120</y>
      <width>630</width>
      <height>200</height>
     </rect>
@@ -185,8 +137,8 @@ p, li { white-space: pre-wrap; }
   <widget class="QLabel" name="label_8">
    <property name="geometry">
     <rect>
-     <x>31</x>
-     <y>351</y>
+     <x>51</x>
+     <y>341</y>
      <width>102</width>
      <height>17</height>
     </rect>
@@ -198,8 +150,8 @@ p, li { white-space: pre-wrap; }
   <widget class="QTextEdit" name="networkLOut">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>370</y>
+     <x>40</x>
+     <y>360</y>
      <width>630</width>
      <height>200</height>
     </rect>
@@ -211,8 +163,8 @@ p, li { white-space: pre-wrap; }
   <widget class="QLabel" name="label_6">
    <property name="geometry">
     <rect>
-     <x>30</x>
-     <y>110</y>
+     <x>50</x>
+     <y>100</y>
      <width>120</width>
      <height>17</height>
     </rect>
@@ -220,6 +172,112 @@ p, li { white-space: pre-wrap; }
    <property name="text">
     <string>Application Layer</string>
    </property>
+  </widget>
+  <widget class="QToolButton" name="toolButton">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>24</width>
+     <height>601</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>...</string>
+   </property>
+   <property name="popupMode">
+    <enum>QToolButton::InstantPopup</enum>
+   </property>
+   <property name="autoRaise">
+    <bool>true</bool>
+   </property>
+   <property name="arrowType">
+    <enum>Qt::LeftArrow</enum>
+   </property>
+  </widget>
+  <widget class="QWidget" name="horizontalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>430</x>
+     <y>10</y>
+     <width>571</width>
+     <height>80</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QLabel" name="serverIPLabel">
+      <property name="text">
+       <string>Server IP:  Not Conected!</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="horizontalSpacer">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QLabel" name="portLabel">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Port:</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="portEdit">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="horizontalSpacer_2">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QPushButton" name="startButton">
+      <property name="maximumSize">
+       <size>
+        <width>219</width>
+        <height>27</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Start</string>
+      </property>
+      <property name="checkable">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>

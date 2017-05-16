@@ -15,3 +15,7 @@ QPushButton#pushButton:disabled {
     font-size: 50px;
 }
 
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}

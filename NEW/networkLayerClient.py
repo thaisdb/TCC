@@ -68,7 +68,7 @@ class NetworkClient(QtCore.QThread):
     routerTable = {'ip_destino':'ip_roteado'}
 
     msg = QtCore.pyqtSignal(str)
-    html = QtCore.pyqtSignal()
+    html = QtCore.pyqtSignal(str)
 
     def __init__(self, parent = None):
         super(NetworkClient, self).__init__()
@@ -200,8 +200,8 @@ class NetworkClient(QtCore.QThread):
             #header = json.dumps(header)
             #self.datagram = ('IPV4', len(header), 'ID', 'c. fragmentação', 'c. tempo', transportProtocol,
             #    'CRC', srcIP, dstIP, 'opções', json.loads(self.package))
-            PDUPrinter.Datagram(self.datagram)
-            self.html.emit()
+            self.html.emit(PDUPrinter.Datagram(self.datagram))
+            #self.html.emit()
             self.datagram = json.dumps(self.datagram)
         except Exception as exc:
             exc_type, exc_obj, exc_tb = sys.exc_info()
