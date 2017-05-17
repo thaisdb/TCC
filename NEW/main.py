@@ -39,10 +39,15 @@ class Main(QtGui.QMainWindow, Ui_NewMainWindow):
         self.server = Server(self)
         self.stackedWidget.addWidget(self.server)
         self.server.toolButton.clicked.connect(self.backToMain)
+        self.server.errorMsg.connect(self.raiseError)
 
         self.router = Router(self)
         self.stackedWidget.addWidget(self.router)
         self.router.toolButton.clicked.connect(self.backToMain)
+
+    def raiseError(self, msg):
+        print 'main error'
+        msgBox = QtGui.QMessageBox.critical(self, 'Critical ERROR!', msg, QtGui.QMessageBox.Retry)
 
     def runClient(self):
         self.stackedWidget.setCurrentIndex(self.stackedWidget.indexOf(self.client))
@@ -122,9 +127,15 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         self.applicationClient.html.connect(self.doHtml)
         self.applicationClient.start()
 
+
+
+
         self.transportClient = TransportClient(self)
         self.transportClient.msg.connect(self.doMsg)
         self.transportClient.html.connect(self.doHtml)
+        transportType = 'TCP' if self.radTCP.isChecked() else 'UDP'
+        self.transportClient.msg.emit('Transport protocol selected = ' + transportType)
+        self.transportClient.configure(transportType)
         self.transportClient.start()
 
         self.networkClient = NetworkClient(self)
@@ -179,6 +190,7 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
 
 class Server(QtGui.QWidget, Ui_ServerWidget):
 
+    errorMsg = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
         super(Server, self).__init__(parent)
@@ -189,9 +201,11 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         self.serverIPLabel.setText('Server IP: ' + self.myIP)
         self.startButton.clicked.connect(self.startServer)
 
+
     def startServer(self):
         self.applicationServer = ApplicationServer(self)
         self.applicationServer.msg.connect(self.printMsg)
+        #self.applicationServer.errorMsg.connect(self.errorMsg.emit())
         self.applicationServer.start()
 
         self.transportServer = TransportServer(self)
@@ -202,10 +216,11 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         self.networkServer.msg.connect(self.printMsg)
         self.networkServer.start()
 
-        port = self.getPort
+        port = self.getPort()
         self.physicalServer = PhysicalServer(self)
         self.physicalServer.msg.connect(self.printMsg)
-        #self.physicalServer.configure(self.myIP, port)
+        self.physicalServer.errorMsg.connect(self.raiseError)
+        self.physicalServer.configure(self.myIP, port)
         self.physicalServer.html.connect(self.printHtml)
         self.physicalServer.start()
 
@@ -239,14 +254,17 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
             self.physicalLOut.append(str(dt.now()))
             self.physicalLOut.insertHtml(msg)
 
+
+
     def getPort(self):
         try:
             port = self.portEdit.text()
-            self.physicalLOut.append('port Selected = ' + str(port))
-            return  port
-        except exc:
-            print exc
+            return  int(port)
+        except Exception as exc:
+            print str(exc)
 
+    def raiseError(self, error):
+        self.errorMsg.emit(error)
 
 
 def main():
