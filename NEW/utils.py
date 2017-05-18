@@ -16,6 +16,7 @@ class Addresses(object):
 
     Browser             = ('localhost', 9999)
 
+
 class Common():
     @staticmethod
     def myIP():
@@ -89,30 +90,32 @@ class PDUPrinter():
 
 
     @staticmethod
-    def TCP():
-        return   ('|' + '*' * 80 + '|\n' \
-                '| Porta de Origem = {0[srcPort]:^10} | Porta de Destino = {0[dstPort]:^10} |\n' \
-                '|' + '*' * 80 + '|\n' \
-                '| Numero de sequencia = {0[seq]:^10} |\n' \
-                '|' + '*' * 80 + '|\n' \
-                '| Numero de confirmação = {0[ackSeq]:^10} |\n' \
-                '|' + '*' * 80 + '|\n' \
-                #TODO comprimento cabeçalho fixo
-                #TODO add flags
-                '| Comprimento do Cabeçalho = {0[offsetRes]:^5} | Tamanho da Janela = {0[window]:^10} !\n' \
-                '|' + '*' * 80 + '|\n' \
-                '| Checksum = checksum | Ponteiro para urgente = {0[urgPtr]:^10} |\n' \
-                '|' + '*' * 80 + '|\n' \
-                '| Opções = {0[opcoes]:^10} |\n' \
-                '|' + '*' * 80 + '|\n' \
-                #TODO formatar requisição http
-                '| Dados = Requisição HTTP |\n' \
-                '|' + '*' * 80 + '|').format(self.tcpHeader)
+    def TCP(segment):
+        return ('<html><head><head><link rel="stylesheet" type="text/css" href="style.css"></head><body>'\
+                '<table border="1" style="width:100%; font-size:5px" cellpadding="5">'\
+                '<caption> TCP SEGMENT </caption>'\
+                '<tr><td colspan="4">Source Port = ' + str(segment['srcPort']) + '</td>'\
+                    '<td colspan="4">Destination Port = ' + str(segment['dstPort']) + '</td>'\
+                '</tr><tr>'\
+                    '<td colspan="8">Sequence Number = ' + str(segment['seqNum']) + '</td>'\
+                '</tr><tr>'\
+                    '<td colspan="8">Acknowledgment Number = ' + str(segment['ackNum']) + '</td>'\
+                '</tr><tr>'\
+                    '<td> Offset = ' + str(segment['offset']) + '</td>'\
+                    '<td> Reserved </td>'\
+                    '<td colspan="2">Flags = ' + str(segment['flags']) + '</td>'\
+                    '<td colspan="4">Window = ' + str(segment['window']) + '</td>'\
+                '</tr><tr>'\
+                    '<td colspan="4">Checksum = ' + str(segment['checksum']) + '</td>'\
+                    '<td colspan="4">Urgent Pointer = ' + str(segment['urgPtr']) + '</td>'\
+                '</tr><tr>'\
+                    '<td colspan="8">TCP Options = Optional</td>'\
+                '</tr></table></body></html>')
 
 
     @staticmethod
     def UDP(segment):
-        return ('<html><head><link rel="stylesheet" href="style.css"></head><body>'\
+        return ('<html><head><link rel="stylesheet" type="text/css" href="style.css"></head><body>'\
                 '<table border="1" style="width:100%" cellpadding="5">'\
                 '<caption> UDP SEGMENT </caption>'\
                 '<tr><td>Source Port = ' + str(segment['srcPort']) + '</td>'\
@@ -127,7 +130,7 @@ class PDUPrinter():
 
     @staticmethod
     def Datagram(datagram):
-        return ('<html><head><link rel="stylesheet" href="style.css"></head><body>'\
+        return ('<html><head><link rel="stylesheet" type="text/css" href="style.css"></head><body>'\
                 '<table border="1" style="width:100%" cellpadding="5">'\
                 '<caption> Datagram </caption>'\
                 '<tr>'
@@ -155,15 +158,15 @@ class PDUPrinter():
 
     @staticmethod
     def Frame(frame):
-        return ('<html><head><link rel="stylesheet" href="style.css"></head><body>'\
-                '<table border="1" style="width:100%" cellpadding="5">'\
+        return ('<html><head><link rel="stylesheet" type="text/css" href="style.css"></head><body>'\
+                '<table border="1">'\
                 '<caption> Frame </caption>'\
-                '<tr><td>Preambulo = ' + str(frame['preambulo']) + '</td>'\
-                    '<td>Destination MAC = ' + str(frame['dstMAC']) + '</td>'\
-                    '<td>Source MAC = ' + str(frame['srcMAC']) + '</td>'\
+                '<tr><td>Preambulo<br>' + str(frame['preambulo']) + '</td>'\
+                    '<td>Destination MAC<br>' + str(frame['dstMAC']) + '</td>'\
+                    '<td>Source MAC<br>' + str(frame['srcMAC']) + '</td>'\
                     #'<td>Type = ' + str(frame['type']) + '</td>'\
-                    '<td>Data = data </td>'\
-                    '<td>Checksum = ' + str(frame['checksum']) + '</td>'\
+                    '<td>Data<br>data </td>'\
+                    '<td>Checksum<br>' + str(frame['checksum']) + '</td>'\
                 '</tr></table></body></html>')
 
 

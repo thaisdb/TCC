@@ -25,12 +25,22 @@ class PhysicalClient(QtCore.QThread):
     def __init__(self, parent = None ):
         super(PhysicalClient, self).__init__()
 
+    def configServer(self, addr):
+        try:
+            self.host = addr[0]
+            self.port = addr[1]
+            self.serverAddr  = addr
+            self.msg.emit('Traing to connect = "' + str(self.host)+':' + str(self.port))
+            self.clientSocket = socket(AF_INET, SOCK_STREAM)
+            self.msg.emit( 'Server configured!\n'\
+                    'Address = ' + str(self.ip) + ':' + str(self.port))
+            self.getIPMAC()
+        #if self.sendFileName():
+        except Exception as exc:
+            #self.errorMsg.emit('Server configuration failed!\n'+str(exc))
+            self.msg.emit('Server configuration/connection failed!\n'+str(exc))
+
     def run(self):
-        self.msg.emit('*' * 20 + ' PHYSICAL CLIENT ' + '*' * 20)
-        self.port = 9753
-        self.host = '127.0.0.1'
-        #self.connect()
-        self.getIPMAC()
         self.physicalClientSocket = socket(AF_INET, SOCK_STREAM)
         self.physicalClientSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.physicalClientSocket.bind(addr.PhysicalClient)
@@ -46,12 +56,7 @@ class PhysicalClient(QtCore.QThread):
          #   print 'Could not connect:'
           #  print exc
 
-    def connect(self):
-        self.physicalSocket = socket(AF_INET, SOCK_STREAM)
-        print 'Connected to Physical Server'
-        self.physicalSocket.connect((self.host, self.port))
-        self.getIPMAC()
-        #if self.sendFileName():
+
 
     def getIPMAC (self):
         print 'gettingIPMAC'
@@ -100,17 +105,16 @@ class PhysicalClient(QtCore.QThread):
 
 
     def sendBinaryFile(self):
-        self.physicalSocket = socket(AF_INET, SOCK_STREAM)
-        self.physicalSocket.connect(addr.PhysicalServer)
+        self.clientSocket.connect(self.serverAddr)
         print 'Sending binary file'
         fileName = 'binary_file.txt'
         if not self.tmqReceived:
             print 'Asking tmq'
             #TODO ask user
             myTMQ = 30
-            self.physicalSocket.send(str(myTMQ).zfill(4))
+            self.clientSocket.send(str(myTMQ).zfill(4))
             #server sends min tmq
-            self.tmq = int(self.physicalSocket.recv(4))
+            self.tmq = int(self.clientSocket.recv(4))
             self.tmqReceived = True
             print 'Frame size = ' + str(self.tmq)
         with open(fileName, 'r') as binFile:
@@ -118,7 +122,7 @@ class PhysicalClient(QtCore.QThread):
             while data:
                 self.physicalSocket.send(data)
                 data = binFile.read(self.tmq)
-            self.physicalSocket.close()
+            self.clientSocket.close()
         print 'Resquest sent to Server'
         return True
 

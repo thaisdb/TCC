@@ -65,8 +65,6 @@ class NetworkServer(QtCore.QThread):
 
     def __init__(self, parent=None):
         super(NetworkServer, self).__init__()
-
-    def run(self):
         #network = raw_input("Enter an IP/mask(xxx.xxx.xxx.xxx/mmm): ")
         #self.ip1 = IP(network)
         #network2 = raw_input("Enter an IP/mask(xxx.xxx.xxx.xxx/mmm): ")
@@ -74,6 +72,8 @@ class NetworkServer(QtCore.QThread):
         #    self.ip2 = IP(network2)
         #    self.ipBelongsToNetwork()
         #self.routerTable('192.168.9.0')
+
+    def run(self):
         self.msg.emit('******************** NETWORK SERVER ********************')
         self.networkServerSocket = socket(AF_INET, SOCK_STREAM)
         self.networkServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
@@ -85,6 +85,7 @@ class NetworkServer(QtCore.QThread):
                 self.sendToTransport()
                 if self.receiveAnswer():
                     self.sendAnswerToPhysical()
+        self.networkServerSocket.close()
 
     def ipBelongsToNetwork(self):
         # ip1 AND subnetMask2
@@ -171,3 +172,20 @@ class NetworkServer(QtCore.QThread):
         networkSender.close()
         print 'Answer sent to physical layer'
         return True
+
+
+class Network(object):
+
+
+    def receiveData(self, networkSocket):
+        receiver, _ = networkSocket.accept()
+        print 'listening'
+        package = ''
+        data = receiver.recv(1024)
+        while data:
+            package += data
+            data = receiver.recv(1024)
+        print 'received request from physical server '
+        receiver.close()
+        return package
+

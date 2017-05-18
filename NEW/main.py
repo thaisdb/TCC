@@ -3,6 +3,7 @@ import threading
 import time
 import sys
 import netifaces as nt
+import socket
 from utils import Common, RouterTable
 from PyQt4 import QtGui, QtCore
 from newWindow      import Ui_NewMainWindow
@@ -23,31 +24,48 @@ from networkLayerClient         import NetworkClient
 from transportLayerClient       import TransportClient
 from applicationLayerHTTPClient import ApplicationClient
 
+#class raiseException(Exception):
+#    def __init__(self, exc):
+#        Exception.__init__(self, exc)
+
+
 class Main(QtGui.QMainWindow, Ui_NewMainWindow):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
         self.setupUi(self)
 
-        self.clientButton.clicked.connect(self.runClient)
-        self.serverButton.clicked.connect(self.runServer)
-        self.routerButton.clicked.connect(self.runRouter)
 
-        self.client = Client(self)
-        self.stackedWidget.addWidget(self.client)
-        self.client.toolButton.clicked.connect(self.backToMain)
+        try:
+            self.client = Client(self)
+            self.stackedWidget.addWidget(self.client)
+            self.client.toolButton.clicked.connect(self.backToMain)
+            self.client.errorMsg.connect(self.showException)
 
-        self.server = Server(self)
-        self.stackedWidget.addWidget(self.server)
-        self.server.toolButton.clicked.connect(self.backToMain)
-        self.server.errorMsg.connect(self.raiseError)
+            self.server = Server(self)
+            self.stackedWidget.addWidget(self.server)
+            self.server.toolButton.clicked.connect(self.backToMain)
+            self.server.errorMsg.connect(self.showException)
 
-        self.router = Router(self)
-        self.stackedWidget.addWidget(self.router)
-        self.router.toolButton.clicked.connect(self.backToMain)
+            self.router = Router(self)
+            self.stackedWidget.addWidget(self.router)
+            self.router.toolButton.clicked.connect(self.backToMain)
+            self.router.errorMsg.connect(self.showException)
 
-    def raiseError(self, msg):
-        print 'main error'
-        msgBox = QtGui.QMessageBox.critical(self, 'Critical ERROR!', msg, QtGui.QMessageBox.Retry)
+            self.clientButton.clicked.connect(self.runClient)
+            self.serverButton.clicked.connect(self.runServer)
+            self.routerButton.clicked.connect(self.runRouter)
+
+        except Exception as exc:
+            self.showException(exc)
+
+
+    def showException(self, exc):
+        msgbox = QtGui.QMessageBox.critical(self, 'critical error!', str(exc),  QtGui.QMessageBox.Retry)
+
+
+    def raiseDeadlyException(self, exc):
+        self.raiseException(exc)
+        sys.exit()
 
     def runClient(self):
         self.stackedWidget.setCurrentIndex(self.stackedWidget.indexOf(self.client))
@@ -64,6 +82,7 @@ class Main(QtGui.QMainWindow, Ui_NewMainWindow):
 
 class Router(QtGui.QWidget, Ui_RouterWidget):
 
+    errorMsg = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
         super(Router, self).__init__(parent)
@@ -92,7 +111,6 @@ class Router(QtGui.QWidget, Ui_RouterWidget):
         self.routerTable.setItem(rowPosition, 1, QtGui.QTableWidgetItem(route))
 
     def newRow(self):
-        ip = self.ipLine.text()
         route = self.routeLine.text()
         self.rt.addDataToRouterTable(ip, route)
 
@@ -105,14 +123,19 @@ class Router(QtGui.QWidget, Ui_RouterWidget):
 
 class Client(QtGui.QWidget, Ui_ClientWidget):
 
+    errorMsg = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
         super(Client, self).__init__(parent)
         self.setupUi(self)
 
+        self.startButton.setEnabled(False)
+        #if self.pingButton.clicked.connect(self.ping):
+        self.startButton.setEnabled(True)
         self.startButton.clicked.connect(self.startClient)
         self.clearButton.clicked.connect(self.clearText)
-        self.pingButton.clicked.connect(self.ping)
+
+
 
     def clearText(self):
         self.applicationLOut.setText('')
@@ -126,8 +149,6 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         self.applicationClient.msg.connect(self.doMsg)
         self.applicationClient.html.connect(self.doHtml)
         self.applicationClient.start()
-
-
 
 
         self.transportClient = TransportClient(self)
@@ -146,8 +167,12 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         self.physicalClient = PhysicalClient(self)
         self.physicalClient.msg.connect(self.doMsg)
         self.physicalClient.html.connect(self.doHtml)
+        try:
+            self.physicalClient.configServer(self.getServerAddr())
+        except Exception as exc:
+            self.errorMsg.emit(str(exc))
+            self.errorMsg.emit('error no config server')
         self.physicalClient.start()
-
 
     def doMsg (self, msg):
         sender =  self.sender().__class__.__name__
@@ -181,12 +206,30 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
             self.physicalLOut.insertHtml(msg)
 
 
-    def ping (self):
-        #TODO nmap -p <port> <ip>
-        pong = os.system('ping -c 1 ' + str(self.serverIPInput.text()))
-        if pong == 0:
-            self.startButton.setEnabled(True)
+    def getServerAddr (self):
+        ip = self.serverIPInput.text()
+        if ip == '':
+            ip = Common.myIP()['addr']
+        print 'ip = ' + str(ip)
+        port = int(self.portInput.text())
+        #pingSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        #if pingSock.connect_ex((str(ip), int(port))) == 0:
+        return (ip, port)
+        #return True if pingSock.connect_ex((str(ip), int(port))) == 0 else False
 
+    def getPort(self):
+
+        port = self.portEdit.text()
+        if port == '':
+            self.errorMsg.emit('Please enter a port to connect')
+        elif int(port) < 1024:
+            self.errorMsg.emit('Ports below 1024 are well-known, elso called system ports,'\
+                    ' associated with well established services and protocol.\nPlease enter a valid port number.')
+        elif int(port) > 49152:
+            self.errorMsg.emit('Ports bigger than 49152 are used by clients to make outbound connections to servers.'\
+                    '\nPlease enter a valid port number.')
+        else:
+            return  int(port)
 
 class Server(QtGui.QWidget, Ui_ServerWidget):
 
@@ -197,12 +240,12 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         self.setupUi(self)
 
         self.myIP = Common.myIP()['addr']
-
         self.serverIPLabel.setText('Server IP: ' + self.myIP)
+
         self.startButton.clicked.connect(self.startServer)
 
 
-    def startServer(self):
+    def startServer(self, pong):
         self.applicationServer = ApplicationServer(self)
         self.applicationServer.msg.connect(self.printMsg)
         #self.applicationServer.errorMsg.connect(self.errorMsg.emit())
@@ -216,13 +259,14 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         self.networkServer.msg.connect(self.printMsg)
         self.networkServer.start()
 
-        port = self.getPort()
         self.physicalServer = PhysicalServer(self)
         self.physicalServer.msg.connect(self.printMsg)
-        self.physicalServer.errorMsg.connect(self.raiseError)
-        self.physicalServer.configure(self.myIP, port)
+        port = self.getPort()
+        self.physicalServer.config(self.myIP, port)
         self.physicalServer.html.connect(self.printHtml)
         self.physicalServer.start()
+
+
 
     def printMsg (self, msg):
         sender =  self.sender().__class__.__name__
@@ -257,14 +301,19 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
 
 
     def getPort(self):
-        try:
-            port = self.portEdit.text()
-            return  int(port)
-        except Exception as exc:
-            print str(exc)
 
-    def raiseError(self, error):
-        self.errorMsg.emit(error)
+        port = self.portEdit.text()
+        if port == '':
+            self.errorMsg.emit('Please enter a port to connect')
+        elif int(port) < 1024:
+            self.errorMsg.emit('Ports below 1024 are well-known, elso called system ports,'\
+                    ' associated with well established services and protocol.\nPlease enter a valid port number.')
+        elif int(port) > 49152:
+            self.errorMsg.emit('Ports bigger than 49152 are used by clients to make outbound connections to servers.'\
+                    '\nPlease enter a valid port number.')
+        else:
+            return  int(port)
+
 
 
 def main():

@@ -25,14 +25,15 @@ class PhysicalServer(QtCore.QThread):
     def __init__(self, parent=None):
         super(PhysicalServer, self).__init__()
 
-    def configure(self, host, port):
+    def config(self, host, port):
         self.host = host
         self.port = port
+        print 'server ip, port'+ str(host) + str(port)
         try:
-            self.physicalServerSocket = socket(AF_INET, SOCK_STREAM)
-            self.physicalServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-            self.physicalServerSocket.bind((host, port))
-            self.physicalServerSocket.listen(1)
+            self.ServerSocket = socket(AF_INET, SOCK_STREAM)
+            self.ServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+            self.ServerSocket.bind((self.host,int(self.port)))
+            self.ServerSocket.listen(1)
             self.msg.emit  ("******************** PHYSICAL SERVER ********************")
             self.msg.emit ("Listening")
             self.msg.emit("Server setup:\nIP = " + str(self.host) + '\tPort = ' + str(self.port) + '\nListening...')
@@ -40,6 +41,10 @@ class PhysicalServer(QtCore.QThread):
             self.errorMsg.emit('ERROR! It was not possible start the server: \n' + str(exc))
 
     def run(self):
+        self.physicalServerSocket = socket(AF_INET, SOCK_STREAM)
+        self.physicalServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        self.physicalServerSocket.bind(addr.PhysicalServer)
+        self.physicalServerSocket.listen(1)
         #self.port = 9753
         #self.host = '127.0.0.1'
         #self.receiveFileName()
@@ -59,6 +64,7 @@ class PhysicalServer(QtCore.QThread):
 
 
     def receiveFileName(self):
+        self.physicalSocket, _ = self.physicalServerSocket.accept()
         data = self.physicalSocket.recv(1024)
         if not data:
             print 'No valid file  received'
@@ -69,12 +75,16 @@ class PhysicalServer(QtCore.QThread):
             self.fileType = 0
         else:
             self.fileType = 1
+        self.physicalSocket.close()
         print ('filename: ' + self.receivedFileName)
 
 
 
     def receiveFile(self):
-        physicalReceiver, _ = self.physicalServerSocket.accept()
+        physicalReceiver, _ = self.ServerSocket.accept()
+        while physicalReceiver == '':
+            print 'passing ping'
+            pass
         if not self.tmqSent:
             self.tmq = int(self.setTMQ(physicalReceiver))
             self.tmqSent = True

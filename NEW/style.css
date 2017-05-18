@@ -15,7 +15,11 @@ QPushButton#pushButton:disabled {
     font-size: 50px;
 }
 
-table, th, td {
-    border: 1px solid black;
+table, td{
+    font: "Ubuntu Condensed";
+    font-size: 13px;
     border-collapse: collapse;
+    text-align: justify;
+    padding: 3px;
+    width: 110%;
 }

@@ -12,6 +12,8 @@ from utils import Addresses as addr
 from utils import PDUPrinter
 from PyQt4 import QtCore
 
+from networkLayerServer import Network
+
 class IP:
     def __init__(self, network):
         ip, self.maskLen = network.split('/')
@@ -87,25 +89,16 @@ class NetworkClient(QtCore.QThread):
         self.networkClientSocket.bind (addr.NetworkClient)
         self.msg.emit('*' * 20 + ' INTENERT CLIENT ' + '*' * 20)
         self.networkClientSocket.listen(1)
-        self.msg.emit('accepted connection')
+        self.msg.emit('Listening...')
         self.loadRouterTable()
         try:
             while True:
-                #mode = raw_input('Enter a corresponding number:\n[1]To access the router table.\n'\
-                #        '[2]To start the layer activity\n : ')
-                mode = '2'
-                if mode == '1':
-                    self.accessRouterTable()
-                    break
-                elif mode == '2':
-                    while True:
-                        if self.receiveFromTransport():
-                            self.createDatagram()
-                            #self.belongsToNetwork()
-                            self.toPhysical()
-                            if self.receiveFromPhysical():
-                                self.sendToTransport()
-                print 'Invalid input. Please choose between valid options.'
+                if self.receiveFromTransport():
+                    self.createDatagram()
+                    #self.belongsToNetwork()
+                    self.toPhysical()
+                    if self.receiveFromPhysical():
+                        self.sendToTransport()
         except KeyboardInterrupt:
             print 'Shutting down Internet Layer Client'
             self.saveRouterTable()
@@ -139,8 +132,7 @@ class NetworkClient(QtCore.QThread):
             return 0
 
     def toPhysical(self):
-        networkSender = socket(AF_INET, SOCK_STREAM)
-        networkSender.connect(addr.PhysicalClient)
+        networkSender,_ = self.networkClientSocket.connect(addr.PhysicalClient)
         while self.datagram:
             sent = networkSender.send(self.datagram)
             self.datagram = self.datagram[sent:]
@@ -150,15 +142,19 @@ class NetworkClient(QtCore.QThread):
 
     def receiveFromTransport(self):
         print 'Listening...\nWaiting upper layer'
-        networkReceiver, _ = self.networkClientSocket.accept()
-        self.frame = ''
-        data = networkReceiver.recv(1024)
-        while data:
-            self.frame += data
-            data = networkReceiver.recv(1024)
-        networkReceiver.close()
-        print 'Received segment from transport layer'
+        networkClient = Network()
+        self.frame = networkClient.receiveData(self.networkClientSocket)
+        print self.frame
         return True
+        #networkReceiver, _ = self.networkClientSocket.accept()
+        #self.frame = ''
+        #data = networkReceiver.recv(1024)
+        #while data:
+        #    self.frame += data
+        #    data = networkReceiver.recv(1024)
+        #networkReceiver.close()
+        #print 'Received segment from transport layer'
+        #return True
 
     def createDatagram(self):
         host = re.compile('Host:(.*?):')

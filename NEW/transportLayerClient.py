@@ -56,9 +56,9 @@ class TransportClient(QtCore.QThread):
                             break;
 
                     if self.transportType == 'TCP':
-                        self.sendTCPPackage()
+                        self.sendTCPSegment()
                     else:
-                        self.sendUDPPackage()
+                        self.sendUDPSegment()
 
                     if self.receiveAnswerFromInternetLayer():
                         self.sendAnswerToApplicationLayer()
@@ -66,7 +66,7 @@ class TransportClient(QtCore.QThread):
             self.transportClientSocket.close()
 
 
-    def sendUDPPackage(self):
+    def sendUDPSegment(self):
         try:
             transportSender = socket(AF_INET, SOCK_STREAM)
             transportSender.connect(addr.NetworkClient)
@@ -102,29 +102,8 @@ class TransportClient(QtCore.QThread):
         #self.udpChecksum = 0
 	#self.udpHeaderTuple = (self.srcPort, self.dstPort, self.udpChecksum)
 
-    def findPort(self):
-        return self.applicationPack.split('Host:', 1)[1].split(':', 1)[1].split('\n')[0]
 
-    def doConnectionTCP(self):
-        try:
-            self.internetSocket = socket(AF_INET, SOCK_STREAM)
-            #internetAddress = ('localhost', 3333)
-            self.internetSocket.connect(('localhost', self.dstPort))
-            if self.threeWayHandshake():
-        	self.TCPConnected = True
-                self.msg.emit('Conection estabilished')
-        except error, msg:
-            self.msg.emit("Couldn't estabilishe connection")
-            self.msg.emit(msg)
-
-
-    def threeWayHandshake(self):
-        if self.send_SYN():
-            if self.receive_SYN_ACK():
-                self.send_ACK()
-
-    def send_SYN(self):
-        self.msg.emit('sending SYN')
+    def sendTCPSegment(self):
         self.seq = 1
         self.ackSeq = 0
         #size of tcp header in 32bit word
@@ -147,6 +126,72 @@ class TransportClient(QtCore.QThread):
                          'window'   : self.window,
                          'urgPtr'   : self.urgPtr,
                          'opcoes'   : 'opções',
+                         'data'     : 'data'}
+        self.jTCPHeader = json.dumps(self.tcpHeader)
+	#remount head with correct checksum
+        #tcpHeaderTuple = (self.srcPort, self.dstPort, self.seq, self.ackSeq, self.offsetRes,
+        #                  jFlags, self.window, self.tcpChecksum, self.urgPtr)
+        self.tcpHeader['checksum'] = self.calculateChecksum(self.jTCPHeader)
+        self.jTCPHeader = json.dumps(self.tcpHeader)
+
+	#self.headerLength = sys.getsizeof(tcpHeader)
+        self.html.emit(PDUPrinter.TCP(self.tcpHeader))
+        try:
+            self.internetSocket.send(self.jTCPHeader)
+            self.msg.emit('TCP sent')
+            return True
+        except Exception as exc:
+            self.errorMsg.emit('Error sending TCP segment')
+            self.errorMsg.emit(str(exc))
+            return False
+
+    def findPort(self):
+        return self.applicationPack.split('Host:', 1)[1].split(':', 1)[1].split('\n')[0]
+
+    def doConnectionTCP(self):
+        try:
+            self.internetSocket = socket(AF_INET, SOCK_STREAM)
+            #internetAddress = ('localhost', 3333)
+            self.internetSocket.connect(('localhost', self.dstPort))
+            if self.threeWayHandshake():
+        	self.TCPConnected = True
+                self.msg.emit('Conection estabilished')
+        except error, msg:
+            self.msg.emit("Couldn't estabilishe connection")
+            self.msg.emit(msg)
+
+
+    def threeWayHandshake(self):
+        self.msg.emit('Starting Three Ways Handshake Protocol')
+
+        if self.send_SYN():
+            if self.receive_SYN_ACK():
+                self.send_ACK()
+
+    def send_SYN(self):
+        self.msg.emit('sending SYN')
+        self.seq = 1
+        self.ackSeq = 0
+        #size of tcp header in 32bit word
+        doff = 5 #4bit field: 5*4 = 20bytes
+        self.window = 5840 #max window size allowed
+        self.tcpChecksum = 0
+        self.urgPtr = 0
+        self.offsetRes = (doff << 4) + 0 #???
+
+        #send SYN
+        self.setFlags('SYN')
+        jFlags = json.dumps(self.flags)
+        self.tcpHeader = {'transportProtocol' : 'TCP',
+                         'srcPort'  : self.srcPort,
+                         'dstPort'  : self.dstPort,
+                         'seqNum'   : self.seq,
+                         'ackNum'   : self.ackSeq,
+                         'offset'   : self.offsetRes,
+                         'flags'    : jFlags,
+                         'window'   : self.window,
+                         'urgPtr'   : self.urgPtr,
+                         'opcoes'   : 'opções',
                          'data'     : 'no data'}
         self.jTCPHeader = json.dumps(self.tcpHeader)
         self.tcpChecksum = self.calculateChecksum(self.jTCPHeader)
@@ -157,7 +202,7 @@ class TransportClient(QtCore.QThread):
         self.jTCPHeader = json.dumps(self.tcpHeader)
 
 	#self.headerLength = sys.getsizeof(tcpHeader)
-        self.html.emit(PDUPrinter('TCP'))
+        self.html.emit(PDUPrinter.TCP(self.tcpHeader))
         try:
             self.internetSocket.send(self.jTCPHeader)
             self.msg.emit('TCPHeader sent')
@@ -186,7 +231,7 @@ class TransportClient(QtCore.QThread):
             #(self.dstPort, self.srcPort, self.seq, self.ackSeq, self.offsetRes, jFlags,
             #    self.window, self.tcpChecksum, self.urgPtr) = json.loads(self.expected_SYN_ACK)
             self.flags = json.loads(jFlags)
-            self.html.emit(PDUPrinter('TCP'))
+            self.html.emit(PDUPrinter.TCP(self.tcpHeader))
             return True
         else:
             self.msg.emit('DID NOT Receive SYN_ACK')
@@ -195,7 +240,7 @@ class TransportClient(QtCore.QThread):
     def send_ACK (self):
         self.msg.emit('Sending ACK')
         self.setFlags('ACK')
-        self.html.emit(PDUPrinter('TCP'))
+        self.html.emit(PDUPrinter.TCP(self.tcpHeader))
         jFlags = json.dumps(self.flags)
         self.tcpHeader = {'transportProtocol' : 'TCP',
                          'srcPort'  : self.srcPort,
