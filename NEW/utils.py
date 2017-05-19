@@ -2,7 +2,7 @@
 import netifaces
 from PyQt4 import QtCore
 
-class Addresses(object):
+class Addresses():
 
     ApplicationServer   = ('localhost', 8888)
     TransportServer     = ('localhost', 7777)
@@ -15,6 +15,10 @@ class Addresses(object):
     ApplicationClient   = ('localhost', 1111)
 
     Browser             = ('localhost', 9999)
+
+    @staticmethod
+    def setServerAddress(addr):
+        PhisicalServer = addr;
 
 class Common():
     @staticmethod
