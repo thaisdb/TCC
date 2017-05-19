@@ -3,7 +3,7 @@ import threading
 import time
 import sys
 import netifaces as nt
-from utils import Common, RouterTable
+from utils import Common, RouterTable, Addresses
 from PyQt4 import QtGui, QtCore
 from newWindow      import Ui_NewMainWindow
 from clientWidget   import Ui_ClientWidget
@@ -203,6 +203,8 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
 
 
     def startServer(self):
+        self.configureServer()
+
         self.applicationServer = ApplicationServer(self)
         self.applicationServer.msg.connect(self.printMsg)
         #self.applicationServer.errorMsg.connect(self.errorMsg.emit())
@@ -216,11 +218,8 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         self.networkServer.msg.connect(self.printMsg)
         self.networkServer.start()
 
-        port = self.getPort()
         self.physicalServer = PhysicalServer(self)
         self.physicalServer.msg.connect(self.printMsg)
-        self.physicalServer.errorMsg.connect(self.raiseError)
-        self.physicalServer.configure(self.myIP, port)
         self.physicalServer.html.connect(self.printHtml)
         self.physicalServer.start()
 
@@ -254,12 +253,11 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
             self.physicalLOut.append(str(dt.now()))
             self.physicalLOut.insertHtml(msg)
 
-
-
-    def getPort(self):
+    def configureServer(self):
         try:
+            ip = Common.myIP()['addr']
             port = self.portEdit.text()
-            return  int(port)
+            Addresses.setServerAddress((ip, int(port)))
         except Exception as exc:
             print str(exc)
 
