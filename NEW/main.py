@@ -105,14 +105,32 @@ class Router(QtGui.QWidget, Ui_RouterWidget):
 
 class Client(QtGui.QWidget, Ui_ClientWidget):
 
+    errorMsg = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
         super(Client, self).__init__(parent)
         self.setupUi(self)
 
-        self.startButton.clicked.connect(self.startClient)
+        self.startButton.clicked.connect(self.configureClient)
         self.clearButton.clicked.connect(self.clearText)
-        self.pingButton.clicked.connect(self.ping)
+#        self.pingButton.clicked.connect(self.ping)
+
+
+    def configureClient(self):
+        try:
+            ip = self.serverIPInput.text()
+            if ip == '':
+                print 'ip null'
+                ip = Common.myIP()['addr']
+                print 'ip ' + str(ip)
+            port = self.portaInput.text()
+            Addresses.PhysicalServer = (ip, int(port))
+            self.startClient()
+            return True
+        except Exception as exc:
+            self.errorMsg.emit(str(exc))
+            return False
+
 
     def clearText(self):
         self.applicationLOut.setText('')
@@ -126,8 +144,6 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         self.applicationClient.msg.connect(self.doMsg)
         self.applicationClient.html.connect(self.doHtml)
         self.applicationClient.start()
-
-
 
 
         self.transportClient = TransportClient(self)
@@ -181,11 +197,11 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
             self.physicalLOut.insertHtml(msg)
 
 
-    def ping (self):
-        #TODO nmap -p <port> <ip>
-        pong = os.system('ping -c 1 ' + str(self.serverIPInput.text()))
-        if pong == 0:
-            self.startButton.setEnabled(True)
+#    def ping (self):
+#        #TODO nmap -p <port> <ip>
+#        pong = os.system('ping -c 1 ' + str(self.serverIPInput.text()))
+#        if pong == 0:
+#            self.startButton.setEnabled(True)
 
 
 class Server(QtGui.QWidget, Ui_ServerWidget):
@@ -199,11 +215,22 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         self.myIP = Common.myIP()['addr']
 
         self.serverIPLabel.setText('Server IP: ' + self.myIP)
-        self.startButton.clicked.connect(self.startServer)
 
+        self.startButton.clicked.connect(self.configureServer)
+
+
+    def configureServer(self):
+        try:
+            ip = Common.myIP()['addr']
+            port = self.portEdit.text()
+            Addresses.PhysicalServer = (ip, int(port))
+            self.startServer()
+            return True
+        except Exception as exc:
+            self.errorMsg.emit(str(exc))
+            return False
 
     def startServer(self):
-        self.configureServer()
 
         self.applicationServer = ApplicationServer(self)
         self.applicationServer.msg.connect(self.printMsg)
@@ -221,6 +248,7 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         self.physicalServer = PhysicalServer(self)
         self.physicalServer.msg.connect(self.printMsg)
         self.physicalServer.html.connect(self.printHtml)
+        self.physicalServer.errorMsg.connect(self.raiseError)
         self.physicalServer.start()
 
     def printMsg (self, msg):
@@ -253,13 +281,6 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
             self.physicalLOut.append(str(dt.now()))
             self.physicalLOut.insertHtml(msg)
 
-    def configureServer(self):
-        try:
-            ip = Common.myIP()['addr']
-            port = self.portEdit.text()
-            Addresses.setServerAddress((ip, int(port)))
-        except Exception as exc:
-            print str(exc)
 
     def raiseError(self, error):
         self.errorMsg.emit(error)

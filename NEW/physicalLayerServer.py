@@ -25,26 +25,20 @@ class PhysicalServer(QtCore.QThread):
     def __init__(self, parent=None):
         super(PhysicalServer, self).__init__()
 
-    def configure(self, host, port):
-        self.host = host
-        self.port = port
+
+    def run(self):
         try:
             self.physicalServerSocket = socket(AF_INET, SOCK_STREAM)
             self.physicalServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-            self.physicalServerSocket.bind((host, port))
+            self.physicalServerSocket.bind(addr.PhysicalServer)
+            print 'physical server add received = ' +str(addr.PhysicalServer)
+            self.host, self.port = addr.PhysicalServer
             self.physicalServerSocket.listen(1)
             self.msg.emit  ("******************** PHYSICAL SERVER ********************")
             self.msg.emit ("Listening")
             self.msg.emit("Server setup:\nIP = " + str(self.host) + '\tPort = ' + str(self.port) + '\nListening...')
         except Exception as exc:
             self.errorMsg.emit('ERROR! It was not possible start the server: \n' + str(exc))
-
-    def run(self):
-        #self.port = 9753
-        #self.host = '127.0.0.1'
-        #self.receiveFileName()
-        #receive binary file and save as txt
-        #print 'another file'
         try:
             while True:
                 if self.receiveFile():

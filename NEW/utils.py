@@ -18,7 +18,8 @@ class Addresses():
 
     @staticmethod
     def setServerAddress(addr):
-        PhisicalServer = addr;
+        print 'server address changed to = ' + str(addr)
+        PhysicalServer = addr;
 
 class Common():
     @staticmethod
