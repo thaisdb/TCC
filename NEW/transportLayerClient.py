@@ -93,6 +93,9 @@ class TransportClient(QtCore.QThread):
         except Exception, exc:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             error = exc_tb.tb_frame
+        #src = client
+        #srcIP = self.datagram['srcIP']
+        #dst = server
             line = exc_tb.tb_lineno
             fileName = error.f_code.co_filename
             self.msg.emit('ERROR! Coudn\'t send UDP package.')
@@ -136,14 +139,13 @@ class TransportClient(QtCore.QThread):
 
         #send SYN
         self.setFlags('SYN')
-        jFlags = json.dumps(self.flags)
         self.tcpHeader = {'transportProtocol' : 'TCP',
                          'srcPort'  : self.srcPort,
                          'dstPort'  : self.dstPort,
                          'seq'      : self.seq,
                          'ackSeq'   : self.ackSeq,
                          'offsetRes': self.offsetRes,
-                         'flags'    : jFlags,
+                         'flags'    : self.flags,
                          'window'   : self.window,
                          'urgPtr'   : self.urgPtr,
                          'opcoes'   : 'opções',
@@ -157,36 +159,34 @@ class TransportClient(QtCore.QThread):
         self.jTCPHeader = json.dumps(self.tcpHeader)
 
 	#self.headerLength = sys.getsizeof(tcpHeader)
-        self.html.emit(PDUPrinter('TCP'))
+        self.html.emit(PDUPrinter.TCP(self.tcpHeader))
         try:
-            self.internetSocket.send(self.jTCPHeader)
+            transportSender = socket(AF_INET, SOCK_STREAM)
+            transportSender.connect(addr.NetworkClient)
+            transportSender.send(self.jTCPHeader)
             self.msg.emit('TCPHeader sent')
             return True
-        except:
-            self.msg.emit('Error sending SYN')
+        except Exception as exc:
+            self.errorMsg.emit('Error sending SYN\n' + str(exc))
             return False
 
     def receive_SYN_ACK (self):
-        self.expected_SYN_ACK = self.internetSocket.recv(1024)
-        if self.expected_SYN_ACK:
-            jFlags = self.flags
+        self.receiveAnswerFromInternetLayer
+        if self.answer:
             self.msg.emit('Received SYN_ACK')
-            package = json.loads(self.expected_SYN_ACK)
+            package = json.loads(self.answer)
             self.tcpHeader = {'transportProtocol' : 'TCP',
                     'srcPort' : package['srcPort'],
                     'dstPort' : package['dstPort'],
                     'seq' : package['seq'],
                     'ackSeq' : package['ackSeq'],
                     'offsetRes' : package['offsetRes'],
-                    'jFlags' : package['flags'],
+                    'flags' : package['flags'],
                     'window' : package['window'],
                     'urgPtr' : package['urgPtr'],
                     'opcoes' : package['opcoes'],
                     'data' : package['data']}
-            #(self.dstPort, self.srcPort, self.seq, self.ackSeq, self.offsetRes, jFlags,
-            #    self.window, self.tcpChecksum, self.urgPtr) = json.loads(self.expected_SYN_ACK)
-            self.flags = json.loads(jFlags)
-            self.html.emit(PDUPrinter('TCP'))
+            self.html.emit(PDUPrinter.TCP(self.tcpHeader))
             return True
         else:
             self.msg.emit('DID NOT Receive SYN_ACK')
@@ -195,7 +195,6 @@ class TransportClient(QtCore.QThread):
     def send_ACK (self):
         self.msg.emit('Sending ACK')
         self.setFlags('ACK')
-        self.html.emit(PDUPrinter('TCP'))
         jFlags = json.dumps(self.flags)
         self.tcpHeader = {'transportProtocol' : 'TCP',
                          'srcPort'  : self.srcPort,
@@ -208,9 +207,12 @@ class TransportClient(QtCore.QThread):
                          'urgPtr'   : self.urgPtr,
                          'opcoes'   : 'opções',
                          'data'     : 'no data'}
+        self.html.emit(PDUPrinter.TCP(self.tcpHeader))
         self.jTCPHeader = json.dumps(self.tcpHeader)
         try:
-            self.internetSocket.send(self.jTCPHeader)
+            transportSender = socket(AF_INET, SOCK_STREAM)
+            transportSender.connect(addr.NetworkClient)
+            transportSender.send(self.jTCPHeader)
             self.msg.emit('ACK sent')
         except:
             self.msg.emit( 'could not send ACK message')

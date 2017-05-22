@@ -94,25 +94,23 @@ class PDUPrinter():
 
 
     @staticmethod
-    def TCP():
-        return   ('|' + '*' * 80 + '|\n' \
-                '| Porta de Origem = {0[srcPort]:^10} | Porta de Destino = {0[dstPort]:^10} |\n' \
-                '|' + '*' * 80 + '|\n' \
-                '| Numero de sequencia = {0[seq]:^10} |\n' \
-                '|' + '*' * 80 + '|\n' \
-                '| Numero de confirmação = {0[ackSeq]:^10} |\n' \
-                '|' + '*' * 80 + '|\n' \
-                #TODO comprimento cabeçalho fixo
-                #TODO add flags
-                '| Comprimento do Cabeçalho = {0[offsetRes]:^5} | Tamanho da Janela = {0[window]:^10} !\n' \
-                '|' + '*' * 80 + '|\n' \
-                '| Checksum = checksum | Ponteiro para urgente = {0[urgPtr]:^10} |\n' \
-                '|' + '*' * 80 + '|\n' \
-                '| Opções = {0[opcoes]:^10} |\n' \
-                '|' + '*' * 80 + '|\n' \
-                #TODO formatar requisição http
-                '| Dados = Requisição HTTP |\n' \
-                '|' + '*' * 80 + '|').format(self.tcpHeader)
+    def TCP(segment):
+        return   ('<html><head><link rel="stylesheet" href="style.css"></head><body>'\
+                '<table border="1" style="width:100%" cellpadding="5">'\
+                '<caption> UDP SEGMENT </caption>'\
+                '<tr><td>Source Port = ' + str(segment['srcPort']) + '</td>'\
+                    '<td>Destination Port = ' + str(segment['dstPort']) + '</td>'\
+                '</tr><tr>'\
+                    '<td colspan="2">Sequence Number = ' + str(segment['seq']) + '</td>'\
+                '</tr><tr>'\
+                    '<td colspan="2">Acknowledgment Number = ' + str(segment['ackSeq']) + '</td>'\
+                '</tr><tr>'\
+                    '<td colspan="2">Flags = ' + str(segment['flags']) + '</td>'\
+                '</tr><tr>'\
+                    '<td>Checksum = ' + str(segment['checksum']) + '</td>'\
+                '</tr><tr>'\
+                    '<td colspan="2">Data = Application Data</td>'\
+                '</tr></table></body></html>')
 
 
     @staticmethod

@@ -88,7 +88,7 @@ class NetworkClient(QtCore.QThread):
         self.msg.emit('*' * 20 + ' INTENERT CLIENT ' + '*' * 20)
         self.networkClientSocket.listen(1)
         self.msg.emit('accepted connection')
-        self.loadRouterTable()
+        #self.loadRouterTable()
         try:
             while True:
                 #mode = raw_input('Enter a corresponding number:\n[1]To access the router table.\n'\

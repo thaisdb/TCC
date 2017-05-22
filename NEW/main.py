@@ -35,6 +35,7 @@ class Main(QtGui.QMainWindow, Ui_NewMainWindow):
         self.client = Client(self)
         self.stackedWidget.addWidget(self.client)
         self.client.toolButton.clicked.connect(self.backToMain)
+        self.client.errorMsg.connect(self.raiseError)
 
         self.server = Server(self)
         self.stackedWidget.addWidget(self.server)
@@ -149,6 +150,7 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         self.transportClient = TransportClient(self)
         self.transportClient.msg.connect(self.doMsg)
         self.transportClient.html.connect(self.doHtml)
+        self.transportClient.errorMsg.connect(self.raiseError)
         transportType = 'TCP' if self.radTCP.isChecked() else 'UDP'
         self.transportClient.msg.emit('Transport protocol selected = ' + transportType)
         self.transportClient.configure(transportType)
@@ -196,6 +198,8 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
             self.physicalLOut.append(str(dt.now()))
             self.physicalLOut.insertHtml(msg)
 
+    def raiseError(self, error):
+        self.errorMsg.emit(error)
 
 #    def ping (self):
 #        #TODO nmap -p <port> <ip>
@@ -239,6 +243,7 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
 
         self.transportServer = TransportServer(self)
         self.transportServer.msg.connect(self.printMsg)
+        self.transportServer.errorMsg.connect(self.raiseError)
         self.transportServer.start()
 
         self.networkServer = NetworkServer(self)

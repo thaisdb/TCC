@@ -132,20 +132,17 @@ class NetworkServer(QtCore.QThread):
 
     def interpretPackage(self):
         self.datagram = json.loads(self.package)
-        #src = client
-        #srcIP = self.datagram['srcIP']
-        #dst = server
+        self.msg.emit('Datagram received:')
+        PDUPrinter.Datagram(self.datagram)
         dstIP = self.datagram['dstIP']
         print 'dstIP = ' + str(dstIP)
         thisIP = Common.myIP()['addr']
         print 'thisIP = ' + str(thisIP)
-        if str(dstIP) == str(thisIP):
+        if str(dstIP) == str(thisIP) or str(dstIP) == 'localhost':
             print 'Right server'
-            PDUPrinter.Datagram(self.datagram)
         else :
             print 'Not this server. Checking router table'
-            rt = RouterTable('serverRouterTable.txt')
-            rt.printRouterTable()
+            #rt = RouterTable('serverRouterTable.txt')
         #print 'result = ' + str(self.package)
 
                                                                                                                                                   #return Tru

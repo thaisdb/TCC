@@ -16,8 +16,11 @@ class TransportServer (QtCore.QThread):
     ACK = {'cwr':0, 'ece':0, 'fin':0, 'syn':0, 'rst':0, 'psh':0, 'ack':1, 'urg':0}
     space = '\t'
 
+    connected = False
+
     answer = ''
     msg = QtCore.pyqtSignal(str)
+    errorMsg = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
         super(TransportServer, self).__init__()
@@ -36,7 +39,6 @@ class TransportServer (QtCore.QThread):
             self.transportServerSocket.listen(1)
             print 'Listening'
             while True:
-                #self.threeWayHandshake()
                 if self.receive_Data():
                     self.interpretSegment()
                     if self.sendToApplication():
@@ -55,7 +57,11 @@ class TransportServer (QtCore.QThread):
 
     def threeWayHandshake(self):
         if self.receive_SYN():
-            self.send_SYN_ACK()
+            if self.send_SYN_ACK():
+                self.msg.emit('Three way handshake protocol established connection!')
+                return True
+        return False
+
 
     def receive_Data(self):
         networkReceiver, _ = self.transportServerSocket.accept()
@@ -79,34 +85,31 @@ class TransportServer (QtCore.QThread):
         return True
 
     def receive_SYN(self):
-        self.internetSocket, _ = self.tcpServerSocket.accept()
-        print self.space + 'Connected!'
-        print self.space + "Expecting SYN"
-        expectSyn = self.internetSocket.recv(1024)
-        self.clientPort, self.serverPort, self.seq, self.ackSeq, self.offsetRes,jFlags, window, checksum, urgPtr = json.loads(expectSyn)
-        self.flags = json.loads(jFlags)
-        print self.flags
+        self.flags = self.segment['flags']
+        print str(self.flags)
         if self.flags == self.SYN:
-            print self.space + "Received SYN package"
+            self.msg.emit("Received SYN package")
             return True
         else:
             self.verifyFlags('SYN')
             return False
 
     def send_SYN_ACK(self):
-        print self.space + 'Sending SYN_ACK'
-        self.setFlags('SYN_ACK')
-        jFlags = json.dumps(self.flags)
-        self.seq = 20
-        self.offsetRes = 0
-        self.window = 0
-        self.tcpChecksum = 0
-        self.urgPtr = 0
-        TCPHeaderTuple = (self.srcPort, self.dstPort, self.seq, self.ackSeq,
-                self.offsetRes, jFlags, self.window, self.tcpChecksum, self.urgPtr)
-        jTCPHeader = json.dumps(TCPHeaderTuple)
-        #self.headerLengh = sys.sizeof(jTCPHeader)
-        self.internetSocket.send(jTCPHeader)
+        self.msg.emit('Sending SYN_ACK')
+        tcpSegment = {'transportProtocol': 'TCP',
+                        'scrPort': self.srcPort,
+                        'dstPort' : self.dstPort,
+                        'seq' : 'seq',
+                        'offsetRes': 'offset',
+                        'window': 'window',
+                        'checksum': 'checksum',
+                        'urgPtr': 'urgPtr',
+                        'flags' : self.setFlags('SYN_ACK'),
+                        'opcoes': 'opcoes',
+                        'data' : 'NULL'}
+        self.answer = json.dumps(tcpSegment)
+        self.sendAnswerToNetwork()
+        return True
 
     def receive_ACK(self):
         expect_ACK = self.internetSocke.recv(1024)
@@ -132,8 +135,8 @@ class TransportServer (QtCore.QThread):
                     'fin':0, 'syn':0, 'rst':0,
                     'psh':0, 'ack':0, 'urg':0}
         if (mode == 'SYN_ACK'):
-            self.ackSeq = self.seq + 1
-            self.seq = 0
+            #self.ackSeq = self.seq + 1
+            #self.seq = 0
             self.flags['syn'] = 1
             self.flags['ack'] = 1
 
@@ -153,15 +156,24 @@ class TransportServer (QtCore.QThread):
     def interpretSegment(self):
         try:
             self.segment = json.loads(self.segment)
-            PDUPrinter.UDP(self.segment)
+            if self.segment['transportProtocol'] == 'UDP':
+                PDUPrinter.UDP(self.segment)
 
-            checksum = self.segment['checksum']
-            del self.segment['checksum']
-            self.verifyChecksum(checksum)
+                checksum = self.segment['checksum']
+                del self.segment['checksum']
+                self.verifyChecksum(checksum)
 
-            self.segment['data'] = json.loads(self.segment['data'])
-            print 'request send to Application Server'
-
+                self.segment['data'] = json.loads(self.segment['data'])
+                print 'request send to Application Server'
+            else: #TCP segment
+                self.msg.emit('TCP connection requested.')
+                if not self.connected:
+                    self.connected = self.threeWayHandshake()
+                    if not self.connected:
+                        self.errorMsg.emit('Couldn\'t established TCP connection')
+                else:
+                    print 'connected'
+                    #pacote tcp normal
         except Exception as exc:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             error = exc_tb.tb_frame
