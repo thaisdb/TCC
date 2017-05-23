@@ -14,10 +14,12 @@ from PyQt4 import QtCore
 
 
 class TransportClient(QtCore.QThread):
-    updPackage = ''
-    tcpPackage = ''
-    TCPConnected = False
+    SYN     = {'cwr':0, 'ece':0, 'fin':0, 'syn':1, 'rst':0, 'psh':0, 'ack':0, 'urg':0}
+    ACK     = {'cwr':0, 'ece':0, 'fin':0, 'syn':0, 'rst':0, 'psh':0, 'ack':1, 'urg':0}
+    SYN_ACK = {'cwr':0, 'ece':0, 'fin':0, 'syn':1, 'rst':0, 'psh':0, 'ack':1, 'urg':0}
 
+    TCPConnected = False
+    answer = ''
 
     msg = QtCore.pyqtSignal(str)
     html = QtCore.pyqtSignal(str)
@@ -44,20 +46,19 @@ class TransportClient(QtCore.QThread):
         try:
             while True:
                 if self.receiveFromApplicationLayer():
-                    if not self.TCPConnected and self.transportType == 'TCP':
-                        if self.threeWayHandshake():
-                            self.TCPConnected = True
-                            self.msg.emit('TCP connection established successfully\n'\
-                                    ' through TreeWayHandshake protocol')
-                        else:
-                            self.TCPConnection = False
-                            self.errorMsg.emit ('The ThreeWayHandshake protocol could not be completed'\
-                                    'Verify you connection and try again')
-                            break;
-
                     if self.transportType == 'TCP':
+                        if not self.TCPConnected :
+                            if self.threeWayHandshake():
+                                self.TCPConnected = True
+                                self.msg.emit('TCP connection established successfully'\
+                                        ' through TreeWayHandshake protocol')
+                            else:
+                                self.TCPConnection = False
+                                self.errorMsg.emit ('The ThreeWayHandshake protocol could not be completed'\
+                                        'Verify you connection and try again')
+                                break;
                         self.sendTCPPackage()
-                    else:
+                    else: #transport protocol = UDP
                         self.sendUDPPackage()
 
                     if self.receiveAnswerFromInternetLayer():
@@ -105,29 +106,62 @@ class TransportClient(QtCore.QThread):
         #self.udpChecksum = 0
 	#self.udpHeaderTuple = (self.srcPort, self.dstPort, self.udpChecksum)
 
+    def sendTCPPackage(self):
+        transportSender = socket(AF_INET, SOCK_STREAM)
+        transportSender.connect(addr.NetworkClient)
+        self.seq = 1
+        self.ackSeq = 0
+        #size of tcp header in 32bit word
+        doff = 5 #4bit field: 5*4 = 20bytes
+        self.window = 5840 #max window size allowed
+        self.tcpChecksum = 0
+        self.urgPtr = 0
+        self.offsetRes = (doff << 4) + 0 #???
+        self.dstPort = self.findPort()
+
+        #send SYN
+        self.tcpSegment = {'transportProtocol' : 'TCP',
+                         'srcPort'  : self.srcPort,
+                         'dstPort'  : self.dstPort,
+                         'seq'      : self.seq,
+                         'ackSeq'   : self.ackSeq,
+                         'offsetRes': self.offsetRes,
+                         'flags'    : 'flags',
+                         'window'   : self.window,
+                         'urgPtr'   : self.urgPtr,
+                         'opcoes'   : 'opções',
+                         'data'     : json.dumps(self.applicationPack)}
+        self.jTCPSegment = json.dumps(self.tcpSegment)
+        self.tcpChecksum = self.calculateChecksum(self.jTCPSegment)
+        self.tcpSegment['checksum'] = self.tcpChecksum
+        self.jTCPSegment = json.dumps(self.tcpSegment)
+
+	#self.headerLength = sys.getsizeof(tcpHeader)
+        self.html.emit(PDUPrinter.TCP(self.tcpSegment))
+        try:
+            while self.jTCPSegment:
+                sent = transportSender.send(self.jTCPSegment)
+                self.jTCPSegment = self.jTCPSegment[sent:]
+            transportSender.close()
+            self.msg.emit('Data sent')
+            return True
+        except Exception as exc:
+            self.errorMsg.emit('Error sending TCP Segment\n' + str(exc))
+            return False
+
     def findPort(self):
         return self.applicationPack.split('Host:', 1)[1].split(':', 1)[1].split('\n')[0]
 
-    def doConnectionTCP(self):
-        try:
-            self.internetSocket = socket(AF_INET, SOCK_STREAM)
-            #internetAddress = ('localhost', 3333)
-            self.internetSocket.connect(('localhost', self.dstPort))
-            if self.threeWayHandshake():
-        	self.TCPConnected = True
-                self.msg.emit('Conection estabilished')
-        except error, msg:
-            self.msg.emit("Couldn't estabilishe connection")
-            self.msg.emit(msg)
-
 
     def threeWayHandshake(self):
-        if self.send_SYN():
+        if self.send(self.SYN):
             if self.receive_SYN_ACK():
-                self.send_ACK()
+                self.send(self.ACK)
+                return True
+        return False
 
-    def send_SYN(self):
-        self.msg.emit('sending SYN')
+    def send(self, flagMode):
+        self.msg.emit('Tree Way Handshake step:')
         self.seq = 1
         self.ackSeq = 0
         #size of tcp header in 32bit word
@@ -138,14 +172,13 @@ class TransportClient(QtCore.QThread):
         self.offsetRes = (doff << 4) + 0 #???
 
         #send SYN
-        self.setFlags('SYN')
         self.tcpHeader = {'transportProtocol' : 'TCP',
                          'srcPort'  : self.srcPort,
                          'dstPort'  : self.dstPort,
                          'seq'      : self.seq,
                          'ackSeq'   : self.ackSeq,
                          'offsetRes': self.offsetRes,
-                         'flags'    : self.flags,
+                         'flags'    : flagMode,
                          'window'   : self.window,
                          'urgPtr'   : self.urgPtr,
                          'opcoes'   : 'opções',
@@ -167,55 +200,33 @@ class TransportClient(QtCore.QThread):
             self.msg.emit('TCPHeader sent')
             return True
         except Exception as exc:
-            self.errorMsg.emit('Error sending SYN\n' + str(exc))
+            self.errorMsg.emit('Error sending TCP Segment\n' + str(exc))
             return False
 
     def receive_SYN_ACK (self):
-        self.receiveAnswerFromInternetLayer
-        if self.answer:
-            self.msg.emit('Received SYN_ACK')
-            package = json.loads(self.answer)
-            self.tcpHeader = {'transportProtocol' : 'TCP',
-                    'srcPort' : package['srcPort'],
-                    'dstPort' : package['dstPort'],
-                    'seq' : package['seq'],
-                    'ackSeq' : package['ackSeq'],
-                    'offsetRes' : package['offsetRes'],
-                    'flags' : package['flags'],
-                    'window' : package['window'],
-                    'urgPtr' : package['urgPtr'],
-                    'opcoes' : package['opcoes'],
-                    'data' : package['data']}
-            self.html.emit(PDUPrinter.TCP(self.tcpHeader))
-            return True
-        else:
-            self.msg.emit('DID NOT Receive SYN_ACK')
+        try:
+            if self.receiveAnswerFromInternetLayer():
+                self.msg.emit('Checking SYN_ACK')
+                print 'syn-ack? ' + self.answer
+                package = json.loads(self.answer)
+                self.tcpHeader = {'transportProtocol' : 'TCP',
+                        'srcPort' : package['srcPort'],
+                        'dstPort' : package['dstPort'],
+                        'seq' : package['seq'],
+                        'ackSeq' : package['ackSeq'],
+                        'offsetRes' : package['offsetRes'],
+                        'flags' : package['flags'],
+                        'window' : package['window'],
+                        'urgPtr' : package['urgPtr'],
+                        'opcoes' : package['opcoes'],
+                        'data' : package['data'],
+                        'checksum' : package['checksum']}
+                self.html.emit(PDUPrinter.TCP(self.tcpHeader))
+                return True
+        except Exception as exc:
+            self.errorMsg.emit('DID NOT Receive SYN_ACK\n' + str(exc))
             return False
 
-    def send_ACK (self):
-        self.msg.emit('Sending ACK')
-        self.setFlags('ACK')
-        jFlags = json.dumps(self.flags)
-        self.tcpHeader = {'transportProtocol' : 'TCP',
-                         'srcPort'  : self.srcPort,
-                         'dstPort'  : self.dstPort,
-                         'seq'      : self.seq,
-                         'ackSeq'   : self.ackSeq,
-                         'offsetRes': self.offsetRes,
-                         'flags'    : jFlags,
-                         'window'   : self.window,
-                         'urgPtr'   : self.urgPtr,
-                         'opcoes'   : 'opções',
-                         'data'     : 'no data'}
-        self.html.emit(PDUPrinter.TCP(self.tcpHeader))
-        self.jTCPHeader = json.dumps(self.tcpHeader)
-        try:
-            transportSender = socket(AF_INET, SOCK_STREAM)
-            transportSender.connect(addr.NetworkClient)
-            transportSender.send(self.jTCPHeader)
-            self.msg.emit('ACK sent')
-        except:
-            self.msg.emit( 'could not send ACK message')
 
     def setFlags (self, mode):
         #reboot tcp flags

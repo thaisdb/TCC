@@ -12,11 +12,12 @@ from utils import PDUPrinter
 
 
 class TransportServer (QtCore.QThread):
-    SYN = {'cwr':0, 'ece':0, 'fin':0, 'syn':1, 'rst':0, 'psh':0, 'ack':0, 'urg':0}
-    ACK = {'cwr':0, 'ece':0, 'fin':0, 'syn':0, 'rst':0, 'psh':0, 'ack':1, 'urg':0}
-    space = '\t'
+    SYN     = {'cwr':0, 'ece':0, 'fin':0, 'syn':1, 'rst':0, 'psh':0, 'ack':0, 'urg':0}
+    ACK     = {'cwr':0, 'ece':0, 'fin':0, 'syn':0, 'rst':0, 'psh':0, 'ack':1, 'urg':0}
+    SYN_ACK = {'cwr':0, 'ece':0, 'fin':0, 'syn':1, 'rst':0, 'psh':0, 'ack':1, 'urg':0}
 
     connected = False
+    justConnected = False
 
     answer = ''
     msg = QtCore.pyqtSignal(str)
@@ -40,8 +41,11 @@ class TransportServer (QtCore.QThread):
             print 'Listening'
             while True:
                 if self.receive_Data():
+                    #interpret inclui verificação protocolo de trasporte
                     self.interpretSegment()
-                    if self.sendToApplication():
+                    if self.justConnected:
+                        continue
+                    elif self.sendToApplication():
                         if self.receiveAnswer():
                             self.sendAnswerToNetwork()
         except KeyboardInterrupt:
@@ -56,10 +60,13 @@ class TransportServer (QtCore.QThread):
         self.transportServerSocket.close()
 
     def threeWayHandshake(self):
-        if self.receive_SYN():
+        if self.receive(self.SYN):
             if self.send_SYN_ACK():
-                self.msg.emit('Three way handshake protocol established connection!')
-                return True
+                self.receive_Data()
+                self.segment = json.loads(self.segment)
+                if self.receive(self.ACK):
+                    self.msg.emit('Three way handshake protocol established connection!')
+                    return True
         return False
 
 
@@ -84,27 +91,27 @@ class TransportServer (QtCore.QThread):
         print 'Answer sent to internet layer'
         return True
 
-    def receive_SYN(self):
+    def receive(self, flagMode):
         self.flags = self.segment['flags']
         print str(self.flags)
-        if self.flags == self.SYN:
-            self.msg.emit("Received SYN package")
+        if self.flags == flagMode:
+            self.msg.emit('Received '+ str(flagMode) + '!')
             return True
         else:
-            self.verifyFlags('SYN')
             return False
 
     def send_SYN_ACK(self):
         self.msg.emit('Sending SYN_ACK')
         tcpSegment = {'transportProtocol': 'TCP',
-                        'scrPort': self.srcPort,
+                        'srcPort': self.srcPort,
                         'dstPort' : self.dstPort,
                         'seq' : 'seq',
+                        'ackSeq' : 'ackSeq',
                         'offsetRes': 'offset',
                         'window': 'window',
                         'checksum': 'checksum',
                         'urgPtr': 'urgPtr',
-                        'flags' : self.setFlags('SYN_ACK'),
+                        'flags' : self.SYN_ACK,
                         'opcoes': 'opcoes',
                         'data' : 'NULL'}
         self.answer = json.dumps(tcpSegment)
@@ -112,7 +119,19 @@ class TransportServer (QtCore.QThread):
         return True
 
     def receive_ACK(self):
-        expect_ACK = self.internetSocke.recv(1024)
+        self.segment
+        tcpSegment = {'transportProtocol': 'TCP',
+                        'srcPort': self.srcPort,
+                        'dstPort' : self.dstPort,
+                        'seq' : 'seq',
+                        'ackSeq' : 'ackSeq',
+                        'offsetRes': 'offset',
+                        'window': 'window',
+                        'checksum': 'checksum',
+                        'urgPtr': 'urgPtr',
+                        'flags' : self.setFlags('SYN_ACK'),
+                        'opcoes': 'opcoes',
+                        'data' : 'NULL'}
         self.clientPort, self.serverPort, self.seq, self.ackSeq, self.offsetRes,
         jFlags, window, checksum, urgPtr = json.loads(expect_ACK)
         self.flags = json.loads(jFlags)
@@ -139,19 +158,7 @@ class TransportServer (QtCore.QThread):
             #self.seq = 0
             self.flags['syn'] = 1
             self.flags['ack'] = 1
-
-    def verifyFlags(self, mode):
-        if (mode == 'SYN'):
-            print self.space + 'DID NOT receive expected SYN'
-            diff = [k for k in self.flags if self.flags[k] != self.SYN[k]]
-            for k in diff:
-                print self.space + 'Flag', k, ': received ', self.flags[k], '-> expected ', self.SYN[k]
-
-        if (mode == 'ACK'):
-            print self.space + 'DID NOT receive expected ACK'
-            diff = [k for k in self.flags if self.flags[k] != self.ACK[k]]
-            for k in diff:
-                print self.space + 'Flag', k, ': received ', self.flags[k], '-> expected ', self.ACK[k]
+        return self.flags
 
     def interpretSegment(self):
         try:
@@ -169,17 +176,25 @@ class TransportServer (QtCore.QThread):
                 self.msg.emit('TCP connection requested.')
                 if not self.connected:
                     self.connected = self.threeWayHandshake()
+                    self.justConnected = True
                     if not self.connected:
                         self.errorMsg.emit('Couldn\'t established TCP connection')
+                        raise
+                    PDUPrinter.TCP(self.segment)
+                    return True
                 else:
+                    self.justConnected = False
+                    PDUPrinter.TCP(self.segment)
                     print 'connected'
                     #pacote tcp normal
+                    return True
+
         except Exception as exc:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             error = exc_tb.tb_frame
             line = exc_tb.tb_lineno
             fileName = error.f_code.co_filename
-            print self.space + "Couldn't interpret package: " + str(exc)
+            print "Couldn't interpret package: " + str(exc)
             print 'error line = ' + str(line)
 
     def verifyChecksum(self, receivedChecksum):

@@ -170,17 +170,12 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
     def doMsg (self, msg):
         sender =  self.sender().__class__.__name__
         if sender == 'ApplicationClient':
-            self.applicationLOut.append(str(dt.now()))
             self.applicationLOut.append(msg)
         elif sender == 'TransportClient':
-            self.transportLOut.append(str(dt.now()))
             self.transportLOut.append(msg)
         elif sender == 'NetworkClient':
-            print 'in msg' + str(msg)
-            self.networkLOut.append(str(dt.now()))
             self.networkLOut.append(msg)
         elif sender == 'PhysicalClient':
-            self.physicalLOut.append(str(dt.now()))
             self.physicalLOut.append(msg)
 
     def doHtml(self, msg):
@@ -199,7 +194,8 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
             self.physicalLOut.insertHtml(msg)
 
     def raiseError(self, error):
-        self.errorMsg.emit(error)
+        sender =  self.sender().__class__.__name__
+        self.errorMsg.emit(sender + ': ' + error)
 
 #    def ping (self):
 #        #TODO nmap -p <port> <ip>
@@ -237,38 +233,34 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
     def startServer(self):
 
         self.applicationServer = ApplicationServer(self)
-        self.applicationServer.msg.connect(self.printMsg)
+        self.applicationServer.msg.connect(self.doMsg)
         #self.applicationServer.errorMsg.connect(self.errorMsg.emit())
         self.applicationServer.start()
 
         self.transportServer = TransportServer(self)
-        self.transportServer.msg.connect(self.printMsg)
+        self.transportServer.msg.connect(self.doMsg)
         self.transportServer.errorMsg.connect(self.raiseError)
         self.transportServer.start()
 
         self.networkServer = NetworkServer(self)
-        self.networkServer.msg.connect(self.printMsg)
+        self.networkServer.msg.connect(self.doMsg)
         self.networkServer.start()
 
         self.physicalServer = PhysicalServer(self)
-        self.physicalServer.msg.connect(self.printMsg)
+        self.physicalServer.msg.connect(self.doMsg)
         self.physicalServer.html.connect(self.printHtml)
         self.physicalServer.errorMsg.connect(self.raiseError)
         self.physicalServer.start()
 
-    def printMsg (self, msg):
+    def doMsg (self, msg):
         sender =  self.sender().__class__.__name__
         if sender == 'ApplicationServer':
-            self.applicationLOut.append(str(dt.now()))
             self.applicationLOut.append(msg)
         elif sender == 'TransportServer':
-            self.transportLOut.append(str(dt.now()))
             self.transportLOut.append(msg)
         elif sender == 'NetworkServer':
-            self.networkLOut.append(str(dt.now()))
             self.networkLOut.append(msg)
         elif sender == 'PhysicalServer':
-            self.physicalLOut.append(str(dt.now()))
             self.physicalLOut.append(msg)
 
     def printHtml(self, msg):
@@ -288,7 +280,8 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
 
 
     def raiseError(self, error):
-        self.errorMsg.emit(error)
+        sender =  self.sender().__class__.__name__
+        self.errorMsg.emit(sender + ': ' + error)
 
 
 def main():
