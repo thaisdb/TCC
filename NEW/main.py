@@ -3,6 +3,7 @@ import threading
 import time
 import sys
 import netifaces as nt
+import logging
 from utils import Common, RouterTable, Addresses
 from PyQt4 import QtGui, QtCore
 from newWindow      import Ui_NewMainWindow
@@ -46,8 +47,12 @@ class Main(QtGui.QMainWindow, Ui_NewMainWindow):
         self.stackedWidget.addWidget(self.router)
         self.router.toolButton.clicked.connect(self.backToMain)
 
+        #thisLevel = getattr(logging, loglevel.upper(), None)
+        logging.basicConfig(filename='log', level=logging.DEBUG)
+
     def raiseError(self, msg):
         print 'main error'
+        logging.error(msg)
         msgBox = QtGui.QMessageBox.critical(self, 'Critical ERROR!', msg, QtGui.QMessageBox.Retry)
 
     def runClient(self):
@@ -114,15 +119,14 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
 
         self.startButton.clicked.connect(self.configureClient)
         self.clearButton.clicked.connect(self.clearText)
-#        self.pingButton.clicked.connect(self.ping)
-
+ #       self.pingButton.clicked.connect(self.ping)
+        self.configureClient()
 
     def configureClient(self):
         try:
             ip = self.serverIPInput.text()
             if ip == '':
                 print 'ip null'
-                ip = Common.myIP()['addr']
                 print 'ip ' + str(ip)
             port = self.portaInput.text()
             Addresses.PhysicalServer = (ip, int(port))
@@ -169,6 +173,7 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
 
     def doMsg (self, msg):
         sender =  self.sender().__class__.__name__
+        logging.info(sender + ' -> ' + msg)
         if sender == 'ApplicationClient':
             self.applicationLOut.append(msg)
         elif sender == 'TransportClient':
@@ -180,6 +185,7 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
 
     def doHtml(self, msg):
         sender =  self.sender().__class__.__name__
+        logging.info(sender + ' -> ' + msg)
         if sender == 'ApplicationClient':
             self.applicationLOut.append(str(dt.now()))
             self.applicationLOut.insertHtml(msg)

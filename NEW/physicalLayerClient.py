@@ -55,8 +55,8 @@ class PhysicalClient(QtCore.QThread):
 
     def getIPMAC (self):
         print 'gettingIPMAC'
-        self.ip = ni.ifaddresses('wlan0')[2][0]['addr']
-        addrs = ni.ifaddresses('wlan0')
+        self.ip = ni.ifaddresses('eth0')[2][0]['addr']
+        addrs = ni.ifaddresses('eth0')
         self.mac = addrs[ni.AF_LINK][0]['addr']
         self.ipdst = self.host
         self.macdst = os.system('arp -n ' + str(self.ipdst))
