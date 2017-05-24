@@ -2,10 +2,12 @@
 from __future__ import with_statement
 from socket import *
 import sys
+import subprocess
 import binascii
 import netifaces as ni
 import os
-from subprocess import Popen, PIPE
+from utils import Common
+from physicalLayer import PhysicalLayer as pl
 import json
 from threading import Thread
 from layer import Layer
@@ -28,8 +30,6 @@ class PhysicalClient(QtCore.QThread):
     def run(self):
         self.msg.emit('*' * 20 + ' PHYSICAL CLIENT ' + '*' * 20)
         self.port = 9753
-        self.host = '127.0.0.1'
-        #self.connect()
         self.getIPMAC()
         self.physicalClientSocket = socket(AF_INET, SOCK_STREAM)
         self.physicalClientSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
@@ -46,48 +46,27 @@ class PhysicalClient(QtCore.QThread):
          #   print 'Could not connect:'
           #  print exc
 
-    def connect(self):
-        self.physicalSocket = socket(AF_INET, SOCK_STREAM)
-        print 'Connected to Physical Server'
-        self.physicalSocket.connect((self.host, self.port))
-        self.getIPMAC()
-        #if self.sendFileName():
 
     def getIPMAC (self):
         print 'gettingIPMAC'
-        self.ip = ni.ifaddresses('eth0')[2][0]['addr']
-        addrs = ni.ifaddresses('eth0')
-        self.mac = addrs[ni.AF_LINK][0]['addr']
-        self.ipdst = self.host
-        self.macdst = os.system('arp -n ' + str(self.ipdst))
-        print "my ip: " + self.ip
-        print "my mac: " + self.mac
-        print "server ip: " + self.ipdst
-        print "server mac: " + str(self.macdst)
+        interface  = Common.myIP()
+        self.myIP = interface[1]
+        self.myMAC = pl.getMyMAC(interface[0])
+        self.serverIP = addr.PhysicalServer[0]
+        self.serverMAC = pl.getServerMAC(self.serverIP)
+        print "my ip: " + str(self.myIP['addr'])
+        print "my mac: " + str(self.myMAC)
+        print "server ip: " + str(self.serverIP)
+        print "server mac: " + str(self.serverMAC)
 
-    def sendFileName(self):
-        #self.fileName = raw_input('Write the file name you want to send: ')
-        try:
-            self.physicalSocket.send(self.package)
-            print 'Sending: ' + self.package
-            extension = self.fileName.split('.')[1]
-            print extension
-            if extension == 'txt':
-                self.fileType = 0
-            else:
-                self.fileType = 1
-            return True
-        except:
-            print 'No file found'
-            return False
 
     def toBinaryFile(self):
         print 'Creating binary file'
         #TODO fix size
         self.tamanho = sys.getsizeof(self.package)
         package = {'preambulo' : '7x(10101010) + 10101011',
-                    'srcMAC' : self.mac,
-                    'dstMAC' : self.macdst,
+                    'srcMAC' : self.myMAC,
+                    'dstMAC' : self.serverMAC,
                     'tamanho' : self.tamanho,
                     'data' : self.package,
                     'checksum' : 'checksum'}

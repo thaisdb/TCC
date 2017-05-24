@@ -31,7 +31,7 @@ class Common():
             iface = netifaces.ifaddresses(i).get(netifaces.AF_INET)
             if iface != None:
                 for j in iface:
-                    return j
+                    return i, j
 
 
 

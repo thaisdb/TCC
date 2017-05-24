@@ -218,7 +218,7 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         super(Server, self).__init__(parent)
         self.setupUi(self)
 
-        self.myIP = Common.myIP()['addr']
+        self.myIP = Common.myIP()[1]['addr']
 
         self.serverIPLabel.setText('Server IP: ' + self.myIP)
 
@@ -227,7 +227,7 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
 
     def configureServer(self):
         try:
-            ip = Common.myIP()['addr']
+            ip = Common.myIP()[1]['addr']
             port = self.portEdit.text()
             Addresses.PhysicalServer = (ip, int(port))
             self.startServer()
