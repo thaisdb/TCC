@@ -136,7 +136,7 @@ class NetworkServer(QtCore.QThread):
         PDUPrinter.Datagram(self.datagram)
         dstIP = self.datagram['dstIP']
         print 'dstIP = ' + str(dstIP)
-        thisIP = Common.myIP()['addr']
+        thisIP = Common.myIP()[1]['addr']
         print 'thisIP = ' + str(thisIP)
         if str(dstIP) == str(thisIP) or str(dstIP) == 'localhost':
             print 'Right server'

@@ -164,12 +164,8 @@ class NetworkClient(QtCore.QThread):
         host = re.compile('Host:(.*?):')
         jPack = json.loads(self.frame)
         m = host.search(jPack['data'])
-        srcIP = 'localhost'
-        dstIP = 'localhost'
-        if m:
-            dstIP = str(m.group(1))
-            if dstIP in [' localhost', ' 127.0.0.1']:
-                dstIP = self.myIP()['addr']
+        srcIP = Commont.myIP()[1]['addr']
+        dstIP = (addr.PhysicalServer)[0]
         try:
             srcIP = self.myIP()['addr']
             transportProtocol = jPack['transportProtocol']
