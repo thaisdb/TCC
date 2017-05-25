@@ -42,10 +42,13 @@ class TransportServer (QtCore.QThread):
             while True:
                 if self.receive_Data():
                     #interpret inclui verificação protocolo de trasporte
-                    self.interpretSegment()
-                    if self.justConnected:
-                        continue
-                    elif self.sendToApplication():
+                    if self.transportProtocol == 'TCP':
+                        self.interpretSegment()
+                        if self.justConnected:
+                            continue
+                    else:
+                        self.interpretUDPSegment()
+                        self.sendToApplication():
                         if self.receiveAnswer():
                             self.sendAnswerToNetwork()
         except KeyboardInterrupt:
@@ -79,6 +82,8 @@ class TransportServer (QtCore.QThread):
             data = networkReceiver.recv(1024)
         networkReceiver.close()
         print 'Received request from network'
+        self.transportProtocol = json.loads(self.segment)['transportProtocol']
+        self.msg.emit('Received a ' + self.transportProtocol + ' segment.')
         return True
 
     def sendAnswerToNetwork(self):
@@ -160,18 +165,10 @@ class TransportServer (QtCore.QThread):
             self.flags['ack'] = 1
         return self.flags
 
-    def interpretSegment(self):
+    def interpretTCPSegment(self):
         try:
             self.segment = json.loads(self.segment)
             if self.segment['transportProtocol'] == 'UDP':
-                PDUPrinter.UDP(self.segment)
-
-                checksum = self.segment['checksum']
-                del self.segment['checksum']
-                self.verifyChecksum(checksum)
-
-                self.segment['data'] = json.loads(self.segment['data'])
-                print 'request send to Application Server'
             else: #TCP segment
                 self.msg.emit('TCP connection requested.')
                 if not self.connected:
@@ -194,8 +191,28 @@ class TransportServer (QtCore.QThread):
             error = exc_tb.tb_frame
             line = exc_tb.tb_lineno
             fileName = error.f_code.co_filename
-            print "Couldn't interpret package: " + str(exc)
-            print 'error line = ' + str(line)
+            self.errorMsg.emit("Couldn't interpret package: " + str(exc))
+            self.errorMsg.emit('error line = ' + str(line)))
+
+    def interpretUDPSegment(self):
+        try:
+            self.segment = json.loads(self.segment)
+            PDUPrinter.UDP(self.segment)
+
+            checksum = self.segment['checksum']
+            del self.segment['checksum']
+            self.verifyChecksum(checksum)
+
+            self.segment['data'] = json.loads(self.segment['data'])
+            print 'request send to Application Server'
+        except Exception as exc:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            error = exc_tb.tb_frame
+            line = exc_tb.tb_lineno
+            fileName = error.f_code.co_filename
+            self.errorMsg.emit("Couldn't interpret package: " + str(exc))
+            self.errorMsg.emit('error line = ' + str(line)))
+
 
     def verifyChecksum(self, receivedChecksum):
         try:
