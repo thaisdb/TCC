@@ -114,7 +114,7 @@ class PhysicalServer(QtCore.QThread):
     def sendToNetwork (self):
         networkSender = socket(AF_INET, SOCK_STREAM)
         networkSender.connect(addr.NetworkServer)
-        self.msg.emit 'package sent to network'
+        self.msg.emit('package sent to network')
         print self.package
         networkSender.send(self.package)
         networkSender.close()
