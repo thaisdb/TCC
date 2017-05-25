@@ -149,14 +149,14 @@ class NetworkServer(QtCore.QThread):
 
     def receiveAnswer(self):
         networkReceiver, _ = self.networkServerSocket.accept()
-        print 'Waiting answer...'
+        self.msg.emit('Waiting answer...')
         self.answer = ''
         data = networkReceiver.recv(1024)
         while data:
             self.answer += data
             data = networkReceiver.recv(1024)
         networkReceiver.close()
-        print 'Answer received'
+        self.msg.emit( 'Answer received')
         return True
 
     def sendAnswerToPhysical(self):
@@ -166,5 +166,5 @@ class NetworkServer(QtCore.QThread):
             sent = networkSender.send(self.answer)
             self.answer = self.answer[sent:]
         networkSender.close()
-        print 'Answer sent to physical layer'
+        self.msg.emit('Answer sent to physical layer')
         return True

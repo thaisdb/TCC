@@ -68,9 +68,8 @@ class PhysicalServer(QtCore.QThread):
 
 
     def receiveFile(self):
-        physicalReceiver, clientAddr = self.physicalServerSocket.accept()
-        addr.PhysicalClient = clientAddr
-        print add.PhysicalClient
+        physicalReceiver, _ = self.physicalServerSocket.accept()
+        print str(addr.PhysicalClient)
         if not self.tmqSent:
             self.tmq = int(self.setTMQ(physicalReceiver))
             self.tmqSent = True

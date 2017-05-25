@@ -119,7 +119,7 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
 
         self.startButton.clicked.connect(self.configureClient)
         self.clearButton.clicked.connect(self.clearText)
- #       self.pingButton.clicked.connect(self.ping)
+ #      self.pingButton.clicked.connect(self.ping)
         self.configureClient()
 
     def configureClient(self):
@@ -130,6 +130,8 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
                 print 'ip ' + str(ip)
             port = self.portaInput.text()
             Addresses.PhysicalServer = (ip, int(port))
+            myIP = Common.myIP()[1]['addr']
+            Addresses.PhysicalClient = (myIP, 4444)
             self.startClient()
             return True
         except Exception as exc:
@@ -203,11 +205,6 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         sender =  self.sender().__class__.__name__
         self.errorMsg.emit(sender + ': ' + error)
 
-#    def ping (self):
-#        #TODO nmap -p <port> <ip>
-#        pong = os.system('ping -c 1 ' + str(self.serverIPInput.text()))
-#        if pong == 0:
-#            self.startButton.setEnabled(True)
 
 
 class Server(QtGui.QWidget, Ui_ServerWidget):

@@ -115,8 +115,10 @@ class PhysicalClient(QtCore.QThread):
         return True
 
     def receiveAnswer(self):
+        self.msg.emit('Waiting answer')
+        self.msg.emit('on addr = ' + str(addr.PhysicalClient))
         physicalReceiver, _ = self.physicalClientSocket.accept()
-        print 'answer'
+        self.msg.emit( 'Answer received')
         self.answer = ''
         data  = physicalReceiver.recv(1024)
         while data:
