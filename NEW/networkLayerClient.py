@@ -5,6 +5,7 @@ from bitstring import BitArray
 from bitstring import BitStream
 import json
 import re
+from utils import Common
 from threading import Thread
 from layer import Layer
 import netifaces
@@ -164,7 +165,7 @@ class NetworkClient(QtCore.QThread):
         host = re.compile('Host:(.*?):')
         jPack = json.loads(self.frame)
         m = host.search(jPack['data'])
-        srcIP = Commont.myIP()[1]['addr']
+        srcIP = Common.myIP()[1]['addr']
         dstIP = (addr.PhysicalServer)[0]
         try:
             srcIP = self.myIP()['addr']
@@ -185,7 +186,7 @@ class NetworkClient(QtCore.QThread):
                             'transportProtocol': transportProtocol,
                             'checksum':'header checksum',
                             'srcIP': srcIP,
-                            'dstIP': dstIP,
+                            'dstIP': str(dstIP),
                             'options':'options',
                             'padding':'padding'}
             self.datagram = self.header

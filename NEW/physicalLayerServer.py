@@ -68,18 +68,20 @@ class PhysicalServer(QtCore.QThread):
 
 
     def receiveFile(self):
-        physicalReceiver, _ = self.physicalServerSocket.accept()
+        physicalReceiver, clientAddr = self.physicalServerSocket.accept()
+        addr.PhysicalClient = clientAddr
+        print add.PhysicalClient
         if not self.tmqSent:
             self.tmq = int(self.setTMQ(physicalReceiver))
             self.tmqSent = True
-        print 'Connected with physical client'
+        self.msg.emit('Connected with physical client')
         with open ('receivedBinary_.txt', "w") as self.rFile:
             data = physicalReceiver.recv(self.tmq)
             while data:
                 self.rFile.write(data)
                 data = physicalReceiver.recv(self.tmq)
         physicalReceiver.close()
-        print 'received frame'
+        self.msg.emit('received frame')
         return True
 
     def translateReceivedFile (self):

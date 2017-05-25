@@ -54,10 +54,10 @@ class PhysicalClient(QtCore.QThread):
         self.myMAC = pl.getMyMAC(interface[0])
         self.serverIP = addr.PhysicalServer[0]
         self.serverMAC = pl.getServerMAC(self.serverIP)
-        print "my ip: " + str(self.myIP['addr'])
-        print "my mac: " + str(self.myMAC)
-        print "server ip: " + str(self.serverIP)
-        print "server mac: " + str(self.serverMAC)
+        self.msg.emit("my ip: " + str(self.myIP['addr']))
+        self.msg.emit("my mac: " + str(self.myMAC))
+        self.msg.emit("server ip: " + str(self.serverIP))
+        self.msg.emit("server mac: " + str(self.serverMAC))
 
 
     def toBinaryFile(self):
