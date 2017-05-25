@@ -13,7 +13,7 @@ class httpHandler(BaseHTTPRequestHandler):
             if self.path.startswith('/favicon.ico'):
                 return
             reqFileName = os.getcwd() + self.path;
-            ApplicationServer.msg.emit('reqFile' + str(reqFileName))
+            print 'reqFile' + reqFileName
 
             if os.path.exists (reqFileName):
                 self.send_response (200)

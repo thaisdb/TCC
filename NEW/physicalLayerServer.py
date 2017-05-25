@@ -69,8 +69,9 @@ class PhysicalServer(QtCore.QThread):
 
     def receiveFile(self):
         self.msg.emit('Waiting file...')
-        physicalReceiver, _ = self.physicalServerSocket.accept()
-        self.msg.emit(str(addr.PhysicalClient))
+        physicalReceiver, clientaddr = self.physicalServerSocket.accept()
+        addr.PhysicalClient = (clientaddr[0], 4444)
+        self.msg.emit(str(clientaddr))
         if not self.tmqSent:
             self.tmq = int(self.setTMQ(physicalReceiver))
             self.tmqSent = True
@@ -145,6 +146,7 @@ class PhysicalServer(QtCore.QThread):
 
     def sendAnswer(self):
         self.physicalSender = socket(AF_INET, SOCK_STREAM)
+        self.msg.emit('sending to ' + str(addr.PhysicalClient))
         self.physicalSender.connect(addr.PhysicalClient)
         while self.answer:
             sent = self.physicalSender.send(self.answer)
