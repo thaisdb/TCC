@@ -168,23 +168,21 @@ class TransportServer (QtCore.QThread):
     def interpretTCPSegment(self):
         try:
             self.segment = json.loads(self.segment)
-            if self.segment['transportProtocol'] == 'UDP':
-            else: #TCP segment
-                self.msg.emit('TCP connection requested.')
+            #TCP segment
+            self.msg.emit('TCP connection requested.')
+            if not self.connected:
+                self.connected = self.threeWayHandshake()
+                self.justConnected = True
                 if not self.connected:
-                    self.connected = self.threeWayHandshake()
-                    self.justConnected = True
-                    if not self.connected:
-                        self.errorMsg.emit('Couldn\'t established TCP connection')
-                        raise
-                    PDUPrinter.TCP(self.segment)
-                    return True
-                else:
-                    self.justConnected = False
-                    PDUPrinter.TCP(self.segment)
-                    print 'connected'
-                    #pacote tcp normal
-                    return True
+                    self.errorMsg.emit('Couldn\'t established TCP connection')
+                    raise
+                PDUPrinter.TCP(self.segment)
+                #return True
+                self.justConnected = False
+                PDUPrinter.TCP(self.segment)
+                print 'connected'
+                #pacote tcp normal
+                return True
 
         except Exception as exc:
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -192,7 +190,7 @@ class TransportServer (QtCore.QThread):
             line = exc_tb.tb_lineno
             fileName = error.f_code.co_filename
             self.errorMsg.emit("Couldn't interpret package: " + str(exc))
-            self.errorMsg.emit('error line = ' + str(line)))
+            self.errorMsg.emit('error line = ' + str(line))
 
     def interpretUDPSegment(self):
         try:
@@ -211,7 +209,7 @@ class TransportServer (QtCore.QThread):
             line = exc_tb.tb_lineno
             fileName = error.f_code.co_filename
             self.errorMsg.emit("Couldn't interpret package: " + str(exc))
-            self.errorMsg.emit('error line = ' + str(line)))
+            self.errorMsg.emit('error line = ' + str(line))
 
 
     def verifyChecksum(self, receivedChecksum):
