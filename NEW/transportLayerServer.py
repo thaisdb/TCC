@@ -48,7 +48,7 @@ class TransportServer (QtCore.QThread):
                             continue
                     else:
                         self.interpretUDPSegment()
-                        self.sendToApplication():
+                        self.sendToApplication()
                         if self.receiveAnswer():
                             self.sendAnswerToNetwork()
         except KeyboardInterrupt:
