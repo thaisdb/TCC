@@ -68,8 +68,9 @@ class PhysicalServer(QtCore.QThread):
 
 
     def receiveFile(self):
+        self.msg.emit('Waiting file...')
         physicalReceiver, _ = self.physicalServerSocket.accept()
-        print str(addr.PhysicalClient)
+        self.msg.emit(str(addr.PhysicalClient))
         if not self.tmqSent:
             self.tmq = int(self.setTMQ(physicalReceiver))
             self.tmqSent = True
@@ -94,7 +95,6 @@ class PhysicalServer(QtCore.QThread):
                 newFile.write(x)
                 buff = binFile.read(self.BYTE_SIZE)
                 self.package += x
-        print 'package:'
 
     def interpretPackage(self):
         self.package =  json.loads(self.package)
@@ -114,7 +114,7 @@ class PhysicalServer(QtCore.QThread):
     def sendToNetwork (self):
         networkSender = socket(AF_INET, SOCK_STREAM)
         networkSender.connect(addr.NetworkServer)
-        print 'package sent!'
+        self.msg.emit 'package sent to network'
         print self.package
         networkSender.send(self.package)
         networkSender.close()
@@ -123,7 +123,7 @@ class PhysicalServer(QtCore.QThread):
 
     def setTMQ(self, clientSocket):
         clientTMQ = int(clientSocket.recv(4))
-        print 'TMQ received = ' + str(clientTMQ)
+        self.msg.emit('TMQ received = ' + str(clientTMQ))
         myTMQ = self.BUFFER_SIZE
         tmq = str(min(myTMQ, clientTMQ)).zfill(4)
         clientSocket.send(tmq)
@@ -131,14 +131,14 @@ class PhysicalServer(QtCore.QThread):
 
 
     def receiveAnswer(self):
-        print 'Waiting answer'
+        self.msg.emit('Waiting answer')
         networkReceiver, _ = self.physicalServerSocket.accept()
         self.answer = ''
         data = networkReceiver.recv(1024)
         while data:
             self.answer += data
             data = networkReceiver.recv(1024)
-        print 'received aswer'
+        self.msg.emit('received aswer')
         networkReceiver.close()
         return True
         #return success
@@ -150,6 +150,6 @@ class PhysicalServer(QtCore.QThread):
             sent = self.physicalSender.send(self.answer)
             self.answer = self.answer[sent:]
         self.physicalSender.close()
-        print 'Answer sent to physical client'
+        self.msg.emit('Answer sent to physical client')
         return True
 

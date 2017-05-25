@@ -81,24 +81,24 @@ class PhysicalClient(QtCore.QThread):
     def sendBinaryFile(self):
         self.physicalSocket = socket(AF_INET, SOCK_STREAM)
         self.physicalSocket.connect(addr.PhysicalServer)
-        print 'Sending binary file'
         fileName = 'binary_file.txt'
         if not self.tmqReceived:
-            print 'Asking tmq'
+            self.msg.emit('Asking tmq')
             #TODO ask user
             myTMQ = 30
             self.physicalSocket.send(str(myTMQ).zfill(4))
             #server sends min tmq
             self.tmq = int(self.physicalSocket.recv(4))
             self.tmqReceived = True
-            print 'Frame size = ' + str(self.tmq)
+            self.msg.emit('Frame size = ' + str(self.tmq))
+        self.msg.emit('Sending binary file')
         with open(fileName, 'r') as binFile:
             data = binFile.read(self.tmq)
             while data:
                 self.physicalSocket.send(data)
                 data = binFile.read(self.tmq)
             self.physicalSocket.close()
-        print 'Resquest sent to Server'
+        self.msg.emit('Resquest sent to Server')
         return True
 
 
