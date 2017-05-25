@@ -41,16 +41,14 @@ class TransportServer (QtCore.QThread):
             print 'Listening'
             while True:
                 if self.receive_Data():
-                    #interpret inclui verificação protocolo de trasporte
                     if self.transportProtocol == 'TCP':
-                        self.interpretSegment()
-                        if self.justConnected:
-                            continue
+                        if not self.interpretTCPSegment():
+                            self.errorMsg.emit('Error trying to interpret TCP segment')
                     else:
                         self.interpretUDPSegment()
-                        self.sendToApplication()
-                        if self.receiveAnswer():
-                            self.sendAnswerToNetwork()
+                    self.sendToApplication()
+                    if self.receiveAnswer():
+                        self.sendAnswerToNetwork()
         except KeyboardInterrupt:
             print 'Shutting down transport server'
         except Exception as exc:
@@ -69,6 +67,8 @@ class TransportServer (QtCore.QThread):
                 self.segment = json.loads(self.segment)
                 if self.receive(self.ACK):
                     self.msg.emit('Three way handshake protocol established connection!')
+                    self.receive_Data()
+                    self.segment = json.loads(self.segment)
                     return True
         return False
 
@@ -169,20 +169,23 @@ class TransportServer (QtCore.QThread):
         try:
             self.segment = json.loads(self.segment)
             #TCP segment
-            self.msg.emit('TCP connection requested.')
             if not self.connected:
+                self.msg.emit('TCP connection requested.')
                 self.connected = self.threeWayHandshake()
-                self.justConnected = True
                 if not self.connected:
                     self.errorMsg.emit('Couldn\'t established TCP connection')
-                    raise
-                PDUPrinter.TCP(self.segment)
+                    return False
                 #return True
-                self.justConnected = False
-                PDUPrinter.TCP(self.segment)
-                print 'connected'
-                #pacote tcp normal
-                return True
+            PDUPrinter.TCP(self.segment)
+            print 'connected'
+            #checksum = self.segment['checksum']
+            #del self.segment['checksum']
+            #self.verifyChecksum(checksum)
+
+            self.segment['data'] = json.loads(self.segment['data'])
+            print 'request send to Application Server'
+            #pacote tcp normal
+            return True
 
         except Exception as exc:
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -238,7 +241,7 @@ class TransportServer (QtCore.QThread):
             while self.segment['data']:
                 sent = self.applicationSocket.send(self.segment['data'])
                 self.segment['data'] = self.segment['data'][sent:]
-            print 'sent request to application'
+            self.msg.emit('sent request to application')
             return True
         except Exception as exc:
             exc_type, exc_obj, exc_tb = sys.exc_info()

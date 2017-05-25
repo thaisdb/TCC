@@ -65,6 +65,7 @@ class httpHandler(BaseHTTPRequestHandler):
 class ApplicationServer(QtCore.QThread):
     def pyserver(self):
         try:
+            virtualhost = ('', 7777)
             server = HTTPServer(addr.ApplicationServer, httpHandler)
             self.msg.emit('started HTTP server')
             server.serve_forever()
@@ -91,6 +92,8 @@ class ApplicationServer(QtCore.QThread):
     def run(self):
         self.msg.emit('******************** APPLICATION SERVER ********************')
         DocumentRoot = '/home/thais/Faculdade/TCC/NEW/'
+        PORT = '8000'
+        HOST = 'localhost'
         try:
             #print 'sys.argv ' + sys.argv[1]
             self.pyserver()
