@@ -40,7 +40,7 @@ class httpHandler(BaseHTTPRequestHandler):
                     self.wfile.write(data)
                     data = f.read()
                 f.close()
-                return
+                return self.headers
 
         except IOError:
             print (os.getcwd() + self.path)
@@ -68,7 +68,8 @@ class ApplicationServer(QtCore.QThread):
             virtualhost = ('', 7777)
             server = HTTPServer(addr.ApplicationServer, httpHandler)
             self.msg.emit('started HTTP server')
-            server.serve_forever()
+            headers = server.serve_forever()
+            print 'HEADERS= ' + str(headers)
 
         except KeyboardInterrupt:
             self.msg.emit('shuting down server HTTP')

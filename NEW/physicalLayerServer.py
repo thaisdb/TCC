@@ -155,3 +155,7 @@ class PhysicalServer(QtCore.QThread):
         self.msg.emit('Answer sent to physical client')
         return True
 
+    def tcpConnected(self, connected):
+        self.msg.emit('Heard shout')
+        self.connected = connected
+

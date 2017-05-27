@@ -22,6 +22,9 @@ class TransportServer (QtCore.QThread):
     answer = ''
     msg = QtCore.pyqtSignal(str)
     errorMsg = QtCore.pyqtSignal(str)
+    html = QtCore.pyqtSignal(str)
+
+    shoutConnection = QtCore.pyqtSignal(bool)
 
     def __init__(self, parent=None):
         super(TransportServer, self).__init__()
@@ -67,13 +70,13 @@ class TransportServer (QtCore.QThread):
                 self.segment = json.loads(self.segment)
                 if self.receive(self.ACK):
                     self.msg.emit('Three way handshake protocol established connection!')
-                    self.receive_Data()
-                    self.segment = json.loads(self.segment)
+                    #self.receive_Data()
                     return True
         return False
 
 
     def receive_Data(self):
+        self.msg.emit('Waiting data....')
         networkReceiver, _ = self.transportServerSocket.accept()
         self.segment = ''
         data = networkReceiver.recv(1024)
@@ -171,19 +174,16 @@ class TransportServer (QtCore.QThread):
             #TCP segment
             if not self.connected:
                 self.msg.emit('TCP connection requested.')
-                self.connected = self.threeWayHandshake()
-                if not self.connected:
+                if not self.threeWayHandshake():
                     self.errorMsg.emit('Couldn\'t established TCP connection')
                     return False
-                #return True
-            PDUPrinter.TCP(self.segment)
-            print 'connected'
-            #checksum = self.segment['checksum']
-            #del self.segment['checksum']
-            #self.verifyChecksum(checksum)
+                #self.html.emit(PDUPrinter.TCP(self.segment))
+                #checksum = self.segment['checksum']
+                #del self.segment['checksum']
+                #self.verifyChecksum(checksum)
 
             self.segment['data'] = json.loads(self.segment['data'])
-            print 'request send to Application Server'
+            self.msg.emit('Request send to Application Server')
             #pacote tcp normal
             return True
 

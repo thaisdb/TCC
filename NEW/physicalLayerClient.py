@@ -136,4 +136,7 @@ class PhysicalClient(QtCore.QThread):
         physicalSender.close()
         print 'answer sent'
 
+    def hearConnection(self, connection):
+        self.connection = connection
+        self.msg.emit ('TCP connection established.')
 

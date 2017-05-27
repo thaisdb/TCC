@@ -62,29 +62,26 @@ class IP:
 
 class NetworkServer(QtCore.QThread):
     msg = QtCore.pyqtSignal(str)
+    html = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
         super(NetworkServer, self).__init__()
 
     def run(self):
-        #network = raw_input("Enter an IP/mask(xxx.xxx.xxx.xxx/mmm): ")
-        #self.ip1 = IP(network)
-        #network2 = raw_input("Enter an IP/mask(xxx.xxx.xxx.xxx/mmm): ")
-        #if (network2 != network):
-        #    self.ip2 = IP(network2)
-        #    self.ipBelongsToNetwork()
-        #self.routerTable('192.168.9.0')
         self.msg.emit('******************** NETWORK SERVER ********************')
         self.networkServerSocket = socket(AF_INET, SOCK_STREAM)
         self.networkServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.networkServerSocket.bind (addr.NetworkServer)
         self.networkServerSocket.listen(1)
         while True:
-            if self.receiveFromPhysical():
+            self.package, success = Layer.receive(self.networkServerSocket)
+            if success:
                 self.interpretPackage()
-                self.sendToTransport()
-                if self.receiveAnswer():
-                    self.sendAnswerToPhysical()
+                sent = Layer.send(addr.TransportServer, self.datagram['data'])
+                if sent:
+                    self.answer, success = Layer.receive(self.networkServerSocket)
+                    sent = Layer.send(addr.PhysicalServer, self.answer)
+
 
     def ipBelongsToNetwork(self):
         # ip1 AND subnetMask2
@@ -93,78 +90,24 @@ class NetworkServer(QtCore.QThread):
         ip2sm = [int(self.ip2.ipBin[i], 2) & int(self.ip2.netMaskBin[i], 2) for i in range(0, len(self.ip2.ipBin))]
         print ip2sm
         if ip1sm == ip2sm:
-            print "Same network"
+            self.msg.emit ("IP verified. Right server!")
         else:
-            print "different network"
+            self.msg.emit ("IP verified. Not this server.\nRediracting datagram...")
             step = self.checkRouterTable(ip1sm)
 
 
-    def checkRouterTable(self, ip):
-        print 'routing'
-        if ip in rTable:
-            print rTable[ip]
-            return rTable[ip]
-        else:
-            print 'router'
-            return 0
 
-    def sendToTransport(self):
-        transportSender = socket(AF_INET, SOCK_STREAM)
-        transportSender.connect(addr.TransportServer)
-        print 'Sending package request to transport layer'
-        while self.datagram['data']:
-            sent = transportSender.send(self.datagram['data'])
-            self.datagram['data'] = self.datagram['data'][sent:]
-        transportSender.close()
-        return True
-
-    def receiveFromPhysical(self):
-        physicalReceiver, _ = self.networkServerSocket.accept()
-        print 'listening'
-        self.package = ''
-        data = physicalReceiver.recv(1024)
-        while data:
-            self.package += data
-            data = physicalReceiver.recv(1024)
-        print 'received request from physical server '
-        physicalReceiver.close()
-        return True
 
     def interpretPackage(self):
         self.datagram = json.loads(self.package)
         self.msg.emit('Datagram received:')
-        PDUPrinter.Datagram(self.datagram)
+        self.html.emit(PDUPrinter.Datagram(self.datagram))
         dstIP = self.datagram['dstIP']
-        print 'dstIP = ' + str(dstIP)
         thisIP = Common.myIP()[1]['addr']
-        print 'thisIP = ' + str(thisIP)
         if str(dstIP) == str(thisIP) or str(dstIP) == 'localhost':
-            print 'Right server'
-        else :
-            print 'Not this server. Checking router table'
-            #rt = RouterTable('serverRouterTable.txt')
-        #print 'result = ' + str(self.package)
+            self.msg.emit ("IP verified. Right server!")
+        else:
+            self.msg.emit ("IP verified. Not this server.\nRediracting datagram...")
+            #TODO send to gateway
 
-                                                                                                                                                  #return Tru
 
-    def receiveAnswer(self):
-        networkReceiver, _ = self.networkServerSocket.accept()
-        self.msg.emit('Waiting answer...')
-        self.answer = ''
-        data = networkReceiver.recv(1024)
-        while data:
-            self.answer += data
-            data = networkReceiver.recv(1024)
-        networkReceiver.close()
-        self.msg.emit( 'Answer received')
-        return True
-
-    def sendAnswerToPhysical(self):
-        networkSender = socket(AF_INET, SOCK_STREAM)
-        networkSender.connect(addr.PhysicalServer)
-        while self.answer:
-            sent = networkSender.send(self.answer)
-            self.answer = self.answer[sent:]
-        networkSender.close()
-        self.msg.emit('Answer sent to physical layer')
-        return True

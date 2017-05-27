@@ -65,8 +65,6 @@ class IP:
 
 
 class NetworkClient(QtCore.QThread):
-    space = '\t\t'
-    routerTable = {'ip_destino':'ip_roteado'}
 
     msg = QtCore.pyqtSignal(str)
     html = QtCore.pyqtSignal(str)
@@ -75,38 +73,22 @@ class NetworkClient(QtCore.QThread):
         super(NetworkClient, self).__init__()
 
 
-        #network = raw_input("Enter an IP/mask(xxx.xxx.xxx.xxx/mmm): ")
-        #self.ip1 = IP(network)
-        #network2 = raw_input("Enter an IP/mask(xxx.xxx.xxx.xxx/mmm): ")
-        #if (network2 != network):
-        #    self.ip2 = IP(network2)
-        #    self.ipBelongsToNetwork()
-        #self.routerTable('192.168.9.0')
     def run(self):
         self.networkClientSocket = socket(AF_INET, SOCK_STREAM)
         self.networkClientSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.networkClientSocket.bind (addr.NetworkClient)
         self.msg.emit('*' * 20 + ' INTENERT CLIENT ' + '*' * 20)
         self.networkClientSocket.listen(1)
-        self.msg.emit('accepted connection')
-        #self.loadRouterTable()
+        self.msg.emit('Accepted connection')
         try:
             while True:
-                #mode = raw_input('Enter a corresponding number:\n[1]To access the router table.\n'\
-                #        '[2]To start the layer activity\n : ')
-                mode = '2'
-                if mode == '1':
-                    self.accessRouterTable()
-                    break
-                elif mode == '2':
-                    while True:
-                        if self.receiveFromTransport():
-                            self.createDatagram()
-                            #self.belongsToNetwork()
-                            self.toPhysical()
-                            if self.receiveFromPhysical():
-                                self.sendToTransport()
-                print 'Invalid input. Please choose between valid options.'
+                self.frame, success = Layer.receive(self.networkClientSocket)
+                if success:
+                    self.createDatagram()
+                    Layer.send(addr.PhysicalClient, self.datagram)
+                    self.answer, success = Layer.receive(self.networkClientSocket)
+                    if success:
+                        Layer.send(addr.TransportClient, self.answer)
         except KeyboardInterrupt:
             print 'Shutting down Internet Layer Client'
             self.saveRouterTable()
@@ -139,27 +121,7 @@ class NetworkClient(QtCore.QThread):
             print 'router'
             return 0
 
-    def toPhysical(self):
-        networkSender = socket(AF_INET, SOCK_STREAM)
-        networkSender.connect(addr.PhysicalClient)
-        while self.datagram:
-            sent = networkSender.send(self.datagram)
-            self.datagram = self.datagram[sent:]
-        networkSender.close()
-        print 'Sent datagram to physical layer'
-        return True
 
-    def receiveFromTransport(self):
-        print 'Listening...\nWaiting upper layer'
-        networkReceiver, _ = self.networkClientSocket.accept()
-        self.frame = ''
-        data = networkReceiver.recv(1024)
-        while data:
-            self.frame += data
-            data = networkReceiver.recv(1024)
-        networkReceiver.close()
-        print 'Received segment from transport layer'
-        return True
 
     def createDatagram(self):
         host = re.compile('Host:(.*?):')
@@ -170,11 +132,6 @@ class NetworkClient(QtCore.QThread):
         try:
             srcIP = self.myIP()['addr']
             transportProtocol = jPack['transportProtocol']
-            #IHL = Internet Header Length
-            #TOS = Type Of Service
-            #TL = Total Length
-            #TTL = Time To Live
-            #HD = Header Checksum
             self.header = {'version':'IPV4',
                             'headerLength':5, #min
                             'TOS': 'Diferentiated Service',
@@ -193,12 +150,7 @@ class NetworkClient(QtCore.QThread):
             self.datagram['TL'] = len(self.header)
             self.datagram['data'] = self.frame
 
-            #header = ('IPV4', 'ID', 'c. fragmentação', 'c. tempo', transportProtocol,'CRC', srcIP, dstIP, 'opcoes')
-            #header = json.dumps(header)
-            #self.datagram = ('IPV4', len(header), 'ID', 'c. fragmentação', 'c. tempo', transportProtocol,
-            #    'CRC', srcIP, dstIP, 'opções', json.loads(self.package))
             self.html.emit(PDUPrinter.Datagram(self.datagram))
-            #self.html.emit()
             self.datagram = json.dumps(self.datagram)
         except Exception as exc:
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -220,28 +172,8 @@ class NetworkClient(QtCore.QThread):
                     return j
         #return True
 
-    def receiveFromPhysical(self):
-        networkReceiver, _ = self.networkClientSocket.accept()
-        print "Waiting answer"
-        self.answer = ''
-        data = networkReceiver.recv(1024)
-        while data:
-            self.answer += data
-            data = networkReceiver.recv(1024)
-        networkReceiver.close()
-        print 'answer received'
-        return True
-
-    def sendToTransport(self):
-        networkSender = socket(AF_INET, SOCK_STREAM)
-        networkSender.connect(addr.TransportClient)
-        while self.answer:
-            sent = networkSender.send(self.answer)
-            self.answer = self.answer[sent:]
-        networkSender.close()
-        return True
-        print 'Answer sent'
 
 
 
-#IP('198.176.0.32/18')
+#class NetworkLayer():
+

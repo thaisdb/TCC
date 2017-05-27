@@ -49,15 +49,14 @@ class TransportClient(QtCore.QThread):
                     if self.transportType == 'TCP':
                         if not self.TCPConnected :
                             if self.threeWayHandshake():
-                                self.TCPConnected = True
                                 self.msg.emit('TCP connection established successfully'\
                                         ' through TreeWayHandshake protocol')
                             else:
-                                self.TCPConnection = False
-                                self.errorMsg.emit ('The ThreeWayHandshake protocol could not be completed'\
-                                        'Verify you connection and try again')
+                                self.errorMsg.emit ('The ThreeWayHandshake protocol could not be completed.'\
+                                        '\nVerify you connection and try again.')
                                 break;
-                        self.sendTCPPackage()
+                        else:
+                            self.sendTCPPackage()
                     else: #transport protocol = UDP
                         self.sendUDPPackage()
 
@@ -156,8 +155,8 @@ class TransportClient(QtCore.QThread):
     def threeWayHandshake(self):
         if self.send(self.SYN):
             if self.receive_SYN_ACK():
-                self.send(self.ACK)
-                return True
+                if self.send(self.ACK):
+                    return True
         return False
 
     def send(self, flagMode):
@@ -183,6 +182,8 @@ class TransportClient(QtCore.QThread):
                          'urgPtr'   : self.urgPtr,
                          'opcoes'   : 'opções',
                          'data'     : 'no data'}
+        if flagMode == self.ACK:
+            self.tcpHeader['data'] = json.dumps(self.applicationPack)
         self.jTCPHeader = json.dumps(self.tcpHeader)
         self.tcpChecksum = self.calculateChecksum(self.jTCPHeader)
 	#remount head with correct checksum
@@ -210,17 +211,17 @@ class TransportClient(QtCore.QThread):
                 print 'syn-ack? ' + self.answer
                 package = json.loads(self.answer)
                 self.tcpHeader = {'transportProtocol' : 'TCP',
-                        'srcPort' : package['srcPort'],
-                        'dstPort' : package['dstPort'],
-                        'seq' : package['seq'],
-                        'ackSeq' : package['ackSeq'],
+                        'srcPort'   : package['srcPort'],
+                        'dstPort'   : package['dstPort'],
+                        'seq'       : package['seq'],
+                        'ackSeq'    : package['ackSeq'],
                         'offsetRes' : package['offsetRes'],
-                        'flags' : package['flags'],
-                        'window' : package['window'],
-                        'urgPtr' : package['urgPtr'],
-                        'opcoes' : package['opcoes'],
-                        'data' : package['data'],
-                        'checksum' : package['checksum']}
+                        'flags'     : package['flags'],
+                        'window'    : package['window'],
+                        'urgPtr'    : package['urgPtr'],
+                        'opcoes'    : package['opcoes'],
+                        'data'      : package['data'],
+                        'checksum'  : package['checksum']}
                 self.html.emit(PDUPrinter.TCP(self.tcpHeader))
                 return True
         except Exception as exc:
@@ -296,5 +297,9 @@ class TransportClient(QtCore.QThread):
         self.applicationSock.close()
         self.msg.emit('answer sent')
         return True
+
+    def hearConnection(self, connection):
+        self.TCPConnected = connection
+        self.msg.emit ('TCP connection established')
 
 TransportClient()
