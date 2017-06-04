@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1277</width>
-    <height>715</height>
+    <height>754</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,9 +17,9 @@
    <property name="geometry">
     <rect>
      <x>70</x>
-     <y>50</y>
+     <y>20</y>
      <width>1181</width>
-     <height>651</height>
+     <height>671</height>
     </rect>
    </property>
    <property name="sizePolicy">
@@ -41,15 +41,15 @@
     <number>0</number>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="ConfigurationPage">
     <property name="geometry">
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>1271</width>
-      <height>589</height>
+      <width>1181</width>
+      <height>609</height>
      </rect>
     </property>
     <property name="accessibleName">
@@ -139,22 +139,22 @@
     <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
       <rect>
-       <x>101</x>
-       <y>153</y>
-       <width>441</width>
+       <x>41</x>
+       <y>228</y>
+       <width>297</width>
        <height>24</height>
       </rect>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_3">
       <item>
-       <widget class="QCheckBox" name="checkBox_2">
+       <widget class="QCheckBox" name="collisionBox">
         <property name="text">
          <string>Simulação de colisão</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="checkBox">
+       <widget class="QCheckBox" name="stepBox">
         <property name="text">
          <string>Step-by-step</string>
         </property>
@@ -165,9 +165,9 @@
     <widget class="QWidget" name="horizontalLayoutWidget">
      <property name="geometry">
       <rect>
-       <x>100</x>
-       <y>90</y>
-       <width>261</width>
+       <x>41</x>
+       <y>169</y>
+       <width>231</width>
        <height>29</height>
       </rect>
      </property>
@@ -203,11 +203,47 @@
       </item>
      </layout>
     </widget>
+    <widget class="QWidget" name="horizontalLayoutWidget_4">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>110</y>
+       <width>230</width>
+       <height>29</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_7">
+      <item>
+       <widget class="QLabel" name="label_10">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Frame size:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="frameInput">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
     <zorder>layoutWidget</zorder>
     <zorder>horizontalLayoutWidget</zorder>
+    <zorder>horizontalLayoutWidget_4</zorder>
+    <zorder>layoutWidget</zorder>
     <zorder>line_2</zorder>
     <zorder>label_5</zorder>
-    <zorder>layoutWidget</zorder>
     <zorder>line_3</zorder>
    </widget>
    <widget class="QWidget" name="displayPage">
@@ -216,7 +252,7 @@
       <x>0</x>
       <y>0</y>
       <width>1181</width>
-      <height>589</height>
+      <height>609</height>
      </rect>
     </property>
     <attribute name="label">
@@ -292,19 +328,6 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pingButton">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Ping</string>
         </property>
        </widget>
       </item>
@@ -455,19 +478,6 @@ p, li { white-space: pre-wrap; }
       <bool>true</bool>
      </property>
     </widget>
-    <widget class="QPushButton" name="clearButton">
-     <property name="geometry">
-      <rect>
-       <x>1000</x>
-       <y>560</y>
-       <width>141</width>
-       <height>27</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Clear</string>
-     </property>
-    </widget>
     <widget class="QTextEdit" name="networkLOut">
      <property name="geometry">
       <rect>
@@ -477,6 +487,32 @@ p, li { white-space: pre-wrap; }
        <height>200</height>
       </rect>
      </property>
+    </widget>
+    <widget class="QWidget" name="horizontalLayoutWidget_2">
+     <property name="geometry">
+      <rect>
+       <x>720</x>
+       <y>550</y>
+       <width>441</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_5">
+      <item>
+       <widget class="QPushButton" name="goButton">
+        <property name="text">
+         <string>Go</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="clearButton">
+        <property name="text">
+         <string>Clear</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </widget>
   </widget>

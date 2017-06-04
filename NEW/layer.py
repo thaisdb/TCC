@@ -1,4 +1,4 @@
-#coding=utf-8
+#coding:utf-8
 from socket import *
 import os
 import sys
@@ -6,7 +6,22 @@ import sys
 BUFFER_SIZE  = 1024
 #enum
 class Layer():
-    # from layer _ to layer:
+
+    #Server
+    ApplicationServer   = ('localhost', 8888)
+    TransportServer     = ('localhost', 7777)
+    NetworkServer       = ('localhost', 6666)
+    PhysicalServer      = ('localhost', 5555)
+
+    #Client
+    ApplicationClient   = ('localhost', 1111)
+    TransportClient     = ('localhost', 2222)
+    NetworkClient       = ('localhost', 3333)
+    PhysicalClient      = ('localhost', 4444)
+
+    #Router
+    NetworkRouter       = ('localhost', 9898)
+    PhysicalRouter      = ('localhost', 8989)
 
     @staticmethod
     def send(layerAddr, data,  tmq = None):
@@ -14,13 +29,13 @@ class Layer():
         sender.connect(layerAddr)
         try:
             if tmq == None:
-                sender.send(data)
-                return True
-            elif os.path.exists(data):
                 while data:
+                    print str(data)
                     sent = sender.send(data)
                     data = data[sent:]
                 sender.close()
+                return True
+            elif os.path.exists(data):
                 return True
             else:
                 print 'Layer ERRO! File ' + str(data) + ' not found'
@@ -31,7 +46,7 @@ class Layer():
             print 'type = ' + str(exc_type)
             print 'obj = ' + str(exc_obj)
             print 'line = ' + str(numb)
-            print 'Could not send data. ERROR:'
+            print 'Layer ERROR! Could not send data:'
             print e
             return False
 
@@ -48,7 +63,7 @@ class Layer():
                 pack += data
                 data = receiver.recv(buff)
             receiver.close()
-            print 'Received data successfully!'
+            print 'Layer message: Received data successfully!'
             return pack, True
 
         except Exception as ex:
@@ -57,7 +72,7 @@ class Layer():
             print 'type = ' + str(exc_type)
             print 'obj = ' + str(exc_obj)
             print 'line = ' + str(numb)
-            print 'Could not receive data. ERROR:'
+            print 'Layer ERROR! Could not receive data :'
             print str(ex)
             return '', False
 

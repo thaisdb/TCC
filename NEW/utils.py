@@ -2,26 +2,9 @@
 import netifaces
 from PyQt4 import QtCore
 
-class Addresses():
-
-    ApplicationServer   = ('localhost', 8888)
-    TransportServer     = ('localhost', 7777)
-    NetworkServer       = ('localhost', 6666)
-    PhysicalServer      = ('localhost', 5555)
-
-    PhysicalClient      = ('localhost', 4444)
-    NetworkClient       = ('localhost', 3333)
-    TransportClient     = ('localhost', 2222)
-    ApplicationClient   = ('localhost', 1111)
-
-    Browser             = ('localhost', 9999)
-
-    @staticmethod
-    def setServerAddress(addr):
-        print 'server address changed to = ' + str(addr)
-        PhysicalServer = addr;
 
 class Common():
+
     @staticmethod
     def myIP():
         interfaces = netifaces.interfaces()
@@ -33,7 +16,23 @@ class Common():
                 for j in iface:
                     return i, j
 
+    @staticmethod
+    def calculateChecksum(package):
+        try:
+            s = 0
+            for i in range(0, len(package), 2):
+                w = ord(package[i]) + (ord(package[i+1]) << 8)
+                s += w
+                s = (s >> 16) + (s & 0xffff)
+                return bin(~s & 0xffff)
+        except Exception as exc:
+            exc_type, exc_object, exc_tb = sys.exc_info()
+            line = exc_tb.tb_lineno
+            return 'Error calculating checksum = ' + str(exc) + '\nLine = ' + str(line)
 
+    @staticmethod
+    def verifyChecksum(package, checksum):
+        return Common.calculateChecksum(package)[2:] == checksum
 
 
 class RouterTable(QtCore.QObject):
@@ -94,9 +93,9 @@ class PDUPrinter():
 
 
     @staticmethod
-    def TCP(segment):
+    def TCP(segment, color="black"):
         return   ('<html><head><link rel="stylesheet" href="style.css"></head><body>'\
-                '<table border="1" style="width:100%" cellpadding="5">'\
+                '<table border="1" style="width:100%" cellpadding="5" color="'+color+'">'\
                 '<caption> UDP SEGMENT </caption>'\
                 '<tr><td>Source Port = ' + str(segment['srcPort']) + '</td>'\
                     '<td>Destination Port = ' + str(segment['dstPort']) + '</td>'\
@@ -114,8 +113,9 @@ class PDUPrinter():
 
 
     @staticmethod
-    def UDP(segment):
+    def UDP(segment, color= 'blue'):
         return ('<html><head><link rel="stylesheet" href="style.css"></head><body>'\
+                '<font color=\"' + color + '\">'\
                 '<table border="1" style="width:100%" cellpadding="5">'\
                 '<caption> UDP SEGMENT </caption>'\
                 '<tr><td>Source Port = ' + str(segment['srcPort']) + '</td>'\
@@ -125,7 +125,7 @@ class PDUPrinter():
                     '<td>Checksum = ' + str(segment['checksum']) + '</td>'\
                 '</tr><tr>'\
                     '<td colspan="2">Data = Application Data</td>'\
-                '</tr></table></body></html>')
+                '</tr></table></font></body></html>')
 
 
     @staticmethod

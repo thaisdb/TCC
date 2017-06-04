@@ -1,10 +1,11 @@
-#coding=utf-8
+#coding: utf-8
+
 import sys,os
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
 from clientWidget import Ui_ClientWidget
 from PyQt4  import QtCore
-from utils import Addresses as addr
+from layer import Layer
 
 class httpHandler(BaseHTTPRequestHandler):
     #global htmlFile
@@ -32,7 +33,7 @@ class httpHandler(BaseHTTPRequestHandler):
                 elif self.path.endswith('.png'):
                     mimeType = 'image/png'
 
-                f = open (reqFileName, 'rb')
+                f = open (reqFileName, 'r')
                 self.send_header('Content-type', mimeType + '; charset=utf-8')
                 self.end_headers()
                 data = f.read()
@@ -40,7 +41,7 @@ class httpHandler(BaseHTTPRequestHandler):
                     self.wfile.write(data)
                     data = f.read()
                 f.close()
-                return self.headers
+                return
 
         except IOError:
             print (os.getcwd() + self.path)
@@ -65,25 +66,14 @@ class httpHandler(BaseHTTPRequestHandler):
 class ApplicationServer(QtCore.QThread):
     def pyserver(self):
         try:
-            virtualhost = ('', 7777)
-            server = HTTPServer(addr.ApplicationServer, httpHandler)
+            server = HTTPServer(Layer.ApplicationServer, httpHandler)
             self.msg.emit('started HTTP server')
-            headers = server.serve_forever()
-            print 'HEADERS= ' + str(headers)
+            server.serve_forever()
 
         except KeyboardInterrupt:
             self.msg.emit('shuting down server HTTP')
             server.server_close()
 
-
-    #def receiveFromTransportLayer(self):
-     #   transportSocket = socket(AF_INET, SOCK_STREAM)
-     #   transportSocket.bind('127.0.0.1', 7777)
-     #   transportSocket.listen()
-     #   print 'waiting from transport'
-     #   clientSocket, addr = transportSocket.accept()
-     #   self.package = clientSocket.recv(1024)
-     #   print 'RECEIVED = \n' + self.package
 
     msg = QtCore.pyqtSignal(str)
 

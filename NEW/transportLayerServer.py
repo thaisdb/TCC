@@ -1,4 +1,4 @@
-#coding=utf-8
+#coding:utf-8
 import sys
 from socket import *
 import json
@@ -6,25 +6,14 @@ from threading import Thread
 from layer import Layer
 import hashlib
 from PyQt4 import QtCore
-from utils import Addresses as addr
 from utils import PDUPrinter
 #normal server port 99999
+from transportLayerClient import TransportLayer
 
-
-class TransportServer (QtCore.QThread):
-    SYN     = {'cwr':0, 'ece':0, 'fin':0, 'syn':1, 'rst':0, 'psh':0, 'ack':0, 'urg':0}
-    ACK     = {'cwr':0, 'ece':0, 'fin':0, 'syn':0, 'rst':0, 'psh':0, 'ack':1, 'urg':0}
-    SYN_ACK = {'cwr':0, 'ece':0, 'fin':0, 'syn':1, 'rst':0, 'psh':0, 'ack':1, 'urg':0}
+class TransportServer (TransportLayer):
 
     connected = False
     justConnected = False
-
-    answer = ''
-    msg = QtCore.pyqtSignal(str)
-    errorMsg = QtCore.pyqtSignal(str)
-    html = QtCore.pyqtSignal(str)
-
-    shoutConnection = QtCore.pyqtSignal(bool)
 
     def __init__(self, parent=None):
         super(TransportServer, self).__init__()
@@ -38,19 +27,23 @@ class TransportServer (QtCore.QThread):
         try:
             self.transportServerSocket = socket(AF_INET, SOCK_STREAM)
             self.transportServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-            self.transportServerSocket.bind(addr.TransportServer)
+            self.transportServerSocket.bind(Layer.TransportServer)
             self.msg.emit('********************** TRANSPORT SERVER **********************')
             self.transportServerSocket.listen(1)
             print 'Listening'
             while True:
-                if self.receive_Data():
+                self.segment, success = Layer.receive(self.transportServerSocket)
+                self.transportProtocol = json.loads(self.segment)['transportProtocol']
+                self.msg.emit('Received a ' + self.transportProtocol + ' segment.')
+                if success:
                     if self.transportProtocol == 'TCP':
                         if not self.interpretTCPSegment():
                             self.errorMsg.emit('Error trying to interpret TCP segment')
                     else:
-                        self.interpretUDPSegment()
+                        self.interpretUDPSegment(self.segment)
                     self.sendToApplication()
                     if self.receiveAnswer():
+                        self.createSegment('UDP')
                         self.sendAnswerToNetwork()
         except KeyboardInterrupt:
             print 'Shutting down transport server'
@@ -65,17 +58,17 @@ class TransportServer (QtCore.QThread):
 
     def threeWayHandshake(self):
         if self.receive(self.SYN):
-            if self.send_SYN_ACK():
+            if self.send_ACK():
                 self.receive_Data()
                 self.segment = json.loads(self.segment)
-                if self.receive(self.ACK):
+                if self.receive(self.SYN_ACK):
                     self.msg.emit('Three way handshake protocol established connection!')
                     #self.receive_Data()
                     return True
         return False
 
 
-    def receive_Data(self):
+    def receivePack(self):
         self.msg.emit('Waiting data....')
         networkReceiver, _ = self.transportServerSocket.accept()
         self.segment = ''
@@ -90,14 +83,9 @@ class TransportServer (QtCore.QThread):
         return True
 
     def sendAnswerToNetwork(self):
-        transportSender = socket(AF_INET, SOCK_STREAM)
-        transportSender.connect(addr.NetworkServer)
-        while self.answer:
-            sent = transportSender.send(self.answer)
-            self.answer = self.answer[sent:]
-        transportSender.close()
+        sent = Layer.send(Layer.NetworkServer, self.segment)
         print 'Answer sent to internet layer'
-        return True
+        return sent
 
     def receive(self, flagMode):
         self.flags = self.segment['flags']
@@ -108,8 +96,8 @@ class TransportServer (QtCore.QThread):
         else:
             return False
 
-    def send_SYN_ACK(self):
-        self.msg.emit('Sending SYN_ACK')
+    def send_ACK(self):
+        self.msg.emit('Sending ACK')
         tcpSegment = {'transportProtocol': 'TCP',
                         'srcPort': self.srcPort,
                         'dstPort' : self.dstPort,
@@ -119,7 +107,7 @@ class TransportServer (QtCore.QThread):
                         'window': 'window',
                         'checksum': 'checksum',
                         'urgPtr': 'urgPtr',
-                        'flags' : self.SYN_ACK,
+                        'flags' : self.ACK,
                         'opcoes': 'opcoes',
                         'data' : 'NULL'}
         self.answer = json.dumps(tcpSegment)
@@ -195,25 +183,6 @@ class TransportServer (QtCore.QThread):
             self.errorMsg.emit("Couldn't interpret package: " + str(exc))
             self.errorMsg.emit('error line = ' + str(line))
 
-    def interpretUDPSegment(self):
-        try:
-            self.segment = json.loads(self.segment)
-            PDUPrinter.UDP(self.segment)
-
-            checksum = self.segment['checksum']
-            del self.segment['checksum']
-            self.verifyChecksum(checksum)
-
-            self.segment['data'] = json.loads(self.segment['data'])
-            print 'request send to Application Server'
-        except Exception as exc:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            error = exc_tb.tb_frame
-            line = exc_tb.tb_lineno
-            fileName = error.f_code.co_filename
-            self.errorMsg.emit("Couldn't interpret package: " + str(exc))
-            self.errorMsg.emit('error line = ' + str(line))
-
 
     def verifyChecksum(self, receivedChecksum):
         try:
@@ -235,13 +204,20 @@ class TransportServer (QtCore.QThread):
 
 
     def sendToApplication(self):
+        self.msg.emit('trying to send')
         try:
             self.applicationSocket = socket(AF_INET, SOCK_STREAM)
-            self.applicationSocket.connect(addr.ApplicationServer)
-            while self.segment['data']:
-                sent = self.applicationSocket.send(self.segment['data'])
-                self.segment['data'] = self.segment['data'][sent:]
-            self.msg.emit('sent request to application')
+            self.applicationSocket.connect(Layer.ApplicationServer)
+            print 'transport sending to application:'
+            data = json.loads(self.segment['data'])
+            while data:
+                sent = self.applicationSocket.send(data)
+                data = data[sent:]
+            self.msg.emit('Sent request to application.')
+            #while self.segment['data']:
+            #    sent = self.applicationSocket.send(self.segment['data'])
+            #    self.segment['data'] = self.segment['data'][sent:]
+            #self.msg.emit('sent request to application')
             return True
         except Exception as exc:
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -252,13 +228,14 @@ class TransportServer (QtCore.QThread):
             print 'error line = ' + str(line)
 
     def receiveAnswer(self):
-        self.answer = ''
+        self.msg.emit('Waiting answer from upper layer')
+        self.applicationPack = ''
         data = self.applicationSocket.recv(1024)
         while data:
-            self.answer += data
+            self.applicationPack += data
             data = self.applicationSocket.recv(1024)
         self.applicationSocket.close()
-        print 'Received aswer from application'
+        self.msg.emit('Received answer from application')
         return True
 
 TransportServer()

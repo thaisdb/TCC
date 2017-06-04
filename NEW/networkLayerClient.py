@@ -9,7 +9,6 @@ from utils import Common
 from threading import Thread
 from layer import Layer
 import netifaces
-from utils import Addresses as addr
 from utils import PDUPrinter
 from PyQt4 import QtCore
 
@@ -76,7 +75,7 @@ class NetworkClient(QtCore.QThread):
     def run(self):
         self.networkClientSocket = socket(AF_INET, SOCK_STREAM)
         self.networkClientSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        self.networkClientSocket.bind (addr.NetworkClient)
+        self.networkClientSocket.bind (Layer.NetworkClient)
         self.msg.emit('*' * 20 + ' INTENERT CLIENT ' + '*' * 20)
         self.networkClientSocket.listen(1)
         self.msg.emit('Accepted connection')
@@ -85,10 +84,12 @@ class NetworkClient(QtCore.QThread):
                 self.frame, success = Layer.receive(self.networkClientSocket)
                 if success:
                     self.createDatagram()
-                    Layer.send(addr.PhysicalClient, self.datagram)
+                    Layer.send(Layer.PhysicalClient, self.datagram)
                     self.answer, success = Layer.receive(self.networkClientSocket)
+                    self.msg.emit('Received answer')
                     if success:
-                        Layer.send(addr.TransportClient, self.answer)
+                        sent = Layer.send(Layer.TransportClient, self.answer)
+                        self.msg.emit ('Sent msg to transport client ' + str(sent))
         except KeyboardInterrupt:
             print 'Shutting down Internet Layer Client'
             self.saveRouterTable()
@@ -128,7 +129,7 @@ class NetworkClient(QtCore.QThread):
         jPack = json.loads(self.frame)
         m = host.search(jPack['data'])
         srcIP = Common.myIP()[1]['addr']
-        dstIP = (addr.PhysicalServer)[0]
+        dstIP = (Layer.PhysicalServer)[0]
         try:
             srcIP = self.myIP()['addr']
             transportProtocol = jPack['transportProtocol']

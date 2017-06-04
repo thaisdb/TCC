@@ -1,4 +1,4 @@
-#coding=utf-8
+#coding:utf-8
 import sys
 import urllib
 import os
@@ -7,7 +7,6 @@ import httplib
 from threading import Thread
 from layer import Layer
 import webbrowser
-from utils import Addresses as addr
 from PyQt4 import QtCore
 from PyQt4.QtCore import QThread
 #create connection
@@ -17,6 +16,8 @@ class ApplicationClient(QtCore.QThread):
     browserMsg = ''
     package = ''
     answer = ''
+
+    go = False
     msg = QtCore.pyqtSignal(str)
     html = QtCore.pyqtSignal(str)
     def __init__(self, parent=None):
@@ -28,7 +29,7 @@ class ApplicationClient(QtCore.QThread):
         self.msg.emit('*' * 20 + ' APPLICATION CLIENT ' + '*' * 20)
         self.applicationSocket = socket(AF_INET, SOCK_STREAM)
         self.applicationSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        self.applicationSocket.bind(addr.ApplicationClient)
+        self.applicationSocket.bind(Layer.ApplicationClient)
         self.applicationSocket.listen(1)
         self.browser = webbrowser.get('google-chrome')
         self.msg.emit('Wainting browser...')
@@ -36,34 +37,20 @@ class ApplicationClient(QtCore.QThread):
         self.browser.open_new_tab('')
         while True:
             if self.listenBrowser() :
-                self.sendToTransportLayer()
-                if self.receiveFromTransport():
-                #self.sendDirectly()
-                #if self.receiveDirectly():
-                    self.sendToBrowser()
-                self.package = ''
-                self.answer = ''
+                if self.go == True:
+                    self.setGo
+                else:
+                    self.sendToTransportLayer()
+                    if self.receiveFromTransport():
+                        self.sendToBrowser()
+                    self.package = ''
+                    self.answer = ''
         self.applicationSocket.close()
 
-    #DEBUG
-    def sendDirectly(self):
-        self.directlySocket = socket(AF_INET, SOCK_STREAM)
-        appAddr = ('localhost', 7777)
-        self.directlySocket.connect(appAddr)
-        self.directlySocket.send(self.browserPack)
-
-    def receiveDirectly(self):
-        self.msg.emit('Waiting answer...')
-        self.answer = ''
-        data = self.directlySocket.recv(1024)
-        while data:
-            self.answer += data
-            data = self.directlySocket.recv(1024)
-        return True
 
     def sendToTransportLayer(self):
         self.transportSock = socket(AF_INET, SOCK_STREAM)
-        self.transportSock.connect(addr.TransportClient)
+        self.transportSock.connect(Layer.TransportClient)
         try:
             self.transportSock.send(self.browserMsg)
             self.msg.emit('Request sent to Transport Layer')
@@ -99,5 +86,15 @@ class ApplicationClient(QtCore.QThread):
         except Exception, ex:
             self.msg.emit('ERROR!' + str(ex))
             return False
+
+    def setGo(self):
+        self.sendToTransportLayer()
+        if self.receiveFromTransport():
+            self.sendToBrowser()
+        self.package = ''
+        self.answer = ''
+
+    def stepMode(self, mode):
+        self.go = mode
 
 ApplicationClient()

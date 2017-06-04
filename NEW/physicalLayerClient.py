@@ -11,7 +11,6 @@ from physicalLayer import PhysicalLayer as pl
 import json
 from threading import Thread
 from layer import Layer
-from utils import Addresses as addr
 from utils import PDUPrinter
 from PyQt4 import QtCore
 #TODO receive server ip from the caller
@@ -33,7 +32,7 @@ class PhysicalClient(QtCore.QThread):
         self.getIPMAC()
         self.physicalClientSocket = socket(AF_INET, SOCK_STREAM)
         self.physicalClientSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        self.physicalClientSocket.bind(addr.PhysicalClient)
+        self.physicalClientSocket.bind(Layer.PhysicalClient)
         self.physicalClientSocket.listen(1)
         while True:
             if self.receiveFromNetwork():
@@ -52,7 +51,7 @@ class PhysicalClient(QtCore.QThread):
         interface  = Common.myIP()
         self.myIP = interface[1]
         self.myMAC = pl.getMyMAC(interface[0])
-        self.serverIP = addr.PhysicalServer[0]
+        self.serverIP = Layer.PhysicalServer[0]
         self.serverMAC = pl.getServerMAC(self.serverIP)
         self.msg.emit("my ip: " + str(self.myIP['addr']))
         self.msg.emit("my mac: " + str(self.myMAC))
@@ -77,18 +76,21 @@ class PhysicalClient(QtCore.QThread):
                 binaryFile.write('{0:08b}'.format(ord(x)))
 
 
+    def setTMQ(self, size):
+        self.myTMQ = size
+        self.msg.emit('Accorded TMQ size = ' + str(size) + '.')
 
     def sendBinaryFile(self):
         self.physicalSocket = socket(AF_INET, SOCK_STREAM)
-        self.physicalSocket.connect(addr.PhysicalServer)
+        self.physicalSocket.connect(Layer.PhysicalServer)
         fileName = 'binary_file.txt'
         if not self.tmqReceived:
             self.msg.emit('Asking tmq')
             #TODO ask user
-            myTMQ = 30
-            self.physicalSocket.send(str(myTMQ).zfill(4))
+            self.physicalSocket.send(str(self.myTMQ).zfill(4))
             #server sends min tmq
             self.tmq = int(self.physicalSocket.recv(4))
+            self.msg.emit('The smaller TMQ, and frame size, is = ' + str(self.tmq) + '.')
             self.tmqReceived = True
             self.msg.emit('Frame size = ' + str(self.tmq))
         self.msg.emit('Sending binary file')
@@ -116,7 +118,7 @@ class PhysicalClient(QtCore.QThread):
 
     def receiveAnswer(self):
         self.msg.emit('Waiting answer')
-        self.msg.emit('on addr = ' + str(addr.PhysicalClient))
+        self.msg.emit('on addr = ' + str(Layer.PhysicalClient))
         physicalReceiver, _ = self.physicalClientSocket.accept()
         self.msg.emit( 'Answer received')
         self.answer = ''
@@ -129,7 +131,7 @@ class PhysicalClient(QtCore.QThread):
 
     def sendAnswer(self):
         physicalSender = socket(AF_INET, SOCK_STREAM)
-        physicalSender.connect(addr.NetworkClient)
+        physicalSender.connect(Layer.NetworkClient)
         while self.answer:
             sent = physicalSender.send(self.answer)
             self.answer = self.answer[sent:]

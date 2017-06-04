@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>720</width>
-    <height>540</height>
+    <width>1292</width>
+    <height>663</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -37,20 +37,28 @@
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>39</x>
-     <y>74</y>
-     <width>651</width>
-     <height>441</height>
+     <x>130</x>
+     <y>220</y>
+     <width>361</width>
+     <height>371</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
-       <widget class="QLineEdit" name="ipLine"/>
+       <widget class="QLineEdit" name="ipLine">
+        <property name="text">
+         <string>IP</string>
+        </property>
+       </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="routeLine"/>
+       <widget class="QLineEdit" name="routeLine">
+        <property name="text">
+         <string>ROTA</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="addButton">
@@ -167,8 +175,8 @@ color: rgb(255, 255, 255);</string>
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>30</y>
+     <x>190</x>
+     <y>120</y>
      <width>241</width>
      <height>31</height>
     </rect>
@@ -186,7 +194,7 @@ color: rgb(255, 255, 255);</string>
      <x>10</x>
      <y>30</y>
      <width>24</width>
-     <height>491</height>
+     <height>601</height>
     </rect>
    </property>
    <property name="text">
@@ -200,6 +208,52 @@ color: rgb(255, 255, 255);</string>
    </property>
    <property name="arrowType">
     <enum>Qt::LeftArrow</enum>
+   </property>
+  </widget>
+  <widget class="QTextEdit" name="physicalOUT">
+   <property name="geometry">
+    <rect>
+     <x>600</x>
+     <y>390</y>
+     <width>571</width>
+     <height>211</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_4">
+   <property name="geometry">
+    <rect>
+     <x>620</x>
+     <y>80</y>
+     <width>131</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Network Layer</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_5">
+   <property name="geometry">
+    <rect>
+     <x>620</x>
+     <y>360</y>
+     <width>131</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Physical Layer</string>
+   </property>
+  </widget>
+  <widget class="QTextEdit" name="networkOUT">
+   <property name="geometry">
+    <rect>
+     <x>600</x>
+     <y>110</y>
+     <width>571</width>
+     <height>211</height>
+    </rect>
    </property>
   </widget>
  </widget>

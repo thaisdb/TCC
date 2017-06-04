@@ -4,7 +4,8 @@ import time
 import sys
 import netifaces as nt
 import logging
-from utils import Common, RouterTable, Addresses
+from layer import Layer
+from utils import Common, RouterTable
 from PyQt4 import QtGui, QtCore
 from newWindow      import Ui_NewMainWindow
 from clientWidget   import Ui_ClientWidget
@@ -33,20 +34,8 @@ class Main(QtGui.QMainWindow, Ui_NewMainWindow):
         self.serverButton.clicked.connect(self.runServer)
         self.routerButton.clicked.connect(self.runRouter)
 
-        self.client = Client(self)
-        self.stackedWidget.addWidget(self.client)
-        self.client.toolButton.clicked.connect(self.backToMain)
-        self.client.errorMsg.connect(self.raiseError)
 
-        self.server = Server(self)
-        self.stackedWidget.addWidget(self.server)
-        self.server.toolButton.clicked.connect(self.backToMain)
-        self.server.errorMsg.connect(self.raiseError)
-        self.server.connected.connect(self.shoutConnection)
 
-        self.router = Router(self)
-        self.stackedWidget.addWidget(self.router)
-        self.router.toolButton.clicked.connect(self.backToMain)
 
         #thisLevel = getattr(logging, loglevel.upper(), None)
         logging.basicConfig(filename='log', level=logging.DEBUG)
@@ -57,23 +46,33 @@ class Main(QtGui.QMainWindow, Ui_NewMainWindow):
         msgBox = QtGui.QMessageBox.critical(self, 'Critical ERROR!', msg, QtGui.QMessageBox.Retry)
 
     def runClient(self):
+        self.client = Client(self)
+        self.stackedWidget.addWidget(self.client)
+        self.client.toolButton.clicked.connect(self.backToMain)
+        self.client.errorMsg.connect(self.raiseError)
         self.stackedWidget.setCurrentIndex(self.stackedWidget.indexOf(self.client))
 
     def runServer(self):
+        self.server = Server(self)
+        self.stackedWidget.addWidget(self.server)
+        self.server.toolButton.clicked.connect(self.backToMain)
+        self.server.errorMsg.connect(self.raiseError)
         self.stackedWidget.setCurrentIndex(self.stackedWidget.indexOf(self.server))
 
     def runRouter(self):
+        self.router = Router(self)
+        self.stackedWidget.addWidget(self.router)
+        self.router.toolButton.clicked.connect(self.backToMain)
         self.stackedWidget.setCurrentIndex(self.stackedWidget.indexOf(self.router))
 
     def backToMain(self):
         self.stackedWidget.setCurrentIndex(0)
 
-    def shoutConnection(self, connection):
-        self.client.hearConnection(connection)
 
 
 class Router(QtGui.QWidget, Ui_RouterWidget):
 
+    errorMsg = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
         super(Router, self).__init__(parent)
@@ -84,6 +83,34 @@ class Router(QtGui.QWidget, Ui_RouterWidget):
         self.addButton.clicked.connect(self.newRow)
         self.removeButton.clicked.connect(self.removeRow)
         self.rt.update.connect(self.displayTable)
+
+        self.configureRouter()
+
+
+    def configureRouter(self):
+        try:
+            ip = Common.myIP()[1]['addr']
+            port = add.PhysicalRouter[1]
+            Layer.PhysicalRouter = (ip, int(port))
+            self.startRouter()
+            return True
+        except Exception as exc:
+            self.errorMsg.emit(str(exc))
+            return False
+
+
+    #def startRouter():
+        #self.physicalRouter = PhysicalServer(self)
+        #self.physicalRouter.msg.connect(self.doMsg)
+        #self.physicalRoyter.html.connect(self.printHtml)
+        #self.physicalRouter.errorMsg.connect(self.raiseError)
+        #self.physicalRouter.start()
+
+        #self.networkRouter = NetworkServer(self)
+        #self.networkRouter.msg.connect(self.doMsg)
+        #self.networkRouter.html.connect(self.printHtml)
+        #self.networkRouter.start()
+
 
     def displayTable(self):
         try:
@@ -123,7 +150,6 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         self.setupUi(self)
 
         self.startButton.clicked.connect(self.configureClient)
-        self.clearButton.clicked.connect(self.clearText)
  #      self.pingButton.clicked.connect(self.ping)
         self.configureClient()
 
@@ -134,8 +160,8 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
             myIP = Common.myIP()[1]['addr']
             if ip =='':
                 ip = myIP
-            Addresses.PhysicalClient = (myIP, 4444)
-            Addresses.PhysicalServer = (ip, int(port))
+            Layer.PhysicalClient = (myIP, 4444)
+            Layer.PhysicalServer = (ip, int(port))
             self.startClient()
             return True
         except Exception as exc:
@@ -149,12 +175,20 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         self.networkLOut.setText('')
         self.physicalLOut.setText('')
 
+        return
+
+
 
     def startClient(self):
         self.applicationClient = ApplicationClient(self)
         self.applicationClient.msg.connect(self.doMsg)
         self.applicationClient.html.connect(self.doHtml)
         self.applicationClient.start()
+        if self.stepBox.isChecked():
+            self.applicationClient.stepMode(True)
+            self.goButton.clicked.connect(self.applicationClient.setGo)
+        else:
+            self.applicationClient.stepMode(False)
 
 
         self.transportClient = TransportClient(self)
@@ -174,15 +208,22 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         self.physicalClient = PhysicalClient(self)
         self.physicalClient.msg.connect(self.doMsg)
         self.physicalClient.html.connect(self.doHtml)
+        if self.frameInput.text() != '':
+            try:
+                frameSize = int(self.frameInput.text())
+                self.physicalClient.setTMQ(frameSize)
+            except:
+                self.errorMsg.emit('Error catching frame size.')
+        else:
+                self.physicalClient.setTMQ(1024)
         self.physicalClient.start()
 
+        self.clearButton.clicked.connect(self.clearText)
         #self.transportClient.hearConnection(connected)
 
-    def shoutConnection(self, connected):
-        self.connected.emit(True)
-        self.physicalClient.connected.connect(self.physicalClient.tcpConnected)
-        self.networkClient.connected.connect(self.networkClient.tcpConnected)
-        #elf.client.transportClient.connected.connect()
+
+    def setGo(self, action):
+        self.applicationClient.go
 
     def doMsg (self, msg):
         sender =  self.sender().__class__.__name__
@@ -214,11 +255,8 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
 
     def raiseError(self, error):
         sender =  self.sender().__class__.__name__
-        self.errorMsg.emit(sender + ': ' + error)
+        self.errorMsg.emit(sender + ':\n' + error)
 
-    def hearConnection(self, connected):
-        print 'emiting shout, hearing'
-        self.connected.emit(connected)
 
 
 class Server(QtGui.QWidget, Ui_ServerWidget):
@@ -231,7 +269,6 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         self.setupUi(self)
 
         self.myIP = Common.myIP()[1]['addr']
-
         self.serverIPLabel.setText('Server IP: ' + self.myIP)
 
         self.startButton.clicked.connect(self.configureServer)
@@ -239,9 +276,9 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
 
     def configureServer(self):
         try:
-            ip = Common.myIP()[1]['addr']
+            ip = self.myIP
             port = self.portEdit.text()
-            Addresses.PhysicalServer = (ip, int(port))
+            Layer.PhysicalServer = (ip, int(port))
             self.startServer()
             return True
         except Exception as exc:
@@ -255,7 +292,6 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         self.physicalServer.html.connect(self.printHtml)
         self.physicalServer.errorMsg.connect(self.raiseError)
         self.physicalServer.start()
-        self.connected.connect(self.physicalServer.tcpConnected)
 
         self.networkServer = NetworkServer(self)
         self.networkServer.msg.connect(self.doMsg)
@@ -267,16 +303,12 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         self.transportServer.errorMsg.connect(self.raiseError)
         self.transportServer.html.connect(self.printHtml)
         self.transportServer.start()
-        self.transportServer.shoutConnection.connect(self.shoutConnection)
 
         self.applicationServer = ApplicationServer(self)
         self.applicationServer.msg.connect(self.doMsg)
         #self.applicationServer.errorMsg.connect(self.errorMsg.emit())
         self.applicationServer.start()
 
-    def shoutConnection(self, connected):
-        print 'trying to shout ' + str(connected)
-        self.connected.emit(connected)
 
     def doMsg (self, msg):
         sender =  self.sender().__class__.__name__

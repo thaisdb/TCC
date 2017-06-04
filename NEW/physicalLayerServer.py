@@ -7,7 +7,6 @@ import binascii
 import json
 from PyQt4 import QtCore
 from layer import Layer
-from utils import Addresses as addr
 from utils import PDUPrinter
 #TODO receive server ip from the caller
 #TODO receive file name from the client
@@ -30,15 +29,13 @@ class PhysicalServer(QtCore.QThread):
         try:
             self.physicalServerSocket = socket(AF_INET, SOCK_STREAM)
             self.physicalServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-            self.physicalServerSocket.bind(addr.PhysicalServer)
-            print 'physical server add received = ' +str(addr.PhysicalServer)
-            self.host, self.port = addr.PhysicalServer
+            self.physicalServerSocket.bind(Layer.PhysicalServer)
+            self.host, self.port = Layer.PhysicalServer
             self.physicalServerSocket.listen(1)
-            self.msg.emit  ("******************** PHYSICAL SERVER ********************")
             self.msg.emit ("Listening")
-            self.msg.emit("Server setup:\nIP = " + str(self.host) + '\tPort = ' + str(self.port) + '\nListening...')
+            self.msg.emit("Setup:\nIP = " + str(self.host) + '\tPort = ' + str(self.port) + '\nListening...')
         except Exception as exc:
-            self.errorMsg.emit('ERROR! It was not possible start the server: \n' + str(exc))
+            self.errorMsg.emit('ERROR! It was not possible start the execution: \n' + str(exc))
         try:
             while True:
                 if self.receiveFile():
@@ -52,25 +49,11 @@ class PhysicalServer(QtCore.QThread):
 
 
 
-    def receiveFileName(self):
-        data = self.physicalSocket.recv(1024)
-        if not data:
-            print 'No valid file  received'
-            return
-        self.receivedFileName = data
-        extension = self.receivedFileName.split('.')
-        if extension == 'txt':
-            self.fileType = 0
-        else:
-            self.fileType = 1
-        print ('filename: ' + self.receivedFileName)
-
-
 
     def receiveFile(self):
         self.msg.emit('Waiting file...')
         physicalReceiver, clientaddr = self.physicalServerSocket.accept()
-        addr.PhysicalClient = (clientaddr[0], 4444)
+        Layer.PhysicalClient = (clientaddr[0], 4444)
         self.msg.emit(str(clientaddr))
         if not self.tmqSent:
             self.tmq = int(self.setTMQ(physicalReceiver))
@@ -114,13 +97,15 @@ class PhysicalServer(QtCore.QThread):
 
     def sendToNetwork (self):
         networkSender = socket(AF_INET, SOCK_STREAM)
-        networkSender.connect(addr.NetworkServer)
+        networkSender.connect(Layer.NetworkServer)
         self.msg.emit('package sent to network')
         print self.package
         networkSender.send(self.package)
         networkSender.close()
         return True
 
+    def setBufferSize(self, size):
+        self.BUFFER_SIZE = size
 
     def setTMQ(self, clientSocket):
         clientTMQ = int(clientSocket.recv(4))
@@ -146,8 +131,8 @@ class PhysicalServer(QtCore.QThread):
 
     def sendAnswer(self):
         self.physicalSender = socket(AF_INET, SOCK_STREAM)
-        self.msg.emit('sending to ' + str(addr.PhysicalClient))
-        self.physicalSender.connect(addr.PhysicalClient)
+        self.msg.emit('sending to ' + str(Layer.PhysicalClient))
+        self.physicalSender.connect(Layer.PhysicalClient)
         while self.answer:
             sent = self.physicalSender.send(self.answer)
             self.answer = self.answer[sent:]

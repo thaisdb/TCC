@@ -19,3 +19,13 @@ table, th, td {
     border: 1px solid black;
     border-collapse: collapse;
 }
+
+h2 {
+    font-weight: bold;
+    font-size: 24px;
+}
+
+h1 {
+    font-weight: bold;
+    font size: 30px; 
+}

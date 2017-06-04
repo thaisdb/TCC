@@ -6,7 +6,6 @@ import json
 from utils import Common
 from PyQt4 import QtCore
 from layer import Layer
-from utils import Addresses as addr
 from utils import RouterTable, PDUPrinter
 import netifaces
 #class Internet:
@@ -71,16 +70,18 @@ class NetworkServer(QtCore.QThread):
         self.msg.emit('******************** NETWORK SERVER ********************')
         self.networkServerSocket = socket(AF_INET, SOCK_STREAM)
         self.networkServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        self.networkServerSocket.bind (addr.NetworkServer)
+        self.networkServerSocket.bind (Layer.NetworkServer)
         self.networkServerSocket.listen(1)
         while True:
             self.package, success = Layer.receive(self.networkServerSocket)
             if success:
                 self.interpretPackage()
-                sent = Layer.send(addr.TransportServer, self.datagram['data'])
+                sent = Layer.send(Layer.TransportServer, self.datagram['data'])
                 if sent:
                     self.answer, success = Layer.receive(self.networkServerSocket)
-                    sent = Layer.send(addr.PhysicalServer, self.answer)
+                    self.msg.emit ('Received answer')
+                    sent = Layer.send(Layer.PhysicalServer, self.answer)
+                    self.msg.emit ('Answer sent to physical layer')
 
 
     def ipBelongsToNetwork(self):
