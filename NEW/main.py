@@ -239,7 +239,6 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
 
     def doHtml(self, msg):
         sender =  self.sender().__class__.__name__
-        logging.info(sender + ' -> ' + msg)
         if sender == 'ApplicationClient':
             self.applicationLOut.append(str(dt.now()))
             self.applicationLOut.insertHtml(msg)

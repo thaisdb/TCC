@@ -1,4 +1,4 @@
-#coding: utf-8
+#coding:utf-8
 
 import sys,os
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
@@ -33,7 +33,7 @@ class httpHandler(BaseHTTPRequestHandler):
                 elif self.path.endswith('.png'):
                     mimeType = 'image/png'
 
-                f = open (reqFileName, 'r')
+                f = open (reqFileName, 'rb')
                 self.send_header('Content-type', mimeType + '; charset=utf-8')
                 self.end_headers()
                 data = f.read()
@@ -83,8 +83,6 @@ class ApplicationServer(QtCore.QThread):
     def run(self):
         self.msg.emit('******************** APPLICATION SERVER ********************')
         DocumentRoot = '/home/thais/Faculdade/TCC/NEW/'
-        PORT = '8000'
-        HOST = 'localhost'
         try:
             #print 'sys.argv ' + sys.argv[1]
             self.pyserver()

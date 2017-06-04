@@ -29,11 +29,12 @@ class TransportLayer( QtCore.QThread):
                                 #'dstPort' : self.dstPort,
                                 'dstPort' : 'dstPort',
                                 'comprimento' : comprimento,
-                                'data' : json.dumps(self.applicationPack) }
-            self.segment['checksum'] = Common.calculateChecksum(json.dumps(self.segment))[2:]
+                                'data' : self.applicationPack }
+            self.segment['checksum'] = 'checksum'
+            #= Common.calculateChecksum(json.dumps(self.segment))[2:]
             self.html.emit(PDUPrinter.UDP(self.segment, 'blue'))
             if mode == 'UDP':
-                self.segment = json.dumps(self.segment)
+                self.segment = json.dumps(self.segment, encoding='utf8')
                 print 'Created UDP segment'
                 return True
             else:
@@ -149,10 +150,8 @@ class TransportClient(TransportLayer):
 
     def sendAnswerToApplicationLayer(self):
         self.msg.emit ('Sending answer to app layer')
-        self.segment['data'] = json.loads(self.segment['data'])
-        print self.segment['data']
         while self.segment['data']:
-            sent = self.applicationSock.send(self.segment['data'])
+            sent = self.applicationSock.send(self.segment['data'].encode('utf-8'))
             self.segment['data'] = self.segment['data'][sent:]
         self.applicationSock.close()
         self.msg.emit('answer sent')

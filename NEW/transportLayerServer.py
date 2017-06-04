@@ -39,7 +39,7 @@ class TransportServer (TransportLayer):
                     if self.transportProtocol == 'TCP':
                         if not self.interpretTCPSegment():
                             self.errorMsg.emit('Error trying to interpret TCP segment')
-                    else:
+                    else: #UDP protocol
                         self.interpretUDPSegment(self.segment)
                     self.sendToApplication()
                     if self.receiveAnswer():
@@ -208,11 +208,9 @@ class TransportServer (TransportLayer):
         try:
             self.applicationSocket = socket(AF_INET, SOCK_STREAM)
             self.applicationSocket.connect(Layer.ApplicationServer)
-            print 'transport sending to application:'
-            data = json.loads(self.segment['data'])
-            while data:
-                sent = self.applicationSocket.send(data)
-                data = data[sent:]
+            while self.segment['data']:
+                sent = self.applicationSocket.send(self.segment['data'])
+                self.segment['data'] = self.segment['data'][sent:]
             self.msg.emit('Sent request to application.')
             #while self.segment['data']:
             #    sent = self.applicationSocket.send(self.segment['data'])

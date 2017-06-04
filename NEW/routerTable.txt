@@ -1,6 +1,4 @@
 ip_destino ip_roteado
 44444 34242
-dfdf dfdfdf
-dfdfbgbgb dfdfdf
 323 3232323
 dfdffdfdfdf fdfdfd

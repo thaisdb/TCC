@@ -30,7 +30,6 @@ class Layer():
         try:
             if tmq == None:
                 while data:
-                    print str(data)
                     sent = sender.send(data)
                     data = data[sent:]
                 sender.close()
@@ -48,6 +47,7 @@ class Layer():
             print 'line = ' + str(numb)
             print 'Layer ERROR! Could not send data:'
             print e
+            print 'tryied data : ' + str(data)
             return False
 
 
