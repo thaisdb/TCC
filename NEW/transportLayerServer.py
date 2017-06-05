@@ -205,6 +205,7 @@ class TransportServer (TransportLayer):
 
     def sendToApplication(self):
         self.msg.emit('trying to send')
+        print 'data = ' + self.segment['data']
         try:
             self.applicationSocket = socket(AF_INET, SOCK_STREAM)
             self.applicationSocket.connect(Layer.ApplicationServer)

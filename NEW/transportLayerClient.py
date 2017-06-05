@@ -1,4 +1,5 @@
 #coding:utf-8
+import base64
 import sys
 import re
 from socket import *
@@ -29,7 +30,7 @@ class TransportLayer( QtCore.QThread):
                                 #'dstPort' : self.dstPort,
                                 'dstPort' : 'dstPort',
                                 'comprimento' : comprimento,
-                                'data' : self.applicationPack }
+                                'data' : json.dumps(self.applicationPack.encode('base64') + '=====') }
             self.segment['checksum'] = 'checksum'
             #= Common.calculateChecksum(json.dumps(self.segment))[2:]
             self.html.emit(PDUPrinter.UDP(self.segment, 'blue'))
@@ -78,6 +79,7 @@ class TransportLayer( QtCore.QThread):
             self.html.emit(PDUPrinter.UDP(self.segment, 'red'))
             checksum = self.segment['checksum']
             del self.segment['checksum']
+            self.segment['data'] = self.decode_base64(json.loads(self.segment['data']))
             #Common.verifyChecksum(json.dumps(segment), checksum)
         except Exception as exc:
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -87,6 +89,11 @@ class TransportLayer( QtCore.QThread):
             self.errorMsg.emit("Couldn't interpret package: " + str(exc))
             self.errorMsg.emit('error line = ' + str(line))
 
+
+    def decode_base64(self, data):
+        lens = len(data)
+        lenx = lens - (lens % 4 if lens % 4 else 4)
+        return base64.decodestring(data[:lenx])
 
 
 class TransportClient(TransportLayer):
@@ -151,7 +158,7 @@ class TransportClient(TransportLayer):
     def sendAnswerToApplicationLayer(self):
         self.msg.emit ('Sending answer to app layer')
         while self.segment['data']:
-            sent = self.applicationSock.send(self.segment['data'].encode('utf-8'))
+            sent = self.applicationSock.send(self.segment['data'])
             self.segment['data'] = self.segment['data'][sent:]
         self.applicationSock.close()
         self.msg.emit('answer sent')
