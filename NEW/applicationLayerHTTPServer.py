@@ -7,8 +7,17 @@ from clientWidget import Ui_ClientWidget
 from PyQt4  import QtCore
 from layer import Layer
 
-class httpHandler(BaseHTTPRequestHandler):
-    #global htmlFile
+class liststream():
+    #def __init__(self):
+    #    self.data = []
+    def write(self, s):
+        self.data = s
+
+
+class httpHandler(BaseHTTPRequestHandler, QtCore.QThread):
+
+    msg = QtCore.pyqtSignal(str)
+
     def do_GET(self):
         try:
             if self.path.startswith('/favicon.ico'):
@@ -37,6 +46,8 @@ class httpHandler(BaseHTTPRequestHandler):
                 self.send_header('Content-type', mimeType + '; charset=utf-8')
                 self.end_headers()
                 data = f.read()
+
+                self.msg.emit('teste')
                 while data:
                     self.wfile.write(data)
                     data = f.read()
@@ -68,12 +79,20 @@ class ApplicationServer(QtCore.QThread):
         try:
             server = HTTPServer(Layer.ApplicationServer, httpHandler)
             self.msg.emit('started HTTP server')
+            httpHandler.msg.connect(self.doMsg)
             server.serve_forever()
 
         except KeyboardInterrupt:
             self.msg.emit('shuting down server HTTP')
             server.server_close()
 
+    def doMsg(msg):
+        self.msg.emit(msg)
+
+    @staticmethod
+    def write(self,string):
+        print 'trying to emit'
+        self.msg.emit(string)
 
     msg = QtCore.pyqtSignal(str)
 

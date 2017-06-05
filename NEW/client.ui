@@ -16,9 +16,9 @@
   <widget class="QToolBox" name="toolBox">
    <property name="geometry">
     <rect>
-     <x>70</x>
-     <y>20</y>
-     <width>1161</width>
+     <x>60</x>
+     <y>30</y>
+     <width>1191</width>
      <height>671</height>
     </rect>
    </property>
@@ -54,7 +54,7 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>1161</width>
+      <width>1191</width>
       <height>625</height>
      </rect>
     </property>
@@ -83,8 +83,8 @@
     <widget class="QLabel" name="label_5">
      <property name="geometry">
       <rect>
-       <x>20</x>
-       <y>70</y>
+       <x>40</x>
+       <y>90</y>
        <width>59</width>
        <height>17</height>
       </rect>
@@ -145,10 +145,10 @@
     <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
       <rect>
-       <x>41</x>
-       <y>228</y>
+       <x>40</x>
+       <y>240</y>
        <width>297</width>
-       <height>24</height>
+       <height>21</height>
       </rect>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -159,13 +159,20 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QCheckBox" name="checkBox">
+        <property name="text">
+         <string>Timer</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
     <widget class="QWidget" name="horizontalLayoutWidget">
      <property name="geometry">
       <rect>
-       <x>41</x>
-       <y>169</y>
+       <x>40</x>
+       <y>190</y>
        <width>231</width>
        <height>29</height>
       </rect>
@@ -206,7 +213,7 @@
      <property name="geometry">
       <rect>
        <x>40</x>
-       <y>110</y>
+       <y>140</y>
        <width>230</width>
        <height>29</height>
       </rect>
@@ -241,35 +248,12 @@
      <property name="geometry">
       <rect>
        <x>40</x>
-       <y>280</y>
-       <width>511</width>
+       <y>290</y>
+       <width>411</width>
        <height>22</height>
       </rect>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_6">
-      <item>
-       <widget class="QCheckBox" name="checkBox">
-        <property name="text">
-         <string>Timer</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeType">
-         <enum>QSizePolicy::Fixed</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
       <item>
        <widget class="QCheckBox" name="checkBox_2">
         <property name="text">
@@ -322,6 +306,94 @@
       </item>
      </layout>
     </widget>
+    <widget class="QTableWidget" name="tableWidget">
+     <property name="geometry">
+      <rect>
+       <x>600</x>
+       <y>190</y>
+       <width>501</width>
+       <height>141</height>
+      </rect>
+     </property>
+     <property name="sortingEnabled">
+      <bool>true</bool>
+     </property>
+     <property name="rowCount">
+      <number>4</number>
+     </property>
+     <property name="columnCount">
+      <number>2</number>
+     </property>
+     <attribute name="horizontalHeaderCascadingSectionResizes">
+      <bool>false</bool>
+     </attribute>
+     <row/>
+     <row/>
+     <row/>
+     <row/>
+     <column>
+      <property name="text">
+       <string>Domínio</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>IP</string>
+      </property>
+     </column>
+    </widget>
+    <widget class="QWidget" name="horizontalLayoutWidget_5">
+     <property name="geometry">
+      <rect>
+       <x>600</x>
+       <y>140</y>
+       <width>501</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_8">
+      <item>
+       <widget class="QLabel" name="label_11">
+        <property name="text">
+         <string>Domínio:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="lineEdit"/>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_12">
+        <property name="text">
+         <string>IP: </string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="lineEdit_2"/>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton">
+        <property name="text">
+         <string>New DNS</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QPushButton" name="pushButton_2">
+     <property name="geometry">
+      <rect>
+       <x>980</x>
+       <y>340</y>
+       <width>121</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Remove DNS</string>
+     </property>
+    </widget>
     <zorder>layoutWidget</zorder>
     <zorder>horizontalLayoutWidget</zorder>
     <zorder>horizontalLayoutWidget_4</zorder>
@@ -330,15 +402,18 @@
     <zorder>label_5</zorder>
     <zorder>line_3</zorder>
     <zorder>horizontalLayoutWidget_3</zorder>
-    <zorder>horizontalSlider</zorder>
-    <zorder>label_4</zorder>
+    <zorder>tableWidget</zorder>
+    <zorder>horizontalLayoutWidget_5</zorder>
+    <zorder>label_11</zorder>
+    <zorder>lineEdit</zorder>
+    <zorder>pushButton_2</zorder>
    </widget>
    <widget class="QWidget" name="displayPage">
     <property name="geometry">
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>1161</width>
+      <width>1191</width>
       <height>625</height>
      </rect>
     </property>
@@ -415,6 +490,9 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="inputMethodHints">
+         <set>Qt::ImhDigitsOnly</set>
         </property>
        </widget>
       </item>

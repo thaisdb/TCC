@@ -7,6 +7,7 @@ import logging
 from layer import Layer
 from utils import Common, RouterTable
 from PyQt4 import QtGui, QtCore
+from bib import wordbook as wb
 from newWindow      import Ui_NewMainWindow
 from clientWidget   import Ui_ClientWidget
 from serverWidget   import Ui_ServerWidget
@@ -67,6 +68,7 @@ class Main(QtGui.QMainWindow, Ui_NewMainWindow):
 
     def backToMain(self):
         self.stackedWidget.setCurrentIndex(0)
+
 
 
 
@@ -272,6 +274,11 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
 
         self.startButton.clicked.connect(self.configureServer)
 
+        self.physicalLOut.mousePressEvent = self.physicalClicked
+        self.networkLOut.mousePressEvent = self.networkClicked
+        self.transportLOut.mousePressEvent = self.trasportClicked
+        self.applicationLOut.mousePressEvent = self.applicationClicked
+
 
     def configureServer(self):
         try:
@@ -297,6 +304,7 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         self.networkServer.html.connect(self.printHtml)
         self.networkServer.start()
 
+
         self.transportServer = TransportServer(self)
         self.transportServer.msg.connect(self.doMsg)
         self.transportServer.errorMsg.connect(self.raiseError)
@@ -307,7 +315,6 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         self.applicationServer.msg.connect(self.doMsg)
         #self.applicationServer.errorMsg.connect(self.errorMsg.emit())
         self.applicationServer.start()
-
 
     def doMsg (self, msg):
         sender =  self.sender().__class__.__name__
@@ -340,7 +347,58 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         sender =  self.sender().__class__.__name__
         self.errorMsg.emit(sender + ': ' + error)
 
+    def physicalClicked(self, event):
+        tc = self.physicalLOut.cursorForPosition(event.pos())
+        tc.select(QtGui.QTextCursor.WordUnderCursor)
+        self.physicalLOut.setTextCursor(tc)
+        word = tc.selectedText()
+        print word
+        pos = self.physicalLOut.cursorRect(self.physicalLOut.textCursor()).bottomRight()
+        pos = self.physicalLOut.mapToGlobal(pos)
+        try:
+            QtGui.QToolTip.showText(pos, wb.getToolTip(word))
+        except:
+            logging.error(word + ' doesn\'t have a tooltip.')
 
+
+    def networkClicked(self, event):
+        tc = self.networkLOut.cursorForPosition(event.pos())
+        tc.select(QtGui.QTextCursor.WordUnderCursor)
+        self.networkLOut.setTextCursor(tc)
+        word = tc.selectedText()
+        print word
+        pos = self.networkLOut.cursorRect(self.networkLOut.textCursor()).bottomRight()
+        pos = self.networkLOut.mapToGlobal(pos)
+        try:
+            QtGui.QToolTip.showText(pos, wb.getToolTip(word))
+        except:
+            logging.error(word + ' doesn\'t have a tooltip.')
+
+    def trasportClicked(self, event):
+        tc = self.transportLOut.cursorForPosition(event.pos())
+        tc.select(QtGui.QTextCursor.WordUnderCursor)
+        self.transportLOut.setTextCursor(tc)
+        word = tc.selectedText()
+        print word
+        pos = self.transportLOut.cursorRect(self.transportLOut.textCursor()).bottomRight()
+        pos = self.transportLOut.mapToGlobal(pos)
+        try:
+            QtGui.QToolTip.showText(pos, wb.getToolTip(word))
+        except:
+            logging.error(word + ' doesn\'t have a tooltip.')
+
+    def applicationClicked(self, event):
+        tc = self.applicationLOut.cursorForPosition(event.pos())
+        tc.select(QtGui.QTextCursor.WordUnderCursor)
+        self.applicationLOut.setTextCursor(tc)
+        word = tc.selectedText()
+        print word
+        pos = self.applicationLOut.cursorRect(self.applicationLOut.textCursor()).bottomRight()
+        pos = self.applicationLOut.mapToGlobal(pos)
+        try:
+            QtGui.QToolTip.showText(pos, wb.getToolTip(word))
+        except:
+            logging.error(word + ' doesn\'t have a tooltip.')
 def main():
     app = QtGui.QApplication(sys.argv)
     css = open('style.css', 'r')
