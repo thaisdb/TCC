@@ -43,6 +43,7 @@ class TransportServer (TransportLayer):
                         self.interpretUDPSegment(self.segment)
                     self.sendToApplication()
                     if self.receiveAnswer():
+                        self.dstPort = Layer.PhysicalClient[1]
                         self.createSegment('UDP')
                         self.sendAnswerToNetwork()
         except KeyboardInterrupt:

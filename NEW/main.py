@@ -158,12 +158,12 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
     def configureClient(self):
         try:
             ip = self.serverIPInput.text()
-            port = self.portaInput.text()
+            self.port = self.portaInput.text()
             myIP = Common.myIP()[1]['addr']
             if ip =='':
                 ip = myIP
             Layer.PhysicalClient = (myIP, 4444)
-            Layer.PhysicalServer = (ip, int(port))
+            Layer.PhysicalServer = (ip, int(self.port))
             self.startClient()
             return True
         except Exception as exc:
@@ -199,7 +199,7 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         self.transportClient.errorMsg.connect(self.raiseError)
         transportType = 'TCP' if self.radTCP.isChecked() else 'UDP'
         self.transportClient.msg.emit('Transport protocol selected = ' + transportType)
-        self.transportClient.configure(transportType)
+        self.transportClient.configure(transportType, self.port)
         self.transportClient.start()
 
         self.networkClient = NetworkClient(self)
@@ -283,8 +283,8 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
     def configureServer(self):
         try:
             ip = self.myIP
-            port = self.portEdit.text()
-            Layer.PhysicalServer = (ip, int(port))
+            self.port = self.portEdit.text()
+            Layer.PhysicalServer = (ip, int(self.port))
             self.startServer()
             return True
         except Exception as exc:

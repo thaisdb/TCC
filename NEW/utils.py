@@ -1,7 +1,7 @@
 #coding: utf-8
 import netifaces
 from PyQt4 import QtCore
-
+import json
 
 class Common():
 
@@ -18,6 +18,7 @@ class Common():
 
     @staticmethod
     def calculateChecksum(package):
+        package = json.dumps(sorted(package))
         try:
             s = 0
             for i in range(0, len(package), 2):

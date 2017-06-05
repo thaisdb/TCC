@@ -11,7 +11,7 @@ import hashlib
 from utils import PDUPrinter, Common
 from PyQt4 import QtCore
 
-class TransportLayer( QtCore.QThread):
+class TransportLayer(QtCore.QThread):
     SYN     = {'cwr':0, 'ece':0, 'fin':0, 'syn':1, 'rst':0, 'psh':0, 'ack':0, 'urg':0}
     ACK     = {'cwr':0, 'ece':0, 'fin':0, 'syn':0, 'rst':0, 'psh':0, 'ack':1, 'urg':0}
     SYN_ACK = {'cwr':0, 'ece':0, 'fin':0, 'syn':1, 'rst':0, 'psh':0, 'ack':1, 'urg':0}
@@ -27,12 +27,10 @@ class TransportLayer( QtCore.QThread):
             self.segment = { 'transportProtocol' : 'UDP',
                                 #'srcPort' : self.srcPort,
                                 'srcPort' : 'srcPort',
-                                #'dstPort' : self.dstPort,
-                                'dstPort' : 'dstPort',
+                                'dstPort' : str(self.dstPort),
                                 'comprimento' : comprimento,
                                 'data' : json.dumps(self.applicationPack.encode('base64') + '=====') }
-            self.segment['checksum'] = 'checksum'
-            #= Common.calculateChecksum(json.dumps(self.segment))[2:]
+            self.segment['checksum'] = Common.calculateChecksum(self.segment)[2:]
             self.html.emit(PDUPrinter.UDP(self.segment, 'blue'))
             if mode == 'UDP':
                 self.segment = json.dumps(self.segment, encoding='utf8')
@@ -79,8 +77,12 @@ class TransportLayer( QtCore.QThread):
             self.html.emit(PDUPrinter.UDP(self.segment, 'red'))
             checksum = self.segment['checksum']
             del self.segment['checksum']
+            self.dstPort = self.segment['srcPort']
             self.segment['data'] = self.decode_base64(json.loads(self.segment['data']))
-            #Common.verifyChecksum(json.dumps(segment), checksum)
+            if Common.verifyChecksum(segment, checksum):
+                self.msg.emit('CHECKSUM successfully verified.')
+            else:
+                self.errorMsg.emit('CHECKSUM error! Unsuccessfully verified.')
         except Exception as exc:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             error = exc_tb.tb_frame
@@ -103,8 +105,9 @@ class TransportClient(TransportLayer):
         self.msg.emit( '*' * 20 + ' TRANSPORT CLIENT ' + '*' * 20)
 
     #server or router -> TODO
-    def configure(self, transportType):
+    def configure(self, transportType, port):
         self.transportType = transportType
+        self.dstPort = port
 
 
     def run(self):
@@ -130,6 +133,7 @@ class TransportClient(TransportLayer):
                         else:
                             self.sendTCPPackage()
                     else: #transport protocol = UDP
+                        self.dstPort = Layer.PhysicalServer[1]
                         if self.createSegment('UDP'):
                             sent = Layer.send(Layer.NetworkClient, self.segment)
                             if self.receiveAnswer():
@@ -269,8 +273,6 @@ class TransportClient(TransportLayer):
             self.errorMsg.emit('Error sending TCP Segment\n' + str(exc))
             return False
 
-    def interpret(self):
-        self.answer = json.loads(self.answer)
 
     def confirmFlags(self, flagsMode):
         try:
@@ -300,21 +302,6 @@ class TransportClient(TransportLayer):
             self.errorMsg.emit('DID NOT Receive SYN_ACK\n' + str(exc))
             return False
 
-
-    def setFlags (self, mode):
-        #reboot tcp flags
-        self.flags = {'cwr':0, 'ece':0,
-                      'fin':0, 'syn':0, 'rst':0,
-                      'psh':0, 'ack':0, 'urg':0}
-        if mode == 'SYN':
-            self.seq = 0
-            self.flags['syn'] = 1
-        elif mode == 'ACK':
-            self.ackSeq = self.seq + 1
-            self.flags['ack'] = 1
-        else: #SYN-ACK
-            self.flags['syn'] = 1
-            self.flags['ack'] = 1
 
 
 
