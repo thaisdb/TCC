@@ -48,6 +48,7 @@ class Ui_ServerWidget(object):
         self.transportLOut.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.transportLOut.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.transportLOut.setAcceptDrops(False)
+        self.transportLOut.setStyleSheet(_fromUtf8("font: 11pt \"Ubuntu Condensed\";"))
         self.transportLOut.setUndoRedoEnabled(False)
         self.transportLOut.setLineWrapMode(QtGui.QTextEdit.NoWrap)
         self.transportLOut.setReadOnly(True)
@@ -59,6 +60,8 @@ class Ui_ServerWidget(object):
         self.physicalLOut = QtGui.QTextEdit(ServerWidget)
         self.physicalLOut.setGeometry(QtCore.QRect(650, 390, 571, 200))
         self.physicalLOut.viewport().setProperty("cursor", QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.physicalLOut.setStyleSheet(_fromUtf8("font: 11pt \"Ubuntu Condensed\";"))
+        self.physicalLOut.setLineWrapMode(QtGui.QTextEdit.NoWrap)
         self.physicalLOut.setReadOnly(True)
         self.physicalLOut.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse|QtCore.Qt.TextSelectableByMouse)
         self.physicalLOut.setObjectName(_fromUtf8("physicalLOut"))
@@ -68,7 +71,9 @@ class Ui_ServerWidget(object):
         self.applicationLOut = QtGui.QTextEdit(ServerWidget)
         self.applicationLOut.setGeometry(QtCore.QRect(50, 150, 571, 200))
         self.applicationLOut.viewport().setProperty("cursor", QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.applicationLOut.setStyleSheet(_fromUtf8("font: 11pt \"Ubuntu Condensed\";"))
         self.applicationLOut.setDocumentTitle(_fromUtf8(""))
+        self.applicationLOut.setLineWrapMode(QtGui.QTextEdit.NoWrap)
         self.applicationLOut.setReadOnly(True)
         self.applicationLOut.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse|QtCore.Qt.TextSelectableByMouse)
         self.applicationLOut.setObjectName(_fromUtf8("applicationLOut"))
@@ -78,6 +83,8 @@ class Ui_ServerWidget(object):
         self.networkLOut = QtGui.QTextEdit(ServerWidget)
         self.networkLOut.setGeometry(QtCore.QRect(50, 390, 571, 200))
         self.networkLOut.viewport().setProperty("cursor", QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.networkLOut.setStyleSheet(_fromUtf8("font: 11pt \"Ubuntu Condensed\";"))
+        self.networkLOut.setLineWrapMode(QtGui.QTextEdit.NoWrap)
         self.networkLOut.setReadOnly(True)
         self.networkLOut.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse|QtCore.Qt.TextSelectableByMouse)
         self.networkLOut.setObjectName(_fromUtf8("networkLOut"))
@@ -134,15 +141,15 @@ class Ui_ServerWidget(object):
         self.transportLOut.setHtml(_translate("ServerWidget", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'Sans Serif\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'Ubuntu\'; font-size:11pt;\"><br /></p></body></html>", None))
+"</style></head><body style=\" font-family:\'Ubuntu Condensed\'; font-size:11pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'Ubuntu\';\"><br /></p></body></html>", None))
         self.label_9.setText(_translate("ServerWidget", "Physical Layer", None))
         self.label_7.setText(_translate("ServerWidget", "Transport Layer", None))
         self.applicationLOut.setHtml(_translate("ServerWidget", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'Sans Serif\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'Ubuntu\'; font-size:11pt;\"><br /></p></body></html>", None))
+"</style></head><body style=\" font-family:\'Ubuntu Condensed\'; font-size:11pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'Ubuntu\';\"><br /></p></body></html>", None))
         self.label_8.setText(_translate("ServerWidget", "Network Layer", None))
         self.label_6.setText(_translate("ServerWidget", "Application Layer", None))
         self.toolButton.setText(_translate("ServerWidget", "...", None))

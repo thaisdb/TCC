@@ -92,6 +92,11 @@ class RouterTable(QtCore.QObject):
 
 class PDUPrinter():
 
+    @staticmethod
+    def HTTP(request, color="black"):
+        return ('<html><table><pre><font face=\"Ubuntu Condensed\" color=\"' + color + '\">\n'\
+                + request + '\n\n</font></pre></table></html>')
+
 
     @staticmethod
     def TCP(segment, color="black"):

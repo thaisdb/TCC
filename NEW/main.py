@@ -155,6 +155,12 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
  #      self.pingButton.clicked.connect(self.ping)
         self.configureClient()
 
+        self.physicalLOut.mousePressEvent = self.physicalClicked
+        self.networkLOut.mousePressEvent = self.networkClicked
+        self.transportLOut.mousePressEvent = self.trasportClicked
+        self.applicationLOut.mousePressEvent = self.applicationClicked
+
+
     def configureClient(self):
         try:
             ip = self.serverIPInput.text()
@@ -260,6 +266,114 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
 
 
 
+    def physicalClicked(self, event):
+        tc = self.physicalLOut.cursorForPosition(event.pos())
+        tc.select(QtGui.QTextCursor.WordUnderCursor)
+        self.physicalLOut.setTextCursor(tc)
+        word = tc.selectedText()
+        print word
+        pos = self.physicalLOut.cursorRect(self.physicalLOut.textCursor()).bottomRight()
+        pos = self.physicalLOut.mapToGlobal(pos)
+        try:
+            QtGui.QToolTip.showText(pos, wb.getToolTip(word))
+        except:
+            logging.error(word + ' doesn\'t have a tooltip.')
+
+
+    def networkClicked(self, event):
+        tc = self.networkLOut.cursorForPosition(event.pos())
+        tc.select(QtGui.QTextCursor.WordUnderCursor)
+        self.networkLOut.setTextCursor(tc)
+        word = tc.selectedText()
+        print word
+        pos = self.networkLOut.cursorRect(self.networkLOut.textCursor()).bottomRight()
+        pos = self.networkLOut.mapToGlobal(pos)
+        try:
+            QtGui.QToolTip.showText(pos, wb.getToolTip(word))
+        except:
+            logging.error(word + ' doesn\'t have a tooltip.')
+
+    def trasportClicked(self, event):
+        tc = self.transportLOut.cursorForPosition(event.pos())
+        tc.select(QtGui.QTextCursor.WordUnderCursor)
+        self.transportLOut.setTextCursor(tc)
+        word = tc.selectedText()
+        print word
+        pos = self.transportLOut.cursorRect(self.transportLOut.textCursor()).bottomRight()
+        pos = self.transportLOut.mapToGlobal(pos)
+        try:
+            QtGui.QToolTip.showText(pos, wb.getToolTip(word))
+        except:
+            logging.error(word + ' doesn\'t have a tooltip.')
+
+    def applicationClicked(self, event):
+        tc = self.applicationLOut.cursorForPosition(event.pos())
+        tc.select(QtGui.QTextCursor.WordUnderCursor)
+        self.applicationLOut.setTextCursor(tc)
+        word = tc.selectedText()
+        print word
+        pos = self.applicationLOut.cursorRect(self.applicationLOut.textCursor()).bottomRight()
+        pos = self.applicationLOut.mapToGlobal(pos)
+        try:
+            QtGui.QToolTip.showText(pos, wb.getToolTip(word))
+        except:
+            logging.error(word + ' doesn\'t have a tooltip.')
+
+#----DNS TABLE---
+
+
+        self.displayTable()
+
+        self.addButton.clicked.connect(self.newRow)
+        self.removeButton.clicked.connect(self.removeRow)
+        self.rt.update.connect(self.displayTable)
+
+        self.configureRouter()
+
+
+
+
+    #def startRouter():
+        #self.physicalRouter = PhysicalServer(self)
+        #self.physicalRouter.msg.connect(self.doMsg)
+        #self.physicalRoyter.html.connect(self.printHtml)
+        #self.physicalRouter.errorMsg.connect(self.raiseError)
+        #self.physicalRouter.start()
+
+        #self.networkRouter = NetworkServer(self)
+        #self.networkRouter.msg.connect(self.doMsg)
+        #self.networkRouter.html.connect(self.printHtml)
+        #self.networkRouter.start()
+
+
+    def displayTable(self):
+        try:
+            self.tableWidget.setRowCount(0)
+            for key, route in self.rt.routerTable.iteritems():
+                self.addRow(key, route)
+        except Exception as error:
+            print 'Error loading router table: ' + str(error)
+
+
+
+    def addRow(self, key, route):
+        rowPosition = self.routerTable.rowCount()
+        self.routerTable.insertRow(rowPosition)
+        self.routerTable.setItem(rowPosition, 0, QtGui.QTableWidgetItem(key))
+        self.routerTable.setItem(rowPosition, 1, QtGui.QTableWidgetItem(route))
+
+    def newRow(self):
+        ip = self.ipLine.text()
+        route = self.routeLine.text()
+        self.rt.addDataToRouterTable(ip, route)
+
+    def removeRow(self):
+        row = self.routerTable.currentRow()
+        self.routerTable.removeRow(row)
+        self.rt.deleteDataFromRouterTable(row)
+
+
+
 class Server(QtGui.QWidget, Ui_ServerWidget):
 
     errorMsg = QtCore.pyqtSignal(str)
@@ -307,6 +421,8 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
 
         self.transportServer = TransportServer(self)
         self.transportServer.msg.connect(self.doMsg)
+        self.transportServer.appMsg.connect(self.appMsg)
+        self.transportServer.appHtml.connect(self.appHtml)
         self.transportServer.errorMsg.connect(self.raiseError)
         self.transportServer.html.connect(self.printHtml)
         self.transportServer.start()
@@ -315,6 +431,15 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         self.applicationServer.msg.connect(self.doMsg)
         #self.applicationServer.errorMsg.connect(self.errorMsg.emit())
         self.applicationServer.start()
+
+    def appMsg (self, msg):
+        self.applicationLOut.append(msg)
+
+    def appHtml(self, msg):
+        self.applicationLOut.append(str(dt.now()))
+        self.applicationLOut.insertHtml(msg)
+
+
 
     def doMsg (self, msg):
         sender =  self.sender().__class__.__name__

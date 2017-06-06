@@ -9,6 +9,7 @@ from layer import Layer
 import webbrowser
 from PyQt4 import QtCore
 from PyQt4.QtCore import QThread
+from utils import PDUPrinter
 #create connection
 
 class ApplicationClient(QtCore.QThread):
@@ -81,7 +82,7 @@ class ApplicationClient(QtCore.QThread):
         self.browserMsg = ''
         try:
             self.browserMsg = self.connection.recv(1024)
-            self.msg.emit(self.browserMsg)
+            self.html.emit(PDUPrinter.HTTP(self.browserMsg, 'blue'))
             return True
         except Exception, ex:
             self.msg.emit('ERROR!' + str(ex))
