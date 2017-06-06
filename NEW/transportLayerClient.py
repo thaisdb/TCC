@@ -100,6 +100,8 @@ class TransportLayer(QtCore.QThread):
 
 class TransportClient(TransportLayer):
 
+    TCPConnected = False
+
     def __init__(self, parent = None):
         super(TransportClient, self).__init__()
         self.msg.emit( '*' * 20 + ' TRANSPORT CLIENT ' + '*' * 20)
@@ -217,6 +219,7 @@ class TransportClient(TransportLayer):
         if self.sendTCP(self.SYN):
             if self.receive_SYN_ACK():
                 if self.sendTCP(self.ACK):
+                    self.TCPConnected = True
                     return True
         return False
 

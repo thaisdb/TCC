@@ -11,6 +11,8 @@ from utils import PDUPrinter
 from transportLayerClient import TransportLayer
 
 class TransportServer (TransportLayer):
+    appMsg = QtCore.pyqtSignal(str)
+    appHtml = QtCore.pyqtSignal(str)
 
     connected = False
     justConnected = False
@@ -205,11 +207,12 @@ class TransportServer (TransportLayer):
 
 
     def sendToApplication(self):
-        self.msg.emit('trying to send')
+        self.msg.emit('Sending request to application server')
         print 'data = ' + self.segment['data']
         try:
             self.applicationSocket = socket(AF_INET, SOCK_STREAM)
             self.applicationSocket.connect(Layer.ApplicationServer)
+            self.appHtml.emit(PDUPrinter.HTTP(self.segment['data'], 'red'))
             while self.segment['data']:
                 sent = self.applicationSocket.send(self.segment['data'])
                 self.segment['data'] = self.segment['data'][sent:]
@@ -235,6 +238,10 @@ class TransportServer (TransportLayer):
             self.applicationPack += data
             data = self.applicationSocket.recv(1024)
         self.applicationSocket.close()
+        msg = ''
+        for head in self.applicationPack.splitlines()[:6]:
+            msg += head + '\n'
+        self.appHtml.emit(PDUPrinter.HTTP(msg + '(...)', 'blue'))
         self.msg.emit('Received answer from application')
         return True
 
