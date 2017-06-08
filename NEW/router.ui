@@ -37,10 +37,10 @@
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>130</x>
-     <y>220</y>
-     <width>361</width>
-     <height>371</height>
+     <x>100</x>
+     <y>110</y>
+     <width>441</width>
+     <height>481</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -54,9 +54,16 @@
        </widget>
       </item>
       <item>
+       <widget class="QLineEdit" name="lineEdit">
+        <property name="text">
+         <string>Mask</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QLineEdit" name="routeLine">
         <property name="text">
-         <string>ROTA</string>
+         <string>Rota</string>
         </property>
        </widget>
       </item>
@@ -105,7 +112,7 @@ font: bold 11pt &quot;Latin Modern Roman Caps&quot;;</string>
        <number>4</number>
       </property>
       <property name="columnCount">
-       <number>2</number>
+       <number>3</number>
       </property>
       <attribute name="horizontalHeaderVisible">
        <bool>true</bool>
@@ -148,6 +155,11 @@ font: bold 11pt &quot;Latin Modern Roman Caps&quot;;</string>
       </column>
       <column>
        <property name="text">
+        <string>Mask</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
         <string>Gateway</string>
        </property>
       </column>
@@ -176,7 +188,7 @@ color: rgb(255, 255, 255);</string>
    <property name="geometry">
     <rect>
      <x>190</x>
-     <y>120</y>
+     <y>40</y>
      <width>241</width>
      <height>31</height>
     </rect>
