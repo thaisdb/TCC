@@ -19,11 +19,11 @@
      <x>60</x>
      <y>30</y>
      <width>1191</width>
-     <height>671</height>
+     <height>651</height>
     </rect>
    </property>
    <property name="sizePolicy">
-    <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
      <horstretch>0</horstretch>
      <verstretch>0</verstretch>
     </sizepolicy>
@@ -54,8 +54,8 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>98</width>
-      <height>28</height>
+      <width>1191</width>
+      <height>599</height>
      </rect>
     </property>
     <property name="accessibleName">
@@ -83,14 +83,14 @@
     <widget class="QLabel" name="label_5">
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>90</y>
-       <width>59</width>
-       <height>17</height>
+       <x>20</x>
+       <y>80</y>
+       <width>121</width>
+       <height>31</height>
       </rect>
      </property>
      <property name="text">
-      <string>Options:</string>
+      <string>&lt;h2&gt;Options:&lt;/h2</string>
      </property>
     </widget>
     <widget class="QWidget" name="layoutWidget">
@@ -145,10 +145,10 @@
     <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>240</y>
+       <x>70</x>
+       <y>300</y>
        <width>297</width>
-       <height>22</height>
+       <height>24</height>
       </rect>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -171,8 +171,8 @@
     <widget class="QWidget" name="horizontalLayoutWidget">
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>190</y>
+       <x>70</x>
+       <y>240</y>
        <width>231</width>
        <height>29</height>
       </rect>
@@ -212,7 +212,7 @@
     <widget class="QWidget" name="horizontalLayoutWidget_4">
      <property name="geometry">
       <rect>
-       <x>40</x>
+       <x>70</x>
        <y>140</y>
        <width>230</width>
        <height>29</height>
@@ -247,10 +247,10 @@
     <widget class="QWidget" name="horizontalLayoutWidget_3">
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>290</y>
+       <x>70</x>
+       <y>350</y>
        <width>411</width>
-       <height>22</height>
+       <height>36</height>
       </rect>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_6">
@@ -306,92 +306,101 @@
       </item>
      </layout>
     </widget>
-    <widget class="QTableWidget" name="tableWidget">
+    <widget class="QWidget" name="horizontalLayoutWidget_6">
      <property name="geometry">
       <rect>
-       <x>600</x>
+       <x>70</x>
        <y>190</y>
-       <width>501</width>
-       <height>141</height>
+       <width>231</width>
+       <height>29</height>
       </rect>
      </property>
-     <property name="sortingEnabled">
-      <bool>true</bool>
-     </property>
-     <property name="rowCount">
-      <number>4</number>
-     </property>
-     <property name="columnCount">
-      <number>2</number>
-     </property>
-     <attribute name="horizontalHeaderCascadingSectionResizes">
-      <bool>false</bool>
-     </attribute>
-     <row/>
-     <row/>
-     <row/>
-     <row/>
-     <column>
-      <property name="text">
-       <string>Domínio</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>IP</string>
-      </property>
-     </column>
-    </widget>
-    <widget class="QWidget" name="horizontalLayoutWidget_5">
-     <property name="geometry">
-      <rect>
-       <x>600</x>
-       <y>140</y>
-       <width>501</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_8">
+     <layout class="QHBoxLayout" name="horizontalLayout_9">
       <item>
-       <widget class="QLabel" name="label_11">
+       <widget class="QLabel" name="label_13">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="text">
-         <string>Domínio:</string>
+         <string>Masc:</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="lineEdit"/>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_12">
-        <property name="text">
-         <string>IP: </string>
+       <widget class="QLineEdit" name="gatewayEdit_2">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="lineEdit_2"/>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton">
-        <property name="text">
-         <string>New DNS</string>
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="frame">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
      </layout>
     </widget>
-    <widget class="QPushButton" name="pushButton_2">
+    <widget class="QLabel" name="logLink">
      <property name="geometry">
       <rect>
-       <x>980</x>
-       <y>340</y>
-       <width>121</width>
-       <height>22</height>
+       <x>1040</x>
+       <y>550</y>
+       <width>91</width>
+       <height>20</height>
       </rect>
      </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="cursor">
+      <cursorShape>PointingHandCursor</cursorShape>
+     </property>
+     <property name="mouseTracking">
+      <bool>true</bool>
+     </property>
+     <property name="focusPolicy">
+      <enum>Qt::StrongFocus</enum>
+     </property>
+     <property name="contextMenuPolicy">
+      <enum>Qt::ActionsContextMenu</enum>
+     </property>
+     <property name="acceptDrops">
+      <bool>false</bool>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
      <property name="text">
-      <string>Remove DNS</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt; Access Log&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="openExternalLinks">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="Line" name="line">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>530</y>
+       <width>1091</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
     </widget>
     <zorder>layoutWidget</zorder>
@@ -402,9 +411,9 @@
     <zorder>label_5</zorder>
     <zorder>line_3</zorder>
     <zorder>horizontalLayoutWidget_3</zorder>
-    <zorder>tableWidget</zorder>
-    <zorder>horizontalLayoutWidget_5</zorder>
-    <zorder>pushButton_2</zorder>
+    <zorder>horizontalLayoutWidget_6</zorder>
+    <zorder>logLink</zorder>
+    <zorder>line</zorder>
    </widget>
    <widget class="QWidget" name="displayPage">
     <property name="geometry">
@@ -412,7 +421,7 @@
       <x>0</x>
       <y>0</y>
       <width>1191</width>
-      <height>625</height>
+      <height>599</height>
      </rect>
     </property>
     <attribute name="label">
@@ -532,7 +541,14 @@
        </spacer>
       </item>
       <item>
-       <widget class="QLCDNumber" name="lcdNumber"/>
+       <widget class="QLCDNumber" name="lcdNumber">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -588,6 +604,9 @@ p, li { white-space: pre-wrap; }
      </property>
      <property name="acceptRichText">
       <bool>true</bool>
+     </property>
+     <property name="textInteractionFlags">
+      <set>Qt::TextBrowserInteraction</set>
      </property>
     </widget>
     <widget class="QLabel" name="label_7">
@@ -652,6 +671,9 @@ p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu Condensed'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu';&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
+     <property name="textInteractionFlags">
+      <set>Qt::TextBrowserInteraction</set>
+     </property>
     </widget>
     <widget class="QLabel" name="label_8">
      <property name="geometry">
@@ -703,6 +725,9 @@ p, li { white-space: pre-wrap; }
      <property name="readOnly">
       <bool>true</bool>
      </property>
+     <property name="textInteractionFlags">
+      <set>Qt::TextBrowserInteraction</set>
+     </property>
     </widget>
     <widget class="QTextEdit" name="networkLOut">
      <property name="geometry">
@@ -726,7 +751,7 @@ p, li { white-space: pre-wrap; }
       <enum>QTextEdit::NoWrap</enum>
      </property>
      <property name="textInteractionFlags">
-      <set>Qt::TextEditable|Qt::TextSelectableByMouse</set>
+      <set>Qt::TextBrowserInteraction</set>
      </property>
     </widget>
     <widget class="QWidget" name="horizontalLayoutWidget_2">
