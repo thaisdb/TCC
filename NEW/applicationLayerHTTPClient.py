@@ -10,6 +10,7 @@ import webbrowser
 from PyQt4 import QtCore
 from PyQt4.QtCore import QThread
 from utils import PDUPrinter
+import time
 #create connection
 
 class ApplicationClient(QtCore.QThread):
@@ -21,23 +22,24 @@ class ApplicationClient(QtCore.QThread):
     go = False
     msg = QtCore.pyqtSignal(str)
     html = QtCore.pyqtSignal(str)
+    time = QtCore.pyqtSignal(float)
     def __init__(self, parent=None):
         super(ApplicationClient, self).__init__()
 
 
 
     def run(self, wait = False):
-        self.msg.emit('*' * 20 + ' APPLICATION CLIENT ' + '*' * 20)
         self.applicationSocket = socket(AF_INET, SOCK_STREAM)
         self.applicationSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.applicationSocket.bind(Layer.ApplicationClient)
         self.applicationSocket.listen(1)
         self.browser = webbrowser.get('google-chrome')
-        self.msg.emit('Wainting browser...')
+        self.msg.emit('Waiting browser...')
         # 2 for oppening another tab on browser
-        self.browser.open_new_tab('')
+        self.browser.open_new_tab('chrome://newtab')
         while True:
             if self.listenBrowser() :
+                self.msg.emit('Browser request received:')
                 if self.go == True:
                     self.setGo
                 else:
@@ -67,6 +69,10 @@ class ApplicationClient(QtCore.QThread):
         while data:
             self.answer += data
             data = self.transportSock.recv(1024)
+        msg = ''
+        for head in self.answer.splitlines()[:6]:
+            msg += head + '\n'
+        self.html.emit(PDUPrinter.HTTP(msg + '(...)', 'red'))
         return True
 
     def sendToBrowser(self):
@@ -89,9 +95,11 @@ class ApplicationClient(QtCore.QThread):
             return False
 
     def setGo(self):
+        start = time.time()
         self.sendToTransportLayer()
         if self.receiveFromTransport():
             self.sendToBrowser()
+        self.time.emit(time.time() - start)
         self.package = ''
         self.answer = ''
 

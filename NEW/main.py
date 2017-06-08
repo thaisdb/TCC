@@ -152,13 +152,15 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         self.setupUi(self)
 
         self.startButton.clicked.connect(self.configureClient)
- #      self.pingButton.clicked.connect(self.ping)
+        self.logLink.setText('<a hrf=file:///log>Access log</a>')
         self.configureClient()
+
 
         self.physicalLOut.mousePressEvent = self.physicalClicked
         self.networkLOut.mousePressEvent = self.networkClicked
         self.transportLOut.mousePressEvent = self.trasportClicked
         self.applicationLOut.mousePressEvent = self.applicationClicked
+
 
 
     def configureClient(self):
@@ -197,6 +199,7 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
             self.goButton.clicked.connect(self.applicationClient.setGo)
         else:
             self.applicationClient.stepMode(False)
+        self.applicationClient.time.connect(self.setTime)
 
 
         self.transportClient = TransportClient(self)
@@ -232,6 +235,9 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
 
     def setGo(self, action):
         self.applicationClient.go
+
+    def setTime(self, time):
+        self.lcdNumber.display(time)
 
     def doMsg (self, msg):
         sender =  self.sender().__class__.__name__
@@ -429,6 +435,7 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
 
         self.applicationServer = ApplicationServer(self)
         self.applicationServer.msg.connect(self.doMsg)
+        self.applicationServer.html.connect(self.printHtml)
         #self.applicationServer.errorMsg.connect(self.errorMsg.emit())
         self.applicationServer.start()
 
