@@ -12,8 +12,15 @@ class wordbook():
             'TCP'       : 'Transmission Control Protocol',
             'IP'        : 'Internet Protocol',
             'HTTP'      : 'Hypertext Transfer Protocol',
-            'MTU'       : 'Maximum Transmission Unit'}
-
+            'MTU'       : 'Maximum Transmission Unit',
+            'UDP'       : 'User Datagram Protocol',
+            'IHL'       : 'Internet Header Length',
+            'TOS'       : 'Type of Service',
+            'ECN'       : 'Explicit Congestion Notification (optional)',
+            'FRAGMENT OFFSET'   : 'Specifies the offset of a particular fragment relative to the beginning of the original unfragmented IP datagram',
+            'TIME TO LIVE'      : 'Limits a datagram\'s lifetime. In practice, the field has become a hop count—when the datagram arrives at a router, the router decrements the TTL field by one. When the TTL field hits zero, the router discards the packet and typically sends an ICMP Time Exceeded message to the sender. ',
+            'FCS'       : 'Frame check sequence',
+            'URL'       : 'Uniform Resource Locator'}
     @classmethod
     def getToolTip(self, key):
         return '<html>' + self.bib[str(key)] + '</html>'
