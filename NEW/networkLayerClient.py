@@ -67,6 +67,7 @@ class NetworkClient(QtCore.QThread):
 
     msg = QtCore.pyqtSignal(str)
     html = QtCore.pyqtSignal(str)
+    count = 0
 
     def __init__(self, parent = None):
         super(NetworkClient, self).__init__()
@@ -76,13 +77,12 @@ class NetworkClient(QtCore.QThread):
         self.networkClientSocket = socket(AF_INET, SOCK_STREAM)
         self.networkClientSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.networkClientSocket.bind (Layer.NetworkClient)
-        self.msg.emit('*' * 20 + ' INTENERT CLIENT ' + '*' * 20)
         self.networkClientSocket.listen(1)
-        self.msg.emit('Accepted connection')
         try:
             while True:
                 self.frame, success = Layer.receive(self.networkClientSocket)
                 if success:
+                    self.msg.emit ('Received UDP package from Transport Layer')
                     self.createDatagram()
                     Layer.send(Layer.PhysicalClient, self.datagram)
                     self.answer, success = Layer.receive(self.networkClientSocket)
@@ -125,6 +125,7 @@ class NetworkClient(QtCore.QThread):
 
 
     def createDatagram(self):
+        self.msg.emit('Creating IP datagram:')
         host = re.compile('Host:(.*?):')
         jPack = json.loads(self.frame)
         m = host.search(jPack['data'])
@@ -133,14 +134,17 @@ class NetworkClient(QtCore.QThread):
         try:
             srcIP = self.myIP()['addr']
             transportProtocol = jPack['transportProtocol']
+            self.count += 1
             self.header = {'version':'IPV4',
-                            'headerLength':5, #min
-                            'TOS': 'Diferentiated Service',
-                            'ID':'ID',
-                            'DF':0,
-                            'MF':1,
-                            'fragOffset':'fragment offset',
-                            'TTL':'time to live',
+                            'IHL':'0101', #min = 5
+                            'ECN':'-x-',
+                            'TOS': 'Differentiated Service', #-x-
+                            'totalLength': '',
+                            'ID': self.count,
+                            'DF':1,
+                            'MF':0,
+                            'fragOffset':'-x-',
+                            'TTL':10,
                             'transportProtocol': transportProtocol,
                             'checksum':'header checksum',
                             'srcIP': srcIP,
@@ -148,10 +152,10 @@ class NetworkClient(QtCore.QThread):
                             'options':'options',
                             'padding':'padding'}
             self.datagram = self.header
-            self.datagram['TL'] = len(self.header)
             self.datagram['data'] = self.frame
+            self.datagram['totalLength'] = len(json.dumps(self.datagram))
 
-            self.html.emit(PDUPrinter.Datagram(self.datagram))
+            self.html.emit(PDUPrinter.Datagram(self.datagram, 'blue'))
             self.datagram = json.dumps(self.datagram)
         except Exception as exc:
             exc_type, exc_obj, exc_tb = sys.exc_info()
