@@ -26,7 +26,7 @@ class TransportLayer(QtCore.QThread):
             #self.dstPort = self.findPort()
             self.segment = { 'transportProtocol' : 'UDP',
                                 #'srcPort' : self.srcPort,
-                                'srcPort' : 'srcPort',
+                                'srcPort' : str(self.srcPort),
                                 'dstPort' : str(self.dstPort),
                                 'comprimento' : comprimento,
                                 'data' : json.dumps(self.applicationPack.encode('base64') + '=====') }
@@ -72,7 +72,7 @@ class TransportLayer(QtCore.QThread):
 
     def interpretUDPSegment(self, segment):
         try:
-            self.msg.emit('interpreting')
+            self.msg.emit('Interpreting:')
             self.segment = json.loads(segment)
             self.html.emit(PDUPrinter.UDP(self.segment, 'red'))
             checksum = self.segment['checksum']
@@ -135,7 +135,8 @@ class TransportClient(TransportLayer):
                         else:
                             self.sendTCPPackage()
                     else: #transport protocol = UDP
-                        self.dstPort = Layer.PhysicalServer[1]
+                        self.srcPort = Layer.ApplicationClient[1]
+                        self.dstPort = Layer.ApplicationServer[1]
                         if self.createSegment('UDP'):
                             sent = Layer.send(Layer.NetworkClient, self.segment)
                             if self.receiveAnswer():
@@ -149,12 +150,13 @@ class TransportClient(TransportLayer):
         self.applicationSock , _ = self.transportClientSocket.accept()
         self.applicationPack  = self.applicationSock.recv(1024)
         print 'applicationpack = ' + str(self.applicationPack)
-        self.msg.emit( 'received from application layer, sending to internet')
+        self.msg.emit('Received request from application layer.\nCreating and sending PDUto Network layer:')
         return True
 
     def receiveAnswer(self):
         self.answer, success = Layer.receive(self.transportClientSocket)
         if success:
+            self.msg.emit('Received answer from Network layer.')
             self.interpretUDPSegment(self.answer)
         print 'received answer' + str(success)
         return success
@@ -162,12 +164,12 @@ class TransportClient(TransportLayer):
 
 
     def sendAnswerToApplicationLayer(self):
-        self.msg.emit ('Sending answer to app layer')
+        self.msg.emit ('Sending payload to Application layer.')
         while self.segment['data']:
             sent = self.applicationSock.send(self.segment['data'])
             self.segment['data'] = self.segment['data'][sent:]
         self.applicationSock.close()
-        self.msg.emit('answer sent')
+        self.msg.emit('Answer sent.')
         return True
 
 

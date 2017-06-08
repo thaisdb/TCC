@@ -30,9 +30,8 @@ class TransportServer (TransportLayer):
             self.transportServerSocket = socket(AF_INET, SOCK_STREAM)
             self.transportServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
             self.transportServerSocket.bind(Layer.TransportServer)
-            self.msg.emit('********************** TRANSPORT SERVER **********************')
             self.transportServerSocket.listen(1)
-            print 'Listening'
+            print 'Listening...'
             while True:
                 self.segment, success = Layer.receive(self.transportServerSocket)
                 self.transportProtocol = json.loads(self.segment)['transportProtocol']
@@ -45,7 +44,8 @@ class TransportServer (TransportLayer):
                         self.interpretUDPSegment(self.segment)
                     self.sendToApplication()
                     if self.receiveAnswer():
-                        self.dstPort = Layer.PhysicalClient[1]
+                        self.srcPort = Layer.ApplicationServer[1]
+                        self.dstPort = Layer.ApplicationClient[1]
                         self.createSegment('UDP')
                         self.sendAnswerToNetwork()
         except KeyboardInterrupt:

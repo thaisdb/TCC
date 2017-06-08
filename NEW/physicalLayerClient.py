@@ -13,6 +13,7 @@ from threading import Thread
 from layer import Layer
 from utils import PDUPrinter
 from PyQt4 import QtCore
+from PyCRC.CRC32 import CRC32
 #TODO receive server ip from the caller
 
 
@@ -27,7 +28,6 @@ class PhysicalClient(QtCore.QThread):
         super(PhysicalClient, self).__init__()
 
     def run(self):
-        self.msg.emit('*' * 20 + ' PHYSICAL CLIENT ' + '*' * 20)
         self.port = 9753
         self.getIPMAC()
         self.physicalClientSocket = socket(AF_INET, SOCK_STREAM)
@@ -56,51 +56,53 @@ class PhysicalClient(QtCore.QThread):
         self.msg.emit("my ip: " + str(self.myIP['addr']))
         self.msg.emit("my mac: " + str(self.myMAC))
         self.msg.emit("server ip: " + str(self.serverIP))
-        self.msg.emit("server mac: " + str(self.serverMAC))
+        self.msg.emit("server mac: " + str(self.serverMAC) + '\n')
 
 
     def toBinaryFile(self):
-        print 'Creating binary file'
+        print 'Creating frame.'
         #TODO fix size
         self.tamanho = sys.getsizeof(self.package)
         package = {'preambulo' : '7x(10101010) + 10101011',
                     'srcMAC' : self.myMAC,
                     'dstMAC' : self.serverMAC,
                     'tamanho' : self.tamanho,
-                    'data' : self.package,
-                    'checksum' : 'checksum'}
+                    'data' : self.package}
         data = json.dumps(package)
-        self.html.emit(PDUPrinter.Frame(package))
+        package['FCS'] = bin(self.calcCRC(data))[2:]
+        self.html.emit(PDUPrinter.Frame(package, 'blue'))
+        data = json.dumps(package)
         with open('binary_file.txt', 'w') as binaryFile:
             for x in data:
                 binaryFile.write('{0:08b}'.format(ord(x)))
 
+    def calcCRC(self, data):
+        return CRC32().calculate(data)
+
 
     def setTMQ(self, size):
         self.myTMQ = size
-        self.msg.emit('Accorded TMQ size = ' + str(size) + '.')
+        self.msg.emit('Entered client MTU = ' + str(size) + '.')
 
     def sendBinaryFile(self):
         self.physicalSocket = socket(AF_INET, SOCK_STREAM)
         self.physicalSocket.connect(Layer.PhysicalServer)
         fileName = 'binary_file.txt'
         if not self.tmqReceived:
-            self.msg.emit('Asking tmq')
             #TODO ask user
             self.physicalSocket.send(str(self.myTMQ).zfill(4))
             #server sends min tmq
             self.tmq = int(self.physicalSocket.recv(4))
-            self.msg.emit('The smaller TMQ, and frame size, is = ' + str(self.tmq) + '.')
+            #self.msg.emit('Accorded MTU size = ' + str(self.tmq) + '.')
             self.tmqReceived = True
-            self.msg.emit('Frame size = ' + str(self.tmq))
-        self.msg.emit('Sending binary file')
+        self.msg.emit('Creating binary file and sending.')
         with open(fileName, 'r') as binFile:
             data = binFile.read(self.tmq)
             while data:
                 self.physicalSocket.send(data)
                 data = binFile.read(self.tmq)
             self.physicalSocket.close()
-        self.msg.emit('Resquest sent to Server')
+        self.msg.emit('Resquest sent to Server.')
         return True
 
 
@@ -117,16 +119,16 @@ class PhysicalClient(QtCore.QThread):
         return True
 
     def receiveAnswer(self):
-        self.msg.emit('Waiting answer')
-        self.msg.emit('on addr = ' + str(Layer.PhysicalClient))
+        self.msg.emit('Waiting answer...\n')
         physicalReceiver, _ = self.physicalClientSocket.accept()
-        self.msg.emit( 'Answer received')
         self.answer = ''
         data  = physicalReceiver.recv(1024)
         while data:
             self.answer += data
             data  = physicalReceiver.recv(1024)
         physicalReceiver.close()
+        self.msg.emit( 'Answer from server received')
+        self.msg.emit('Interpreting:')
         return True
 
     def sendAnswer(self):
@@ -136,7 +138,7 @@ class PhysicalClient(QtCore.QThread):
             sent = physicalSender.send(self.answer)
             self.answer = self.answer[sent:]
         physicalSender.close()
-        print 'answer sent'
+        print 'Answer sent to upper layer'
 
     def hearConnection(self, connection):
         self.connection = connection

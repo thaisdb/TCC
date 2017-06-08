@@ -32,7 +32,6 @@ class PhysicalServer(QtCore.QThread):
             self.physicalServerSocket.bind(Layer.PhysicalServer)
             self.host, self.port = Layer.PhysicalServer
             self.physicalServerSocket.listen(1)
-            self.msg.emit ("Listening")
             self.msg.emit("Setup:\nIP = " + str(self.host) + '\tPort = ' + str(self.port) + '\nListening...')
         except Exception as exc:
             self.errorMsg.emit('ERROR! It was not possible start the execution: \n' + str(exc))
@@ -45,7 +44,13 @@ class PhysicalServer(QtCore.QThread):
                     if self.receiveAnswer():
                         self.sendAnswer()
         except Exception as exc:
-            self.errorMsg.emit('ERROR! It was not possible run the server: \n' + str(exc))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            error = exc_tb.tb_frame
+            line = exc_tb.tb_lineno
+            fileName = error.f_code.co_filename
+            self.errorMsg.emit('ERROR! It was not possible run the server: \n' + str(exc)+
+                    '\nLine = ' + str(line))
+            return False
 
 
 
@@ -90,7 +95,7 @@ class PhysicalServer(QtCore.QThread):
         #TODO verificar se meu mac == meu mac
         #print 'myMAC: ' + str(myMAC)
         #tamanho =       self.package['tamanho']
-        self.html.emit(PDUPrinter.Frame(self.package))
+        self.html.emit(PDUPrinter.Frame(self.package, 'red'))
         self.package =  self.package['data']
         #print 'result = ' + str(self.package)
 

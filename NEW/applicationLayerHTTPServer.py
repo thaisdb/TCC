@@ -5,8 +5,9 @@ from threading import Thread
 from clientWidget import Ui_ClientWidget
 from PyQt4  import QtCore
 from layer import Layer
+from utils import PDUPrinter
 
-
+header = ''
 
 class httpHandler(BaseHTTPRequestHandler):
 
@@ -42,6 +43,7 @@ class httpHandler(BaseHTTPRequestHandler):
                     self.wfile.write(data)
                     data = f.read()
                 f.close()
+                #header = self.headers
                 return
 
         except IOError:
@@ -64,6 +66,9 @@ class httpHandler(BaseHTTPRequestHandler):
         except:
             pass
 
+    def getHeaders(self):
+        return self.headers
+
 class ApplicationServer(QtCore.QThread):
     def pyserver(self):
         try:
@@ -71,20 +76,22 @@ class ApplicationServer(QtCore.QThread):
             self.msg.emit('started HTTP server')
             server.serve_forever()
 
+
         except KeyboardInterrupt:
             self.msg.emit('shuting down server HTTP')
             server.server_close()
 
 
 
+    html = QtCore.pyqtSignal(str)
     msg = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
         super(ApplicationServer, self).__init__()
 
     def run(self):
-        self.msg.emit('******************** APPLICATION SERVER ********************')
         DocumentRoot = '/home/thais/Faculdade/TCC/NEW/'
+        self.msg.emit('Document root = ' + str(DocumentRoot))
         try:
             #print 'sys.argv ' + sys.argv[1]
             self.pyserver()

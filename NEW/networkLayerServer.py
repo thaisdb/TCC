@@ -67,7 +67,6 @@ class NetworkServer(QtCore.QThread):
         super(NetworkServer, self).__init__()
 
     def run(self):
-        self.msg.emit('******************** NETWORK SERVER ********************')
         self.networkServerSocket = socket(AF_INET, SOCK_STREAM)
         self.networkServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.networkServerSocket.bind (Layer.NetworkServer)
@@ -102,7 +101,7 @@ class NetworkServer(QtCore.QThread):
     def interpretPackage(self):
         self.datagram = json.loads(self.package)
         self.msg.emit('Datagram received:')
-        self.html.emit(PDUPrinter.Datagram(self.datagram))
+        self.html.emit(PDUPrinter.Datagram(self.datagram, 'red'))
         dstIP = self.datagram['dstIP']
         thisIP = Common.myIP()[1]['addr']
         if str(dstIP) == str(thisIP) or str(dstIP) == 'localhost':
