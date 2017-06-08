@@ -94,27 +94,29 @@ class PDUPrinter():
 
     @staticmethod
     def HTTP(request, color="black"):
-        return ('<html><table><pre><font face=\"Ubuntu Condensed\" color=\"' + color + '\">\n'\
-                + request + '\n\n</font></pre></table></html>')
+        return ('<html><head><link rel="stylesheet" href="style.css"></head>'\
+                '<body><table border="1" style="width:100%" cellpadding="5">'\
+                '<tr><td><pre><font face=\"Ubuntu Condensed\" color="'+color+'">'\
+                + request + '</font></pre></td></tr></table></body></html>\n\n')
 
 
     @staticmethod
     def TCP(segment, color="black"):
         return   ('<html><head><link rel="stylesheet" href="style.css"></head><body>'\
                 '<table border="1" style="width:100%" cellpadding="5" color="'+color+'">'\
-                '<caption> UDP SEGMENT </caption>'\
-                '<tr><td>Source Port = ' + str(segment['srcPort']) + '</td>'\
-                    '<td>Destination Port = ' + str(segment['dstPort']) + '</td>'\
+                '<caption> TCP SEGMENT </caption>'\
+                '<tr><td align="center">Source Port = ' + str(segment['srcPort']) + '</td>'\
+                    '<td align="center">Destination Port = ' + str(segment['dstPort']) + '</td>'\
                 '</tr><tr>'\
-                    '<td colspan="2">Sequence Number = ' + str(segment['seq']) + '</td>'\
+                    '<td align="center" colspan="2">Sequence Number = ' + str(segment['seq']) + '</td>'\
                 '</tr><tr>'\
-                    '<td colspan="2">Acknowledgment Number = ' + str(segment['ackSeq']) + '</td>'\
+                    '<td align="center" colspan="2">Acknowledgment Number = ' + str(segment['ackSeq']) + '</td>'\
                 '</tr><tr>'\
-                    '<td colspan="2">Flags = ' + str(segment['flags']) + '</td>'\
+                    '<td align="center" colspan="2">Flags = ' + str(segment['flags']) + '</td>'\
                 '</tr><tr>'\
-                    '<td>Checksum = ' + str(segment['checksum']) + '</td>'\
+                    '<td align="center">Checksum = ' + str(segment['checksum']) + '</td>'\
                 '</tr><tr>'\
-                    '<td colspan="2">Data = Application Data</td>'\
+                    '<td align="center" colspan="2">Data = Application Data</td>'\
                 '</tr></table></body></html>')
 
 
@@ -124,47 +126,54 @@ class PDUPrinter():
                 '<font color=\"' + color + '\">'\
                 '<table border="1" style="width:100%" cellpadding="5">'\
                 '<caption> UDP SEGMENT </caption>'\
-                '<tr><td>Source Port = ' + str(segment['srcPort']) + '</td>'\
-                    '<td>Destination Port = ' + str(segment['dstPort']) + '</td>'\
+                '<tr><td align="center">Source Port = ' + str(segment['srcPort']) + '</td>'\
+                    '<td align="center">Destination Port = ' + str(segment['dstPort']) + '</td>'\
                 '</tr><tr>'\
-                    '<td>Comprimento do UDP = ' + str(segment['comprimento']) + '</td>'\
-                    '<td>Checksum = ' + str(segment['checksum']) + '</td>'\
+                    '<td align="center">UDP size = ' + str(segment['comprimento']) + '</td>'\
+                    '<td align="center">Checksum = ' + str(segment['checksum']) + '</td>'\
                 '</tr><tr>'\
-                    '<td colspan="2">Data = Application Data</td>'\
+                    '<td align="center" colspan="2">Payload = Application Data</td>'\
                 '</tr></table></font></body></html>')
 
 
     @staticmethod
-    def Datagram(datagram):
+    def Datagram(datagram, color='black'):
         return ('<html><head><link rel="stylesheet" href="style.css"></head><body>'\
+                '<font color=\"'+color+'\">'\
                 '<table border="1" style="width:100%" cellpadding="5">'\
                 '<caption> Datagram </caption>'\
                 '<tr>'
-                '<td>Version = ' + str(datagram['version']) + '</td>'\
-                    '<td>IHL = ' + str(datagram['headerLength']) + '</td>'\
-                    '<td>TOS = ' + str(datagram['TOS']) + '</td>'\
-                    '<td colspan="2">Total Length =' + str(datagram['TL']) + '</td>'\
+                    '<td align="center" colspan="4">Version = ' + str(datagram['version']) + '</td>'\
+                    '<td align="center" colspan="4">IHL = ' + str(datagram['IHL']) + '</td>'\
+                    '<td align="center" colspan="6">TOS = ' + str(datagram['TOS']) + '</td>'\
+                    '<td align="center" colspan="2">ECN = ' + str(datagram['ECN']) + '</td>'\
+                    '<td align="center" colspan="16">Total Length = ' + str(datagram['totalLength']) + '</td>'\
                 '</tr><tr>'\
-                    '<td colspan="3">ID = ' + str(datagram['ID']) + '</td>'\
+                    '<td align="center" colspan="16">ID = ' + str(datagram['ID']) + '</td>'\
+                    #Reserved must be zero
+                    '<td>0</td>'\
                     '<td>DF = ' + str(datagram['DF']) + '</td>'\
                     '<td>MF = ' + str(datagram['MF']) + '</td>'\
-                    '<td>Offset = ' + str(datagram['fragOffset']) + '</td>'\
+                    '<td align="center" colspan="13">Offset = ' + str(datagram['fragOffset']) + '</td>'\
                 '</tr><tr>'\
-                    '<td colspan="2">TTL = ' + str(datagram['TTL']) + '</td>'\
-                    '<td>Protocol = ' + str(datagram['transportProtocol']) + '</td>'\
-                    '<td colspan="2">Header Checksum = ' + str(datagram['checksum']) + '</td>'\
+                    '<td align="center" colspan="8">Time To Live = ' + str(datagram['TTL']) + '</td>'\
+                    '<td align="center" colspan="8">Protocol = ' + str(datagram['transportProtocol']) + '</td>'\
+                    '<td align="center" colspan="16">Header Checksum = ' + str(datagram['checksum']) + '</td>'\
                 '</tr><tr>'\
-                    '<td colspan="5">Source Address = ' + str(datagram['srcIP']) + '</td>'\
+                    '<td align="center" colspan="32">Source Address = ' + str(datagram['srcIP']) + '</td>'\
                 '</tr><tr>'\
-                    '<td colspan="5">Destination Address = ' + str(datagram['dstIP']) + '</td>'\
+                    '<td align="center" colspan="32">Destination Address = ' + str(datagram['dstIP']) + '</td>'\
                 '</tr><tr>'\
-                    '<td colspan="5">IP Option =' + str(datagram['options']) + '</td>'\
-                '</tr></table></body></html>')
+                    '<td align="center" colspan="32">IP Option =' + str(datagram['options']) + '</td>'\
+                '</tr><tr>'\
+                    '<td align="center" colspan="32">Payload</td>'\
+                '</tr></table></font></body></html>')
 
 
     @staticmethod
-    def Frame(frame):
+    def Frame(frame, color='black'):
         return ('<html><head><link rel="stylesheet" href="style.css"></head><body>'\
+                '<font color=\"'+color+'\">'\
                 '<table border="1" style="width:100%" cellpadding="5">'\
                 '<caption> Frame </caption>'\
                 '<tr><td>Preambulo = ' + str(frame['preambulo']) + '</td>'\
@@ -172,8 +181,8 @@ class PDUPrinter():
                     '<td>Source MAC = ' + str(frame['srcMAC']) + '</td>'\
                     #'<td>Type = ' + str(frame['type']) + '</td>'\
                     '<td>Data = data </td>'\
-                    '<td>Checksum = ' + str(frame['checksum']) + '</td>'\
-                '</tr></table></body></html>')
+                    '<td>FCS = ' + str(frame['FCS']) + '</td>'\
+                '</tr></table></font></body></html>')
 
 
 
