@@ -11,6 +11,9 @@ from PyQt4 import QtCore
 from PyQt4.QtCore import QThread
 from utils import PDUPrinter
 import time
+import json
+from subprocess import Popen
+from selenium import webdriver
 #create connection
 
 class ApplicationClient(QtCore.QThread):
@@ -33,10 +36,11 @@ class ApplicationClient(QtCore.QThread):
         self.applicationSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.applicationSocket.bind(Layer.ApplicationClient)
         self.applicationSocket.listen(1)
-        self.browser = webbrowser.get('google-chrome')
+        self.browser = webdriver.Chrome('/usr/local/bin/chromedriver')
+        self.pid = self.browser.service.process.pid
+        self.msg.emit('Browser process ID = ' + str(self.pid))
         self.msg.emit('Waiting browser...')
         # 2 for oppening another tab on browser
-        self.browser.open_new_tab('chrome://newtab')
         while True:
             if self.listenBrowser() :
                 self.msg.emit('Browser request received:')
@@ -54,8 +58,10 @@ class ApplicationClient(QtCore.QThread):
     def sendToTransportLayer(self):
         self.transportSock = socket(AF_INET, SOCK_STREAM)
         self.transportSock.connect(Layer.TransportClient)
+        pack = {'pid':self.pid, 'request':self.browserMsg}
+        pack = json.dumps(pack)
         try:
-            self.transportSock.send(self.browserMsg)
+            self.transportSock.send(pack)
             self.msg.emit('Request sent to Transport Layer')
         except Exception, ex:
             self.msg.emit ('ERROR! Could not sand package')

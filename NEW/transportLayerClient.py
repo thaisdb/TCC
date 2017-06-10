@@ -78,6 +78,7 @@ class TransportLayer(QtCore.QThread):
             checksum = self.segment['checksum']
             del self.segment['checksum']
             self.dstPort = self.segment['srcPort']
+            self.srcPort = self.segment['dstPort']
             self.segment['data'] = self.decode_base64(json.loads(self.segment['data']))
             if Common.verifyChecksum(segment, checksum):
                 self.msg.emit('CHECKSUM successfully verified.')
@@ -135,8 +136,6 @@ class TransportClient(TransportLayer):
                         else:
                             self.sendTCPPackage()
                     else: #transport protocol = UDP
-                        self.srcPort = Layer.ApplicationClient[1]
-                        self.dstPort = Layer.ApplicationServer[1]
                         if self.createSegment('UDP'):
                             sent = Layer.send(Layer.NetworkClient, self.segment)
                             if self.receiveAnswer():
@@ -146,11 +145,14 @@ class TransportClient(TransportLayer):
             self.transportClientSocket.close()
 
     def receiveFromApplicationLayer(self):
-        #TODO review this ocnnection
+        #TODO review this conection
         self.applicationSock , _ = self.transportClientSocket.accept()
-        self.applicationPack  = self.applicationSock.recv(1024)
-        print 'applicationpack = ' + str(self.applicationPack)
-        self.msg.emit('Received request from application layer.\nCreating and sending PDUto Network layer:')
+        pack = json.loads(self.applicationSock.recv(1024))
+        self.srcPort = pack['pid']
+        self.applicationPack = pack['request']
+        print 'port = ' + str(self.srcPort)
+        print 'app request = ' +  str(self.applicationPack)
+        self.msg.emit('Received request from application layer.\nCreating and sending PDU to Network layer:')
         return True
 
     def receiveAnswer(self):
