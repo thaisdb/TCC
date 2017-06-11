@@ -7,19 +7,95 @@ import binascii
 import netifaces as ni
 import os
 from utils import Common
-from physicalLayer import PhysicalLayer as pl
 import json
 from threading import Thread
 from layer import Layer
 from utils import PDUPrinter
 from PyQt4 import QtCore
 from PyCRC.CRC32 import CRC32
+import netifaces
 #TODO receive server ip from the caller
 
+class PhysicalLayer(QtCore.QThread):
 
-class PhysicalClient(QtCore.QThread):
+    BYTE_SIZE = 8
+
+    def createFrame_BinaryFile(self, data, fileName):
+        self.msg.emit('Creating binary file')
+        #TODO fix size
+        self.tamanho = sys.getsizeof(data)
+        package = {'preambulo'  : 7*'(10101010)' + '10101011',
+                    'srcMAC'    : self.myMAC,
+                    'dstMAC'    : self.dstMAC,
+                    'tamanho'   : self.tamanho,
+                    'data'      : data}
+        pack = json.dumps(package)
+        package['FCS'] = bin(CRC32().calculate(pack))[2:]
+        pack = json.dumps(package)
+        self.html.emit(PDUPrinter.Frame(package))
+        with open(fileName, 'w') as binaryFile:
+            for x in pack:
+                binaryFile.write('{0:08b}'.format(ord(x)))
+
+
+    def receiveFile(self, socket, fileName):
+        with open (fileName, "w") as self.rFile:
+            data, success = Layer.receive(socket)
+            self.rFile.write(data)
+        self.msg.emit('Received frame')
+        return success
+
+    def translateReceivedFile (self, fileName):
+        #translate received binaryFile to string pack
+        self.msg.emit('Translating received binary file.')
+        newFile = open(fileName + '_translated.txt', 'wb')
+        with open(fileName, "r") as binFile:
+            buff = binFile.read(self.BYTE_SIZE)
+            data = ''
+            while buff:
+                x = chr(int(buff,2))
+                newFile.write(x)
+                buff = binFile.read(self.BYTE_SIZE)
+                data += x
+        return data
+
+    def interpretPackage(self, fileName):
+        self.msg.emit('Interpreting:')
+        received = json.loads(self.translateReceivedFile(fileName))
+        self.html.emit(PDUPrinter.Frame(received, 'red'))
+        return received['data']
+
+
+    def getDstMAC (self, ip):
+        self.msg.emit('Getting server IP and MAC...')
+        self.dstIP = ip
+        self.dstMAC = self.getServerMAC(self.dstIP)
+        self.msg.emit("Destiny IP: " + str(self.dstIP))
+        self.msg.emit("Destiny MAC: " + str(self.dstMAC) + '\n')
+
+
+    def getMyIPMAC(self):
+        self.msg.emit('Getting my IP and MAC...')
+        interface  = Common.myIP()
+        self.myIP = interface[1]
+        self.myMAC = self.getMyMAC(interface[0])
+        self.msg.emit("My IP: " + str(self.myIP['addr']))
+        self.msg.emit("My MAC: " + str(self.myMAC))
+
+
+    @staticmethod
+    def getMyMAC(interface):
+        addr = netifaces.ifaddresses(interface)
+        print 'getting MAC'
+        return addr[netifaces.AF_LINK][0]['addr']
+
+    @staticmethod
+    def getServerMAC(ip):
+        return os.popen('arp -a ' + str(ip) + ' | awk \'{print $4}\'').read()[:-1]
+
+class PhysicalClient(PhysicalLayer):
     fileType = 0 #0 to text files and 1 to image files
-    tmqReceived = False
+    mtuReceived = False
 
     msg = QtCore.pyqtSignal(str)
     html = QtCore.pyqtSignal(str)
@@ -28,119 +104,45 @@ class PhysicalClient(QtCore.QThread):
         super(PhysicalClient, self).__init__()
 
     def run(self):
-        self.port = 9753
-        self.getIPMAC()
+        self.getMyIPMAC()
         self.physicalClientSocket = socket(AF_INET, SOCK_STREAM)
         self.physicalClientSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.physicalClientSocket.bind(Layer.PhysicalClient)
         self.physicalClientSocket.listen(1)
         while True:
-            if self.receiveFromNetwork():
-                #self.getIPMAC()
-                self.toBinaryFile()
-                self.sendBinaryFile()
-                if self.receiveAnswer():
-                    self.sendAnswer()
-        #except socket.error, exc:
-         #   print 'Could not connect:'
-          #  print exc
+            self.msg.emit('Waiting datagram from Network layer')
+            self.package, success = Layer.receive(self.physicalClientSocket)
+            self.msg.emit('Received package from Network layer.')
+            self.getDstMAC(Layer.PhysicalServer[0])
+            if success:
+                if not self.mtuReceived:
+                    self.connect()
+                self.createFrame_BinaryFile(self.package, 'binaryRequestClient.txt')
+                sent = Layer.send(Layer.PhysicalServer, 'binaryRequestClient.txt', self.myMTU)
+                self.msg.emit('Sent binary file to Physical server = ' + str(sent))
+                if self.receiveFile(self.physicalClientSocket, 'binaryAnswer.txt'):
+                    self.msg.emit('Received binary file from server')
+                    self.answer = self.interpretPackage('binaryAnswer.txt')
+                    sent = Layer.send(Layer.NetworkClient, self.answer)
 
 
-    def getIPMAC (self):
-        print 'gettingIPMAC'
-        interface  = Common.myIP()
-        self.myIP = interface[1]
-        self.myMAC = pl.getMyMAC(interface[0])
-        self.serverIP = Layer.PhysicalServer[0]
-        self.serverMAC = pl.getServerMAC(self.serverIP)
-        self.msg.emit("my ip: " + str(self.myIP['addr']))
-        self.msg.emit("my mac: " + str(self.myMAC))
-        self.msg.emit("server ip: " + str(self.serverIP))
-        self.msg.emit("server mac: " + str(self.serverMAC) + '\n')
-
-
-    def toBinaryFile(self):
-        print 'Creating frame.'
-        #TODO fix size
-        self.tamanho = sys.getsizeof(self.package)
-        package = {'preambulo' : '7x(10101010) + 10101011',
-                    'srcMAC' : self.myMAC,
-                    'dstMAC' : self.serverMAC,
-                    'tamanho' : self.tamanho,
-                    'data' : self.package}
-        data = json.dumps(package)
-        package['FCS'] = bin(self.calcCRC(data))[2:]
-        self.html.emit(PDUPrinter.Frame(package, 'blue'))
-        data = json.dumps(package)
-        with open('binary_file.txt', 'w') as binaryFile:
-            for x in data:
-                binaryFile.write('{0:08b}'.format(ord(x)))
-
-    def calcCRC(self, data):
-        return CRC32().calculate(data)
-
-
-    def setTMQ(self, size):
-        self.myTMQ = size
-        self.msg.emit('Entered client MTU = ' + str(size) + '.')
-
-    def sendBinaryFile(self):
+    def connect(self):
         self.physicalSocket = socket(AF_INET, SOCK_STREAM)
         self.physicalSocket.connect(Layer.PhysicalServer)
-        fileName = 'binary_file.txt'
-        if not self.tmqReceived:
-            #TODO ask user
-            self.physicalSocket.send(str(self.myTMQ).zfill(4))
-            #server sends min tmq
-            self.tmq = int(self.physicalSocket.recv(4))
-            #self.msg.emit('Accorded MTU size = ' + str(self.tmq) + '.')
-            self.tmqReceived = True
-        self.msg.emit('Creating binary file and sending.')
-        with open(fileName, 'r') as binFile:
-            data = binFile.read(self.tmq)
-            while data:
-                self.physicalSocket.send(data)
-                data = binFile.read(self.tmq)
-            self.physicalSocket.close()
-        self.msg.emit('Resquest sent to Server.')
-        return True
+        self.msg.emit('Establishing MTU')
+        self.msg.emit('Sending my MTU = ' + str(self.myMTU))
+        self.physicalSocket.send(str(self.myMTU).zfill(4))
+        self.mtu = int(self.physicalSocket.recv(4))
+        self.msg.emit('The smaller MTU, and frame size, is = ' + str(self.mtu) + '.')
+        self.mtuReceived = True
+        self.msg.emit('Frame size = ' + str(self.mtu))
+        self.physicalSocket.close()
 
 
-    def receiveFromNetwork(self):
-        networkReceiver, _ = self.physicalClientSocket.accept()
-        self.package = ''
-        data = networkReceiver.recv(1024)
-        while data:
-            self.package += data
-            data = networkReceiver.recv(1024)
-        networkReceiver.close()
-        print 'Packet from network received'
-        print 'received from network' + str(self.package)
-        return True
 
-    def receiveAnswer(self):
-        self.msg.emit('Waiting answer...\n')
-        physicalReceiver, _ = self.physicalClientSocket.accept()
-        self.answer = ''
-        data  = physicalReceiver.recv(1024)
-        while data:
-            self.answer += data
-            data  = physicalReceiver.recv(1024)
-        physicalReceiver.close()
-        self.msg.emit( 'Answer from server received')
-        self.msg.emit('Interpreting:')
-        return True
+    def setMTU(self, size):
+        self.myMTU = size
+        self.msg.emit('Client MTU = ' + str(size) + '.')
 
-    def sendAnswer(self):
-        physicalSender = socket(AF_INET, SOCK_STREAM)
-        physicalSender.connect(Layer.NetworkClient)
-        while self.answer:
-            sent = physicalSender.send(self.answer)
-            self.answer = self.answer[sent:]
-        physicalSender.close()
-        print 'Answer sent to upper layer'
 
-    def hearConnection(self, connection):
-        self.connection = connection
-        self.msg.emit ('TCP connection established.')
 

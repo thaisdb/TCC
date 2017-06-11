@@ -222,11 +222,12 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         if self.frameInput.text() != '':
             try:
                 frameSize = int(self.frameInput.text())
-                self.physicalClient.setTMQ(frameSize)
+                self.physicalClient.setMTU(frameSize)
             except:
                 self.errorMsg.emit('Error catching frame size.')
         else:
-                self.physicalClient.setTMQ(1024)
+            #default value
+            self.physicalClient.setMTU(4096)
         self.physicalClient.start()
 
         self.clearButton.clicked.connect(self.clearText)

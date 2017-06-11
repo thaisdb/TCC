@@ -85,6 +85,7 @@ class NetworkClient(QtCore.QThread):
                     self.msg.emit ('Received UDP package from Transport Layer')
                     self.createDatagram()
                     Layer.send(Layer.PhysicalClient, self.datagram)
+                    self.msg.emit('Datagram sent to Physical layer.')
                     self.answer, success = Layer.receive(self.networkClientSocket)
                     self.msg.emit('Received answer')
                     if success:

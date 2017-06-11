@@ -3,7 +3,7 @@ from socket import *
 import os
 import sys
 
-BUFFER_SIZE  = 1024
+BUFFER_SIZE  = 4096
 #enum
 class Layer():
 
@@ -32,12 +32,17 @@ class Layer():
                 while data:
                     sent = sender.send(data)
                     data = data[sent:]
-                sender.close()
-                return True
             elif os.path.exists(data):
-                return True
+                with open(data, 'r') as binFile:
+                    buff = binFile.read(tmq)
+                    while buff:
+                        sender.send(buff)
+                        buff = binFile.read(tmq)
             else:
                 print 'Layer ERRO! File ' + str(data) + ' not found'
+
+            sender.close()
+            return True
 
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -52,11 +57,11 @@ class Layer():
 
 
     @staticmethod
-    def receive(layerSocket, tmq = None):
+    def receive(layerSocket, mtu= None):
         # an integer = 4 bytes
         receiver, _ = layerSocket.accept()
         try:
-            buff = int(tmq) if tmq != None else BUFFER_SIZE
+            buff = int(mtu) if mtu != None else BUFFER_SIZE
             pack = ''
             data = receiver.recv(buff)
             while data:
@@ -65,7 +70,6 @@ class Layer():
             receiver.close()
             print 'Layer message: Received data successfully!'
             return pack, True
-
         except Exception as ex:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             numb = sys.exc_traceback.tb_lineno
