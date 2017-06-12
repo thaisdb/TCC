@@ -36,10 +36,11 @@ class ApplicationClient(QtCore.QThread):
         self.applicationSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.applicationSocket.bind(Layer.ApplicationClient)
         self.applicationSocket.listen(1)
+        self.msg.emit('Opening browser...')
         self.browser = webdriver.Chrome('/usr/local/bin/chromedriver')
         self.pid = self.browser.service.process.pid
-        self.msg.emit('Browser process ID = ' + str(self.pid))
-        self.msg.emit('Waiting browser...')
+        self.msg.emit('Browser process ID = ' + str(self.pid) +
+                '.\nWaiting request from browser...')
         # 2 for oppening another tab on browser
         while True:
             if self.listenBrowser() :
@@ -54,6 +55,8 @@ class ApplicationClient(QtCore.QThread):
                     self.answer = ''
         self.applicationSocket.close()
 
+    def end(self):
+        self.applicationSocket.close()
 
     def sendToTransportLayer(self):
         self.transportSock = socket(AF_INET, SOCK_STREAM)

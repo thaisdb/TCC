@@ -14,15 +14,15 @@ from serverWidget   import Ui_ServerWidget
 from routerWidget   import Ui_RouterWidget
 import os
 
+
+from networkLayer import NetworkServer, NetworkClient
 #Server modules
 from applicationLayerHTTPServer import ApplicationServer
 from transportLayerServer       import TransportServer
-from networkLayerServer         import NetworkServer
 from physicalLayerServer        import PhysicalServer
 
 #Client modules
 from physicalLayerClient        import PhysicalClient
-from networkLayerClient         import NetworkClient
 from transportLayerClient       import TransportClient
 from applicationLayerHTTPClient import ApplicationClient
 
@@ -181,9 +181,13 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
 
     def clearText(self):
         self.applicationLOut.setText('')
+        self.applicationClient.end()
         self.transportLOut.setText('')
+        self.transportClient.end()
         self.networkLOut.setText('')
+        self.networkClient.end()
         self.physicalLOut.setText('')
+        self.physicalClient.end()
 
         return
 
@@ -214,20 +218,17 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         self.networkClient = NetworkClient(self)
         self.networkClient.msg.connect(self.doMsg)
         self.networkClient.html.connect(self.doHtml)
+        self.networkClient.configure(self.inputMask.text())
         self.networkClient.start()
 
         self.physicalClient = PhysicalClient(self)
         self.physicalClient.msg.connect(self.doMsg)
         self.physicalClient.html.connect(self.doHtml)
-        if self.frameInput.text() != '':
-            try:
-                frameSize = int(self.frameInput.text())
-                self.physicalClient.setMTU(frameSize)
-            except:
-                self.errorMsg.emit('Error catching frame size.')
-        else:
-            #default value
-            self.physicalClient.setMTU(4096)
+        try:
+            frameSize = int(self.inputMTU.text())
+            self.physicalClient.setMTU(frameSize)
+        except:
+            self.errorMsg.emit('Error catching frame size.')
         self.physicalClient.start()
 
         self.clearButton.clicked.connect(self.clearText)
@@ -412,6 +413,16 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
             self.errorMsg.emit(str(exc))
             return False
 
+    def clear(self):
+        self.applicationLOut.setText('')
+        self.applicationServer.end()
+        self.transportLOut.setText('')
+        self.transportServer.end()
+        self.networkLOut.setText('')
+        self.networkServer.end()
+        self.physicalLOut.setText('')
+        self.physicalServer.end()
+
     def startServer(self):
 
         self.physicalServer = PhysicalServer(self)
@@ -439,6 +450,8 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         self.applicationServer.html.connect(self.printHtml)
         #self.applicationServer.errorMsg.connect(self.errorMsg.emit())
         self.applicationServer.start()
+
+        self.clearButton.clicked.connect(self.clear)
 
     def appMsg (self, msg):
         self.applicationLOut.append(msg)

@@ -144,6 +144,12 @@ class TransportClient(TransportLayer):
         except KeyboardInterrupt:
             self.transportClientSocket.close()
 
+    def end(self):
+        try:
+            self.transportClientSocket.close()
+        except:
+            self.msg.emit('Transport client socket already closed.')
+
     def receiveFromApplicationLayer(self):
         #TODO review this conection
         self.applicationSock , _ = self.transportClientSocket.accept()
@@ -204,7 +210,7 @@ class TransportClient(TransportLayer):
         self.tcpSegment['checksum'] = self.tcpChecksum
         self.jTCPSegment = json.dumps(self.tcpSegment)
 
-	#self.headerLength = sys.getsizeof(tcpHeader)
+        #self.headerLength = sys.getsizeof(tcpHeader)
         self.html.emit(PDUPrinter.TCP(self.tcpSegment))
         try:
             while self.jTCPSegment:
@@ -262,13 +268,13 @@ class TransportClient(TransportLayer):
             self.tcpHeader['data'] = json.dumps(self.applicationPack)
         self.jTCPHeader = json.dumps(self.tcpHeader)
         self.tcpChecksum = self.calculateChecksum(self.jTCPHeader)
-	#remount head with correct checksum
+        #remount head with correct checksum
         #tcpHeaderTuple = (self.srcPort, self.dstPort, self.seq, self.ackSeq, self.offsetRes,
         #                  jFlags, self.window, self.tcpChecksum, self.urgPtr)
         self.tcpHeader['checksum'] = self.tcpChecksum
         self.jTCPHeader = json.dumps(self.tcpHeader)
 
-	#self.headerLength = sys.getsizeof(tcpHeader)
+        #self.headerLength = sys.getsizeof(tcpHeader)
         self.html.emit(PDUPrinter.TCP(self.tcpHeader))
         try:
             transportSender = socket(AF_INET, SOCK_STREAM)

@@ -72,14 +72,14 @@ class httpHandler(BaseHTTPRequestHandler):
 class ApplicationServer(QtCore.QThread):
     def pyserver(self):
         try:
-            server = HTTPServer(Layer.ApplicationServer, httpHandler)
+            self.server = HTTPServer(Layer.ApplicationServer, httpHandler)
             self.msg.emit('started HTTP server')
-            server.serve_forever()
+            self.server.serve_forever()
 
 
         except KeyboardInterrupt:
             self.msg.emit('shuting down server HTTP')
-            server.server_close()
+            self.server.server_close()
 
 
 
@@ -101,7 +101,9 @@ class ApplicationServer(QtCore.QThread):
             #pyserver('%s:%s' % (HOST, PORT))
 
 
-    def finish(self):
-        print 'deleting'
-        #i = application()
+    def end(self):
+        try:
+            self.server.server_close()
+        except:
+            self.msg.emit('Application server socket already closed.')
 

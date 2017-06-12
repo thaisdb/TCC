@@ -243,4 +243,8 @@ class TransportServer (TransportLayer):
         self.msg.emit('Received answer from application')
         return True
 
-TransportServer()
+    def end(self):
+        try:
+            self.transportServerSocket.close()
+        except:
+            self.msg.emit('Transport server socket already closed.')

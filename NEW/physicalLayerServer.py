@@ -45,6 +45,9 @@ class PhysicalServer(PhysicalLayer):
                     Layer.send(Layer.NetworkServer, self.package)
                     self.msg.emit('Waiting answer...')
                     self.answer, success = Layer.receive(self.physicalServerSocket)
+                    self.msg.emit('Received package from Network layer.')
+                    self.getDstMAC(json.loads(self.answer)['dstIP'])
+                    self.answer = json.loads(self.answer)['datagram']
                     if success:
                         self.createFrame_BinaryFile(self.answer, 'server_binary.txt')
                         #self.sendAnswer()
@@ -73,5 +76,12 @@ class PhysicalServer(PhysicalLayer):
         self.msg.emit('Connected with physical client')
         self.getDstMAC(Layer.PhysicalClient[0])
         physicalReceiver.close()
+
+
+    def end(self):
+        try:
+            self.physicalServerSocket.close()
+        except:
+            self.msg.emit('Physical server socket already closed.')
 
 

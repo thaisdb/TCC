@@ -67,7 +67,7 @@ class PhysicalLayer(QtCore.QThread):
 
 
     def getDstMAC (self, ip):
-        self.msg.emit('Getting server IP and MAC...')
+        self.msg.emit('Getting MAC of IP = ' + str(ip))
         self.dstIP = ip
         self.dstMAC = self.getServerMAC(self.dstIP)
         self.msg.emit("Destiny IP: " + str(self.dstIP))
@@ -113,7 +113,8 @@ class PhysicalClient(PhysicalLayer):
             self.msg.emit('Waiting datagram from Network layer')
             self.package, success = Layer.receive(self.physicalClientSocket)
             self.msg.emit('Received package from Network layer.')
-            self.getDstMAC(Layer.PhysicalServer[0])
+            self.getDstMAC(json.loads(self.package)['dstIP'])
+            self.package = json.loads(self.package)['datagram']
             if success:
                 if not self.mtuReceived:
                     self.connect()
@@ -144,5 +145,9 @@ class PhysicalClient(PhysicalLayer):
         self.myMTU = size
         self.msg.emit('Client MTU = ' + str(size) + '.')
 
-
+    def end(self):
+        try:
+            self.physicalClientSocket.close()
+        except:
+            self.msg.emit('Physical client socket already closed.')
 

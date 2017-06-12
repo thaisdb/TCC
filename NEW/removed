@@ -1,0 +1,9 @@
+NEW/applicationLayerHTTPClient.pyc
+NEW/applicationLayerHTTPServer.pyc
+NEW/clientWidget.pyc
+NEW/log
+NEW/physicalLayerClient.py
+NEW/physicalLayerClient.pyc
+NEW/serverWidget.pyc
+NEW/transportLayerClient.pyc
+NEW/transportLayerServer.pyc

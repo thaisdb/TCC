@@ -55,7 +55,7 @@
       <x>0</x>
       <y>0</y>
       <width>1191</width>
-      <height>599</height>
+      <height>605</height>
      </rect>
     </property>
     <property name="accessibleName">
@@ -192,7 +192,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="gatewayEdit">
+       <widget class="QLineEdit" name="inputGateway">
         <property name="sizePolicy">
          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -233,12 +233,15 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="frameInput">
+       <widget class="QLineEdit" name="inputMTU">
         <property name="sizePolicy">
          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="text">
+         <string>4096</string>
         </property>
        </widget>
       </item>
@@ -325,12 +328,12 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>Masc:</string>
+         <string>Mask:</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="gatewayEdit_2">
+       <widget class="QLineEdit" name="inputMask">
         <property name="sizePolicy">
          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -339,6 +342,9 @@
         </property>
         <property name="focusPolicy">
          <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="text">
+         <string>255.255.255.0</string>
         </property>
         <property name="frame">
          <bool>true</bool>
@@ -421,7 +427,7 @@
       <x>0</x>
       <y>0</y>
       <width>1191</width>
-      <height>599</height>
+      <height>605</height>
      </rect>
     </property>
     <attribute name="label">
