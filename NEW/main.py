@@ -117,22 +117,24 @@ class Router(QtGui.QWidget, Ui_RouterWidget):
     def displayTable(self):
         try:
             self.routerTable.setRowCount(0)
-            for key, route in self.rt.routerTable.iteritems():
-                self.addRow(key, route)
+            for key, mask, route in self.rt.routerTable.iteritems():
+                self.addRow(key, mask, route)
         except Exception as error:
             print 'Error loading router table: ' + str(error)
 
 
 
-    def addRow(self, key, route):
+    def addRow(self, key, mask, route):
         rowPosition = self.routerTable.rowCount()
         self.routerTable.insertRow(rowPosition)
         self.routerTable.setItem(rowPosition, 0, QtGui.QTableWidgetItem(key))
-        self.routerTable.setItem(rowPosition, 1, QtGui.QTableWidgetItem(route))
+        self.routerTable.setItem(rowPosition, 1, QtGui.QTableWidgetItem(mask))
+        self.routerTable.setItem(rowPosition, 2, QtGui.QTableWidgetItem(route))
 
     def newRow(self):
         ip = self.ipLine.text()
         route = self.routeLine.text()
+        mask = self.maskLine.text()
         self.rt.addDataToRouterTable(ip, route)
 
     def removeRow(self):
