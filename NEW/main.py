@@ -183,7 +183,7 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         self.transportLOut.mousePressEvent = self.trasportClicked
         self.applicationLOut.mousePressEvent = self.applicationClicked
 
-
+        self.probCollision.stateChanged.connect(self.setCollision)
 
     def configureClient(self):
         try:
@@ -248,13 +248,22 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         self.physicalClient.html.connect(self.doHtml)
         try:
             frameSize = int(self.inputMTU.text())
-            self.physicalClient.setMTU(frameSize)
+            probCollision = 0
+            if self.probCollision.isChecked():
+                probCollision = self.horizontalSlider.value()
+            self.physicalClient.configure(frameSize, probCollision)
         except:
-            self.errorMsg.emit('Error catching frame size.')
+            self.errorMsg.emit('Error catching physical parameters.')
         self.physicalClient.start()
 
         self.clearButton.clicked.connect(self.clearText)
         #self.transportClient.hearConnection(connected)
+
+    def setCollision(self):
+        if self.probCollision.isChecked():
+            self.horizontalSlider.setEnabled(True)
+        else:
+            self.horizontalSlider.setEnabled(False)
 
 
     def setGo(self, action):

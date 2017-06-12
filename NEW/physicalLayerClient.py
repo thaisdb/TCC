@@ -14,6 +14,10 @@ from utils import PDUPrinter
 from PyQt4 import QtCore
 from PyCRC.CRC32 import CRC32
 import netifaces
+
+#bib for conlision simulation
+import random
+import time
 #TODO receive server ip from the caller
 
 class PhysicalLayer(QtCore.QThread):
@@ -119,6 +123,11 @@ class PhysicalClient(PhysicalLayer):
                 if not self.mtuReceived:
                     self.connect()
                 self.createFrame_BinaryFile(self.package, 'binaryRequestClient.txt')
+                if self.probCollision != 0:
+                    while random.randint(0, 10) <= self.probCollision:
+                        rand = random.randint(0, 10)
+                        self.msg.emit('Collision detected, ' + str(rand) + ' seconds to retry...')
+                        time.sleep(rand)
                 sent = Layer.send(Layer.PhysicalServer, 'binaryRequestClient.txt', self.myMTU)
                 self.msg.emit('Sent binary file to Physical server = ' + str(sent))
                 if self.receiveFile(self.physicalClientSocket, 'binaryAnswer.txt'):
@@ -141,9 +150,11 @@ class PhysicalClient(PhysicalLayer):
 
 
 
-    def setMTU(self, size):
-        self.myMTU = size
-        self.msg.emit('Client MTU = ' + str(size) + '.')
+    def configure(self, mtu, probCollision):
+        self.myMTU = mtu
+        self.probCollision = int(probCollision)
+        self.msg.emit('Client MTU = ' + str(mtu) + '.\n' +
+                'Probability of collision = ' + str(probCollision) + '.\n')
 
     def end(self):
         try:
