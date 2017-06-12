@@ -45,27 +45,19 @@ class RouterTable(QtCore.QObject):
         super(RouterTable, self).__init__()
         self.loadRouterTable()
 
-    def accessRouterTable(self):
-        while True:
-            mode = raw_input('Choose one option:\n\t[1]Print router table'\
-            '\n\t[2]Remove data from router table\n\t[3]Add data to router table\n\t: ')
-            if mode == '1':
-                self.printRouterTable()
-            elif mode == '2':
-                self.printRouterTable()
-                self.deleteDataFromRouterTable()
-            elif mode == '3':
-                self.addDataToRouterTable()
 
 
     def loadRouterTable(self):
         try:
+            count = 0
             with open ('routerTable.txt', 'r') as rt:
                 for line in rt:
-                    (key, value) = line.split()
-                    self.routerTable[key] = value
+                    (key, mask, value) = line.split()
+                    self.routerTable[count] = (key, mask, value)
+                    count += 1
         except Exception as e:
             print 'Did not find router table file.'
+            print str(e)
 
 
     def saveRouterTable(self):

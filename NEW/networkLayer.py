@@ -74,7 +74,7 @@ class NetworkLayer(QtCore.QThread):
             self.msg.emit('Same network')
         else:
             self.msg.emit('Can\'t reach server. Package beeing redirected to gateway...')
-        networkPackage = {'dstIP' : dstIP, 'datagram' : datagram}
+        networkPackage = {'dstIP' : str(dstIP), 'datagram' : datagram}
         return json.dumps(networkPackage)
 
     def createDatagram(self, data):

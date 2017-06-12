@@ -101,23 +101,42 @@ class Router(QtGui.QWidget, Ui_RouterWidget):
             return False
 
 
-    #def startRouter():
-        #self.physicalRouter = PhysicalServer(self)
-        #self.physicalRouter.msg.connect(self.doMsg)
-        #self.physicalRoyter.html.connect(self.printHtml)
-        #self.physicalRouter.errorMsg.connect(self.raiseError)
-        #self.physicalRouter.start()
+    def startRouter():
+        self.physicalRouter = PhysicalServer(self)
+        self.physicalRouter.msg.connect(self.doMsg)
+        self.physicalRoyter.html.connect(self.printHtml)
+        self.physicalRouter.errorMsg.connect(self.raiseError)
+        self.physicalRouter.start()
 
-        #self.networkRouter = NetworkServer(self)
-        #self.networkRouter.msg.connect(self.doMsg)
-        #self.networkRouter.html.connect(self.printHtml)
-        #self.networkRouter.start()
+        self.networkRouter = NetworkServer(self)
+        self.networkRouter.msg.connect(self.doMsg)
+        self.networkRouter.html.connect(self.printHtml)
+        self.networkRouter.start()
+
+
+    def doMsg (self, msg):
+        sender =  self.sender().__class__.__name__
+        logging.info(sender + ' -> ' + msg)
+        if sender == 'NetworkClient':
+            self.networkLOut.append(msg)
+        elif sender == 'PhysicalClient':
+            self.physicalLOut.append(msg)
+
+    def doHtml(self, msg):
+        sender =  self.sender().__class__.__name__
+        if sender == 'NetworkClient':
+            self.networkOUT.append(str(dt.now()))
+            self.networkOUT.insertHtml(msg)
+        elif sender == 'PhysicalClient':
+            self.physicalOUT.append(str(dt.now()))
+            self.physicalOUT.insertHtml(msg)
 
 
     def displayTable(self):
         try:
             self.routerTable.setRowCount(0)
-            for key, mask, route in self.rt.routerTable.iteritems():
+            for index, (key, mask, route) in self.rt.routerTable.iteritems():
+                print 'reading key '+ str(key)
                 self.addRow(key, mask, route)
         except Exception as error:
             print 'Error loading router table: ' + str(error)
@@ -127,6 +146,7 @@ class Router(QtGui.QWidget, Ui_RouterWidget):
     def addRow(self, key, mask, route):
         rowPosition = self.routerTable.rowCount()
         self.routerTable.insertRow(rowPosition)
+        print 'inserting '+ str(rowPosition)
         self.routerTable.setItem(rowPosition, 0, QtGui.QTableWidgetItem(key))
         self.routerTable.setItem(rowPosition, 1, QtGui.QTableWidgetItem(mask))
         self.routerTable.setItem(rowPosition, 2, QtGui.QTableWidgetItem(route))
