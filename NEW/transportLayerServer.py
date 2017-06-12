@@ -11,6 +11,7 @@ from utils import PDUPrinter
 from transportLayerClient import TransportLayer
 
 class TransportServer (TransportLayer):
+    TCPConnected = False
     appMsg = QtCore.pyqtSignal(str)
     appHtml = QtCore.pyqtSignal(str)
 
@@ -38,14 +39,15 @@ class TransportServer (TransportLayer):
                 self.msg.emit('Received a ' + self.transportProtocol + ' segment.')
                 if success:
                     if self.transportProtocol == 'TCP':
-                        if not self.interpretTCPSegment():
+                        if not self.interpretTCPSegment(self.segment):
                             self.errorMsg.emit('Error trying to interpret TCP segment')
                     else: #UDP protocol
                         self.interpretUDPSegment(self.segment)
                     self.sendToApplication()
                     if self.receiveAnswer():
-                        self.createSegment('UDP')
-                        self.sendAnswerToNetwork()
+                        self.createSegment(self.transportProtocol, self.applicationPack)
+                        sent = Layer.send(Layer.NetworkServer, self.segment)
+                        print 'Answer sent to internet layer'
         except KeyboardInterrupt:
             print 'Shutting down transport server'
         except Exception as exc:
@@ -59,10 +61,10 @@ class TransportServer (TransportLayer):
 
     def threeWayHandshake(self):
         if self.receive(self.SYN):
-            if self.send_ACK():
-                self.receive_Data()
+            if self.send_SYN_ACK():
+                self.segment, success = Layer.receive(self.transportServerSocket)
                 self.segment = json.loads(self.segment)
-                if self.receive(self.SYN_ACK):
+                if self.receive(self.ACK):
                     self.msg.emit('Three way handshake protocol established connection!')
                     #self.receive_Data()
                     return True
@@ -83,10 +85,6 @@ class TransportServer (TransportLayer):
         self.msg.emit('Received a ' + self.transportProtocol + ' segment.')
         return True
 
-    def sendAnswerToNetwork(self):
-        sent = Layer.send(Layer.NetworkServer, self.segment)
-        print 'Answer sent to internet layer'
-        return sent
 
     def receive(self, flagMode):
         self.flags = self.segment['flags']
@@ -97,23 +95,26 @@ class TransportServer (TransportLayer):
         else:
             return False
 
-    def send_ACK(self):
-        self.msg.emit('Sending ACK')
+    def send_SYN_ACK(self):
+        self.msg.emit('Sending SYN_ACK')
         tcpSegment = {'transportProtocol': 'TCP',
                         'srcPort': self.srcPort,
                         'dstPort' : self.dstPort,
-                        'seq' : 'seq',
-                        'ackSeq' : 'ackSeq',
+                        'seq' : 0,
+                        'ackSeq' : 1,
                         'offsetRes': 'offset',
                         'window': 'window',
                         'checksum': 'checksum',
                         'urgPtr': 'urgPtr',
-                        'flags' : self.ACK,
+                        'flags' : self.SYN_ACK,
                         'opcoes': 'opcoes',
                         'data' : 'NULL'}
         self.answer = json.dumps(tcpSegment)
-        self.sendAnswerToNetwork()
-        return True
+        sent = Layer.send(Layer.NetworkServer, self.answer)
+        if sent:
+            self.msg.emit('Sent SYN_ACK to network layer.')
+            return True
+        return False
 
     def receive_ACK(self):
         self.segment
@@ -157,32 +158,6 @@ class TransportServer (TransportLayer):
             self.flags['ack'] = 1
         return self.flags
 
-    def interpretTCPSegment(self):
-        try:
-            self.segment = json.loads(self.segment)
-            #TCP segment
-            if not self.connected:
-                self.msg.emit('TCP connection requested.')
-                if not self.threeWayHandshake():
-                    self.errorMsg.emit('Couldn\'t established TCP connection')
-                    return False
-                #self.html.emit(PDUPrinter.TCP(self.segment))
-                #checksum = self.segment['checksum']
-                #del self.segment['checksum']
-                #self.verifyChecksum(checksum)
-
-            self.segment['data'] = json.loads(self.segment['data'])
-            self.msg.emit('Request send to Application Server')
-            #pacote tcp normal
-            return True
-
-        except Exception as exc:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            error = exc_tb.tb_frame
-            line = exc_tb.tb_lineno
-            fileName = error.f_code.co_filename
-            self.errorMsg.emit("Couldn't interpret package: " + str(exc))
-            self.errorMsg.emit('error line = ' + str(line))
 
 
     def verifyChecksum(self, receivedChecksum):
@@ -210,6 +185,7 @@ class TransportServer (TransportLayer):
         try:
             self.applicationSocket = socket(AF_INET, SOCK_STREAM)
             self.applicationSocket.connect(Layer.ApplicationServer)
+            #self.segment['data'] = self.decode_base64(json.loads(self.segment['data']))
             self.appHtml.emit(PDUPrinter.HTTP(self.segment['data'], 'red'))
             while self.segment['data']:
                 sent = self.applicationSocket.send(self.segment['data'])

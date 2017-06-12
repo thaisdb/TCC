@@ -20,7 +20,7 @@ class TransportLayer(QtCore.QThread):
     html = QtCore.pyqtSignal(str)
     errorMsg = QtCore.pyqtSignal(str)
 
-    def createSegment(self, mode):
+    def createSegment(self, mode, pack):
         try:
             comprimento = len(self.applicationPack)
             #self.dstPort = self.findPort()
@@ -31,8 +31,8 @@ class TransportLayer(QtCore.QThread):
                                 'comprimento' : comprimento,
                                 'data' : json.dumps(self.applicationPack.encode('base64') + '=====') }
             self.segment['checksum'] = Common.calculateChecksum(self.segment)[2:]
-            self.html.emit(PDUPrinter.UDP(self.segment, 'blue'))
             if mode == 'UDP':
+                self.html.emit(PDUPrinter.UDP(self.segment, 'blue'))
                 self.segment = json.dumps(self.segment, encoding='utf8')
                 print 'Created UDP segment'
                 return True
@@ -42,8 +42,8 @@ class TransportLayer(QtCore.QThread):
                 self.tcpChecksum = 0
                 self.urgPtr = 0
                 self.offsetRes = (doff << 4) + 0 #???
-                self.dstPort = self.findPort()
-                self.datagram['transportProtocol'] = 'TCP'
+                self.dstPort = str(self.dstPort)
+                self.srcPort = str(self.srcPort)
                 #seq e ack seq so no treewayhanshake
                 self.segment['seq']       = 'seq'
                 self.segment['ackSeq']    = 'ackSeck',
@@ -52,7 +52,9 @@ class TransportLayer(QtCore.QThread):
                 self.segment['window']    = self.window,
                 self.segment['urgPtr']    = self.urgPtr,
                 self.segment['opcoes']    = 'opções',
-                self.segment = json.dumps(self.datagram)
+                self.html.emit(PDUPrinter.TCP(self.segment, 'blue'))
+                self.segment = json.dumps(self.segment, encoding='utf8')
+                print 'Created TCP segment'
                 return True
         except Exception, exc:
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -99,6 +101,96 @@ class TransportLayer(QtCore.QThread):
         return base64.decodestring(data[:lenx])
 
 
+    def sendTCP(self, flagMode):
+        self.msg.emit('Tree Way Handshake step:')
+        self.ackSeq = 0
+        #size of tcp header in 32bit word
+        doff = 5 #4bit field: 5*4 = 20bytes
+        self.window = 5840 #max window size allowed
+        self.tcpChecksum = 0
+        self.urgPtr = 0
+        self.offsetRes = (doff << 4) + 0 #???
+        if flagMode == self.SYN:
+            self.seq    = 0
+            self.ackSeq = 0
+        elif flagMode == self.ACK:
+            self.seq    = 0
+            self.ackSeq = 1
+        elif flagMode == self.SYN_ACK:
+            self.seq    = 1
+            self.ackSeq = 1
+            #pacote enviado
+
+        #send SYN
+        self.tcpHeader = {'transportProtocol' : 'TCP',
+                         'srcPort'  : str(self.srcPort),
+                         'dstPort'  : str(self.dstPort),
+                         'seq'      : self.seq,
+                         'ackSeq'   : self.ackSeq,
+                         'offsetRes': self.offsetRes,
+                         'flags'    : flagMode,
+                         'window'   : self.window,
+                         'urgPtr'   : self.urgPtr,
+                         'opcoes'   : 'opções',
+                         'data'     : 'no data'}
+        if flagMode == self.ACK:
+            self.tcpHeader['data'] = json.dumps(self.applicationPack.encode('base64') + '=====')
+        self.seq    = self.seq + int(self.tcpHeader['window'])
+        #pacote recebido
+        try:
+            self.ackSeq = self.ackSeq + int(self.answer['window'])
+        except:
+            print 'ackseq'
+        self.jTCPHeader = json.dumps(self.tcpHeader)
+        self.tcpChecksum = Common.calculateChecksum(self.jTCPHeader)
+        #remount head with correct checksum
+        #tcpHeaderTuple = (self.srcPort, self.dstPort, self.seq, self.ackSeq, self.offsetRes,
+        #                  jFlags, self.window, self.tcpChecksum, self.urgPtr)
+        self.tcpHeader['checksum'] = self.tcpChecksum
+        self.jTCPHeader = json.dumps(self.tcpHeader)
+
+        #self.headerLength = sys.getsizeof(tcpHeader)
+        self.html.emit(PDUPrinter.TCP(self.tcpHeader))
+        try:
+            transportSender = socket(AF_INET, SOCK_STREAM)
+            transportSender.connect(Layer.NetworkClient)
+            transportSender.send(self.jTCPHeader)
+            self.msg.emit('TCPHeader sent')
+            return True
+        except Exception as exc:
+            self.errorMsg.emit('Error sending TCP Segment\n' + str(exc))
+            return False
+
+
+    def interpretTCPSegment(self, pack):
+        try:
+            self.msg.emit('Interpreting TCP segment:')
+            self.segment = json.loads(pack)
+            #TCP segment
+            if not self.TCPConnected:
+                if not self.threeWayHandshake():
+                    self.errorMsg.emit('Couldn\'t established TCP connection')
+                    return False
+                else:
+                    self.TCPConnected = True
+                #self.html.emit(PDUPrinter.TCP(self.segment))
+                #checksum = self.segment['checksum']
+                #del self.segment['checksum']
+                #self.verifyChecksum(checksum)
+
+            self.segment['data'] = self.decode_base64(json.loads(self.segment['data']))
+            self.msg.emit('Request send to Application Server')
+            #pacote tcp normal
+            return True
+
+        except Exception as exc:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            error = exc_tb.tb_frame
+            line = exc_tb.tb_lineno
+            fileName = error.f_code.co_filename
+            self.errorMsg.emit("Couldn't interpret package: " + str(exc))
+            self.errorMsg.emit('error line = ' + str(line))
+
 class TransportClient(TransportLayer):
 
     TCPConnected = False
@@ -108,8 +200,8 @@ class TransportClient(TransportLayer):
         self.msg.emit( '*' * 20 + ' TRANSPORT CLIENT ' + '*' * 20)
 
     #server or router -> TODO
-    def configure(self, transportType, port):
-        self.transportType = transportType
+    def configure(self, transportProtocol, port):
+        self.transportProtocol = transportProtocol
         self.dstPort = port
 
 
@@ -124,7 +216,7 @@ class TransportClient(TransportLayer):
         try:
             while True:
                 if self.receiveFromApplicationLayer():
-                    if self.transportType == 'TCP':
+                    if self.transportProtocol == 'TCP':
                         if not self.TCPConnected :
                             if self.threeWayHandshake():
                                 self.msg.emit('TCP connection established successfully'\
@@ -136,11 +228,11 @@ class TransportClient(TransportLayer):
                         else:
                             self.sendTCPPackage()
                     else: #transport protocol = UDP
-                        if self.createSegment('UDP'):
+                        if self.createSegment(self.transportProtocol, self.applicationPack):
                             sent = Layer.send(Layer.NetworkClient, self.segment)
-                            if self.receiveAnswer():
-                                #TODO recognize datagram
-                                self.sendAnswerToApplicationLayer()
+                    if self.receiveAnswer():
+                        #TODO recognize datagram
+                        self.sendAnswerToApplicationLayer()
         except KeyboardInterrupt:
             self.transportClientSocket.close()
 
@@ -165,8 +257,12 @@ class TransportClient(TransportLayer):
         self.answer, success = Layer.receive(self.transportClientSocket)
         if success:
             self.msg.emit('Received answer from Network layer.')
-            self.interpretUDPSegment(self.answer)
+            if self.transportProtocol == 'UDP':
+                self.interpretUDPSegment(self.answer)
+            else:
+                self.interpretTCPSegment(self.answer)
         print 'received answer' + str(success)
+        #self.answer = json.loads(self.answer)
         return success
 
 
@@ -204,9 +300,9 @@ class TransportClient(TransportLayer):
                          'window'   : self.window,
                          'urgPtr'   : self.urgPtr,
                          'opcoes'   : 'opções',
-                         'data'     : json.dumps(self.applicationPack)}
+                         'data'     : json.dumps(self.applicationPack.encode('base64') + '=====') }
         self.jTCPSegment = json.dumps(self.tcpSegment)
-        self.tcpChecksum = self.calculateChecksum(self.jTCPSegment)
+        self.tcpChecksum = Common.calculateChecksum(self.jTCPSegment)
         self.tcpSegment['checksum'] = self.tcpChecksum
         self.jTCPSegment = json.dumps(self.tcpSegment)
 
@@ -233,58 +329,6 @@ class TransportClient(TransportLayer):
                     return True
         return False
 
-    def sendTCP(self, flagMode):
-        self.msg.emit('Tree Way Handshake step:')
-        self.ackSeq = 0
-        #size of tcp header in 32bit word
-        doff = 5 #4bit field: 5*4 = 20bytes
-        self.window = 5840 #max window size allowed
-        self.tcpChecksum = 0
-        self.urgPtr = 0
-        self.offsetRes = (doff << 4) + 0 #???
-        if flagMode == self.SYN:
-            self.seq    = 0
-            self.ackSeq = 0
-        elif flagMode == self.ACK:
-            self.seq    = 1
-            self.ackSeq = 1
-        else:
-            self.seq    = int(self.tcpHeader['seq']) + int(self.tcpHeader['window'])
-            self.ackSeq = int(self.tcpHeader['seq']) + int(self.tcpHeader['window'])
-
-        #send SYN
-        self.tcpHeader = {'transportProtocol' : 'TCP',
-                         'srcPort'  : self.srcPort,
-                         'dstPort'  : self.dstPort,
-                         'seq'      : self.seq,
-                         'ackSeq'   : self.ackSeq,
-                         'offsetRes': self.offsetRes,
-                         'flags'    : flagMode,
-                         'window'   : self.window,
-                         'urgPtr'   : self.urgPtr,
-                         'opcoes'   : 'opções',
-                         'data'     : 'no data'}
-        if flagMode == self.ACK:
-            self.tcpHeader['data'] = json.dumps(self.applicationPack)
-        self.jTCPHeader = json.dumps(self.tcpHeader)
-        self.tcpChecksum = self.calculateChecksum(self.jTCPHeader)
-        #remount head with correct checksum
-        #tcpHeaderTuple = (self.srcPort, self.dstPort, self.seq, self.ackSeq, self.offsetRes,
-        #                  jFlags, self.window, self.tcpChecksum, self.urgPtr)
-        self.tcpHeader['checksum'] = self.tcpChecksum
-        self.jTCPHeader = json.dumps(self.tcpHeader)
-
-        #self.headerLength = sys.getsizeof(tcpHeader)
-        self.html.emit(PDUPrinter.TCP(self.tcpHeader))
-        try:
-            transportSender = socket(AF_INET, SOCK_STREAM)
-            transportSender.connect(Layer.NetworkClient)
-            transportSender.send(self.jTCPHeader)
-            self.msg.emit('TCPHeader sent')
-            return True
-        except Exception as exc:
-            self.errorMsg.emit('Error sending TCP Segment\n' + str(exc))
-            return False
 
 
     def confirmFlags(self, flagsMode):
@@ -306,7 +350,6 @@ class TransportClient(TransportLayer):
                 self.html.emit(PDUPrinter.TCP(self.tcpHeader, 'blue'))
                 self.answer = json.loads(self.answer)
                 if self.answer['seq'] == 0 and self.answer['ackSeq'] == 1:
-                    self.html.emit(PDUPrinter.TCP(self.tcpHeader, 'blue'))
                     return True
                 else:
                     self.msg.emit('Acknowledge sequence number doesn\'t check')
