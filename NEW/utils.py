@@ -39,12 +39,18 @@ class Common():
 class RouterTable(QtCore.QObject):
 
     update = QtCore.pyqtSignal()
-    routerTable = {}
+
+    #vector of routes
+    tableVector = {}
+    route = {
+        'key':'',
+        'mask':'',
+        'value':''
+    }
     def __init__(self):
         print 'router obj'
         super(RouterTable, self).__init__()
         self.loadRouterTable()
-
 
 
     def loadRouterTable(self):
@@ -53,7 +59,10 @@ class RouterTable(QtCore.QObject):
             with open ('routerTable.txt', 'r') as rt:
                 for line in rt:
                     (key, mask, value) = line.split()
-                    self.routerTable[count] = (key, mask, value)
+                    route = { 'key'  : key,
+                              'mask'  : mask,
+                              'value' : value }
+                    self.tableVector[count] = route
                     count += 1
         except Exception as e:
             print 'Did not find router table file.'
@@ -62,24 +71,30 @@ class RouterTable(QtCore.QObject):
 
     def saveRouterTable(self):
         with open ('routerTable.txt', 'w') as rt:
-            for x in self.routerTable:
-                rt.write(x + ' ' + self.routerTable[x] + '\n')
+            for x, route in self.tableVector.iteritems():
+                print 'saving ' + str(x)
+                rt.write(route['key'] + ' ' + route['mask'] + ' ' + route['value'] + '\n')
 
 
-    def addDataToRouterTable(self, key, value):
+    def addDataToRouterTable(self, key, mask, value):
         #add ip validation
-        self.routerTable[str(key)] = str(value)
+        print str(len(self.tableVector))
+        route = { 'key'     : key,
+                  'mask'    : mask,
+                  'value'   : value }
+        self.tableVector[len(self.tableVector)] = route
         self.saveRouterTable()
+        self.loadRouterTable()
         self.update.emit()
 
 
     def deleteDataFromRouterTable(self, index):
-        for i, (key, value) in enumerate(self.routerTable.items()):
-            print i
-            if i == int(index):
-                del self.routerTable[key]
-                self.saveRouterTable()
-                break
+        print 'deleting index ' + str(index)
+        del self.tableVector[index]
+        print str(self.tableVector)
+        self.saveRouterTable()
+        self.loadRouterTable()
+        self.update.emit()
 
 
 class PDUPrinter():
@@ -95,21 +110,23 @@ class PDUPrinter():
     @staticmethod
     def TCP(segment, color="black"):
         return   ('<html><head><link rel="stylesheet" href="style.css"></head><body>'\
-                '<table border="1" style="width:100%" cellpadding="5" color="'+color+'">'\
+                '<font color="'+color+'">'\
+                '<table border="1" style="width:100%" cellpadding="5"'\
                 '<caption> TCP SEGMENT </caption>'\
-                '<tr><td align="center">Source Port = ' + str(segment['srcPort']) + '</td>'\
-                    '<td align="center">Destination Port = ' + str(segment['dstPort']) + '</td>'\
+                '<tr><td align="center" colspan="16">Source Port = ' + str(segment['srcPort']) + '</td>'\
+                    '<td align="center" colspan="16">Destination Port = ' + str(segment['dstPort']) + '</td>'\
                 '</tr><tr>'\
-                    '<td align="center" colspan="2">Sequence Number = ' + str(segment['seq']) + '</td>'\
+                    '<td align="center" colspan="32">Sequence Number = ' + str(segment['seq']) + '</td>'\
                 '</tr><tr>'\
-                    '<td align="center" colspan="2">Acknowledgment Number = ' + str(segment['ackSeq']) + '</td>'\
+                    '<td align="center" colspan="32">Acknowledgment Number = ' + str(segment['ackSeq']) + '</td>'\
                 '</tr><tr>'\
-                    '<td align="center" colspan="2">Flags = ' + str(segment['flags']) + '</td>'\
+                    '<td align="center" colspan="16">Window size = ' + str(segment['window']) + '</td>'\
+                    '<td align="center" colspan="9">Flags = ' + str(segment['flags']) + '</td>'\
                 '</tr><tr>'\
-                    '<td align="center">Checksum = ' + str(segment['checksum']) + '</td>'\
+                    '<td align="center" colspan="16">Checksum = ' + str(segment['checksum']) + '</td>'\
                 '</tr><tr>'\
-                    '<td align="center" colspan="2">Data = Application Data</td>'\
-                '</tr></table></body></html>')
+                    '<td align="center" colspan="32">Data = Application Data</td>'\
+                '</tr></table></font></body></html>')
 
 
     @staticmethod

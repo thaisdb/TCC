@@ -186,15 +186,11 @@ class TransportServer (TransportLayer):
             self.applicationSocket = socket(AF_INET, SOCK_STREAM)
             self.applicationSocket.connect(Layer.ApplicationServer)
             #self.segment['data'] = self.decode_base64(json.loads(self.segment['data']))
-            self.appHtml.emit(PDUPrinter.HTTP(self.segment['data'], 'red'))
+            self.appHtml.emit(PDUPrinter.HTTP(self.segment['data'], 'blue'))
             while self.segment['data']:
                 sent = self.applicationSocket.send(self.segment['data'])
                 self.segment['data'] = self.segment['data'][sent:]
             self.msg.emit('Sent request to application.')
-            #while self.segment['data']:
-            #    sent = self.applicationSocket.send(self.segment['data'])
-            #    self.segment['data'] = self.segment['data'][sent:]
-            #self.msg.emit('sent request to application')
             return True
         except Exception as exc:
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -215,7 +211,7 @@ class TransportServer (TransportLayer):
         msg = ''
         for head in self.applicationPack.splitlines()[:6]:
             msg += head + '\n'
-        self.appHtml.emit(PDUPrinter.HTTP(msg + '(...)', 'blue'))
+        self.appHtml.emit(PDUPrinter.HTTP(msg + '(...)', 'red'))
         self.msg.emit('Received answer from application')
         return True
 

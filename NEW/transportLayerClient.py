@@ -277,7 +277,7 @@ class TransportClient(TransportLayer):
         return True
 
 
-    def sendTCPPackage(self):
+    def sendTCPPackage(self, color = 'black'):
         transportSender = socket(AF_INET, SOCK_STREAM)
         transportSender.connect(Layer.NetworkClient)
         self.seq = 1
@@ -307,7 +307,7 @@ class TransportClient(TransportLayer):
         self.jTCPSegment = json.dumps(self.tcpSegment)
 
         #self.headerLength = sys.getsizeof(tcpHeader)
-        self.html.emit(PDUPrinter.TCP(self.tcpSegment))
+        self.html.emit(PDUPrinter.TCP(self.tcpSegment, color))
         try:
             while self.jTCPSegment:
                 sent = transportSender.send(self.jTCPSegment)
@@ -347,9 +347,9 @@ class TransportClient(TransportLayer):
             self.answer, success = Layer.receive(self.transportClientSocket)
             if success:
                 self.msg.emit('Checking SYN_ACK')
-                self.html.emit(PDUPrinter.TCP(self.tcpHeader, 'blue'))
                 self.answer = json.loads(self.answer)
-                if self.answer['seq'] == 0 and self.answer['ackSeq'] == 1:
+                self.html.emit(PDUPrinter.TCP(self.answer, 'blue'))
+                if self.answer['flags'] == self.SYN_ACK:
                     return True
                 else:
                     self.msg.emit('Acknowledge sequence number doesn\'t check')

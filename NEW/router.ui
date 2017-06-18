@@ -29,7 +29,7 @@
    <bool>false</bool>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: rgb(255, 255, 255);</string>
+   <string notr="true"/>
   </property>
   <property name="inputMethodHints">
    <set>Qt::ImhNone</set>
@@ -37,31 +37,31 @@
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>100</x>
-     <y>110</y>
+     <x>120</x>
+     <y>190</y>
      <width>441</width>
-     <height>481</height>
+     <height>421</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
-       <widget class="QLineEdit" name="ipLine">
+       <widget class="QLineEdit" name="ipInput">
         <property name="text">
          <string>IP</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="lineEdit">
+       <widget class="QLineEdit" name="maskInput">
         <property name="text">
          <string>Mask</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="routeLine">
+       <widget class="QLineEdit" name="routeInput">
         <property name="text">
          <string>Rota</string>
         </property>
@@ -70,9 +70,7 @@
       <item>
        <widget class="QPushButton" name="addButton">
         <property name="styleSheet">
-         <string notr="true">background-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);
-font: bold 11pt &quot;Latin Modern Roman Caps&quot;;</string>
+         <string notr="true"/>
         </property>
         <property name="text">
          <string>Add</string>
@@ -90,11 +88,7 @@ font: bold 11pt &quot;Latin Modern Roman Caps&quot;;</string>
        </sizepolicy>
       </property>
       <property name="styleSheet">
-       <string notr="true">color: rgb(255, 255, 255);
-gridline-color: rgb(0, 0, 0);
-alternate-background-color: rgb(240, 240, 240);
-border-color: rgb(0, 0, 0);
-font: bold 11pt &quot;Latin Modern Roman Caps&quot;;</string>
+       <string notr="true"/>
       </property>
       <property name="lineWidth">
        <number>1</number>
@@ -170,10 +164,7 @@ font: bold 11pt &quot;Latin Modern Roman Caps&quot;;</string>
       <item>
        <widget class="QPushButton" name="removeButton">
         <property name="styleSheet">
-         <string notr="true">font: bold 11pt &quot;Latin Modern Roman Caps&quot;;
-selection-background-color: rgb(0, 0, 0);
-background-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);</string>
+         <string notr="true"/>
         </property>
         <property name="text">
          <string>Remove</string>
@@ -187,14 +178,14 @@ color: rgb(255, 255, 255);</string>
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>190</x>
-     <y>40</y>
+     <x>300</x>
+     <y>130</y>
      <width>241</width>
      <height>31</height>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">font: 26pt &quot;Latin Modern Mono Caps&quot;;</string>
+    <string notr="true"/>
    </property>
    <property name="text">
     <string>Router Table</string>
@@ -222,21 +213,27 @@ color: rgb(255, 255, 255);</string>
     <enum>Qt::LeftArrow</enum>
    </property>
   </widget>
-  <widget class="QTextEdit" name="physicalOUT">
+  <widget class="QTextEdit" name="physicalLOut">
    <property name="geometry">
     <rect>
-     <x>600</x>
-     <y>390</y>
+     <x>650</x>
+     <y>400</y>
      <width>571</width>
      <height>211</height>
     </rect>
+   </property>
+   <property name="lineWrapMode">
+    <enum>QTextEdit::NoWrap</enum>
+   </property>
+   <property name="textInteractionFlags">
+    <set>Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
    </property>
   </widget>
   <widget class="QLabel" name="label_4">
    <property name="geometry">
     <rect>
-     <x>620</x>
-     <y>80</y>
+     <x>670</x>
+     <y>120</y>
      <width>131</width>
      <height>17</height>
     </rect>
@@ -248,8 +245,8 @@ color: rgb(255, 255, 255);</string>
   <widget class="QLabel" name="label_5">
    <property name="geometry">
     <rect>
-     <x>620</x>
-     <y>360</y>
+     <x>660</x>
+     <y>370</y>
      <width>131</width>
      <height>17</height>
     </rect>
@@ -258,15 +255,83 @@ color: rgb(255, 255, 255);</string>
     <string>Physical Layer</string>
    </property>
   </widget>
-  <widget class="QTextEdit" name="networkOUT">
+  <widget class="QTextEdit" name="networkLOut">
    <property name="geometry">
     <rect>
-     <x>600</x>
-     <y>110</y>
+     <x>650</x>
+     <y>150</y>
      <width>571</width>
      <height>211</height>
     </rect>
    </property>
+   <property name="lineWrapMode">
+    <enum>QTextEdit::NoWrap</enum>
+   </property>
+   <property name="textInteractionFlags">
+    <set>Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+   </property>
+  </widget>
+  <widget class="Line" name="line">
+   <property name="geometry">
+    <rect>
+     <x>90</x>
+     <y>30</y>
+     <width>1151</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+  <widget class="Line" name="line_2">
+   <property name="geometry">
+    <rect>
+     <x>90</x>
+     <y>80</y>
+     <width>1151</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+  <widget class="QWidget" name="horizontalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>300</x>
+     <y>50</y>
+     <width>921</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_3">
+    <item>
+     <widget class="QLabel" name="ipLabel">
+      <property name="text">
+       <string>IP:  </string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="portLabel">
+      <property name="text">
+       <string>Port:</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="startButton">
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
+      <property name="text">
+       <string>Start</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>

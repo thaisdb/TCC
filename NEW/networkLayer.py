@@ -77,7 +77,7 @@ class NetworkLayer(QtCore.QThread):
         networkPackage = {'dstIP' : str(dstIP), 'datagram' : datagram}
         return json.dumps(networkPackage)
 
-    def createDatagram(self, data):
+    def createDatagram(self, data, color):
         self.msg.emit('Creating IP datagram:')
         host = re.compile('Host:(.*?):')
         jPack = json.loads(data)
@@ -107,7 +107,7 @@ class NetworkLayer(QtCore.QThread):
             self.datagram['data'] = data
             self.datagram['totalLength'] = len(json.dumps(self.datagram))
 
-            self.html.emit(PDUPrinter.Datagram(self.datagram, 'blue'))
+            self.html.emit(PDUPrinter.Datagram(self.datagram, color))
             return json.dumps(self.datagram)
         except Exception as exc:
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -118,10 +118,10 @@ class NetworkLayer(QtCore.QThread):
             print 'error line = ' + str(line)
 
 
-    def interpretPackage(self, pack):
+    def interpretPackage(self, pack, color):
         self.datagram = json.loads(pack)
         self.msg.emit('Datagram received:')
-        self.html.emit(PDUPrinter.Datagram(self.datagram, 'red'))
+        self.html.emit(PDUPrinter.Datagram(self.datagram, color))
         dstIP = self.datagram['dstIP']
         thisIP = Common.myIP()[1]['addr']
         if str(dstIP) == str(thisIP) or str(dstIP) == 'localhost':
@@ -150,13 +150,13 @@ class NetworkClient(NetworkLayer):
                 self.frame, success = Layer.receive(self.networkClientSocket)
                 if success:
                     self.msg.emit ('Received UDP package from Transport Layer')
-                    networkPackage = self.createNetworkPackage(self.createDatagram(self.frame))
+                    networkPackage = self.createNetworkPackage(self.createDatagram(self.frame, 'blue'))
                     Layer.send(Layer.PhysicalClient, networkPackage)
                     self.msg.emit('Datagram sent to Physical layer.')
                     self.answer, success = Layer.receive(self.networkClientSocket)
                     if success:
                         self.msg.emit('Received answer')
-                        self.interpretPackage(self.answer)
+                        self.interpretPackage(self.answer, 'red')
                         sent = Layer.send(Layer.TransportClient, json.loads(self.answer)['data'])
                         self.msg.emit ('Sent msg to transport client ' + str(sent))
         except KeyboardInterrupt:
@@ -197,12 +197,12 @@ class NetworkServer(NetworkLayer):
         while True:
             self.package, success = Layer.receive(self.networkServerSocket)
             if success:
-                self.interpretPackage(self.package)
+                self.interpretPackage(self.package, 'blue')
                 sent = Layer.send(Layer.TransportServer, self.datagram['data'])
                 if sent:
                     self.answer, success = Layer.receive(self.networkServerSocket)
                     self.msg.emit ('Received answer')
-                    networkPackage = self.createNetworkPackage(self.createDatagram(self.answer))
+                    networkPackage = self.createNetworkPackage(self.createDatagram(self.answer, 'red'))
                     sent = Layer.send(Layer.PhysicalServer, networkPackage)
                     self.msg.emit ('Answer sent to physical layer')
 

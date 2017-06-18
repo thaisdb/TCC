@@ -86,6 +86,8 @@ class Router(QtGui.QWidget, Ui_RouterWidget):
         self.removeButton.clicked.connect(self.removeRow)
         self.rt.update.connect(self.displayTable)
 
+        self.startButton.clicked.connect(self.startRouter)
+
         self.configureRouter()
 
 
@@ -94,7 +96,6 @@ class Router(QtGui.QWidget, Ui_RouterWidget):
             ip = Common.myIP()[1]['addr']
             port = add.PhysicalRouter[1]
             Layer.PhysicalRouter = (ip, int(port))
-            self.startRouter()
             return True
         except Exception as exc:
             self.errorMsg.emit(str(exc))
@@ -135,11 +136,10 @@ class Router(QtGui.QWidget, Ui_RouterWidget):
     def displayTable(self):
         try:
             self.routerTable.setRowCount(0)
-            for index, (key, mask, route) in self.rt.routerTable.iteritems():
-                print 'reading key '+ str(key)
-                self.addRow(key, mask, route)
+            for x, route in self.rt.tableVector.iteritems():
+                self.addRow(route['key'], route['mask'], route['value'])
         except Exception as error:
-            print 'Error loading router table: ' + str(error)
+            print 'Error displaying router table: ' + str(error)
 
 
 
@@ -152,15 +152,17 @@ class Router(QtGui.QWidget, Ui_RouterWidget):
         self.routerTable.setItem(rowPosition, 2, QtGui.QTableWidgetItem(route))
 
     def newRow(self):
-        ip = self.ipLine.text()
-        route = self.routeLine.text()
-        mask = self.maskLine.text()
-        self.rt.addDataToRouterTable(ip, route)
+        ip = self.ipInput.text()
+        mask = self.maskInput.text()
+        route = self.routeInput.text()
+        self.rt.addDataToRouterTable(ip, mask, route)
 
     def removeRow(self):
         row = self.routerTable.currentRow()
         self.routerTable.removeRow(row)
         self.rt.deleteDataFromRouterTable(row)
+        self.rt.loadRouterTable()
+
 
 
 
