@@ -15,11 +15,11 @@ from routerWidget   import Ui_RouterWidget
 import os
 
 
-from networkLayer import NetworkServer, NetworkClient
+from networkLayer import NetworkServer, NetworkClient, NetworkRouter
 #Server modules
 from applicationLayerHTTPServer import ApplicationServer
 from transportLayerServer       import TransportServer
-from physicalLayerServer        import PhysicalServer
+from physicalLayerServer        import PhysicalServer, PhysicalRouter
 
 #Client modules
 from physicalLayerClient        import PhysicalClient
@@ -76,9 +76,15 @@ class Router(QtGui.QWidget, Ui_RouterWidget):
 
     errorMsg = QtCore.pyqtSignal(str)
 
+
     def __init__(self, parent=None):
         super(Router, self).__init__(parent)
         self.setupUi(self)
+
+        self.myIP = Common.myIP()[1]['addr']
+        self.ipLabel.setText('Router IP: ' + self.myIP)
+        self.portLabel.setText('Router port: ' + str(Layer.PhysicalRouter[1]))
+
         self.rt = RouterTable()
         self.displayTable()
 
@@ -86,51 +92,54 @@ class Router(QtGui.QWidget, Ui_RouterWidget):
         self.removeButton.clicked.connect(self.removeRow)
         self.rt.update.connect(self.displayTable)
 
-        self.startButton.clicked.connect(self.startRouter)
+        self.startButton.clicked.connect(self.configureRouter)
 
-        self.configureRouter()
 
 
     def configureRouter(self):
         try:
+            print 'configuring'
             ip = Common.myIP()[1]['addr']
-            port = add.PhysicalRouter[1]
+            port = Layer.PhysicalRouter[1]
             Layer.PhysicalRouter = (ip, int(port))
+            self.startRouter()
             return True
         except Exception as exc:
             self.errorMsg.emit(str(exc))
             return False
 
 
-    def startRouter():
-        self.physicalRouter = PhysicalServer(self)
-        self.physicalRouter.msg.connect(self.doMsg)
-        self.physicalRoyter.html.connect(self.printHtml)
+    def startRouter(self):
+        print 'starting physical layer'
+        self.physicalRouter = PhysicalRouter(self)
+        self.physicalRouter.msg.connect(self.printMsg)
+        self.physicalRouter.html.connect(self.printHtml)
         self.physicalRouter.errorMsg.connect(self.raiseError)
         self.physicalRouter.start()
 
-        self.networkRouter = NetworkServer(self)
-        self.networkRouter.msg.connect(self.doMsg)
+        print 'starting network layer'
+        self.networkRouter = NetworkRouter(self)
+        self.networkRouter.msg.connect(self.printMsg)
         self.networkRouter.html.connect(self.printHtml)
         self.networkRouter.start()
 
 
-    def doMsg (self, msg):
+    def printMsg (self, msg):
         sender =  self.sender().__class__.__name__
         logging.info(sender + ' -> ' + msg)
-        if sender == 'NetworkClient':
+        if sender == 'NetworkRouter':
             self.networkLOut.append(msg)
-        elif sender == 'PhysicalClient':
+        elif sender == 'PhysicalRouter':
             self.physicalLOut.append(msg)
 
-    def doHtml(self, msg):
+    def printHtml(self, msg):
         sender =  self.sender().__class__.__name__
-        if sender == 'NetworkClient':
-            self.networkOUT.append(str(dt.now()))
-            self.networkOUT.insertHtml(msg)
-        elif sender == 'PhysicalClient':
-            self.physicalOUT.append(str(dt.now()))
-            self.physicalOUT.insertHtml(msg)
+        if sender == 'NetworkRouter':
+            self.networkLOut.append(str(dt.now()))
+            self.networkLOut.insertHtml(msg)
+        elif sender == 'PhysicalRouter':
+            self.physicalLOut.append(str(dt.now()))
+            self.physicalLOut.insertHtml(msg)
 
 
     def displayTable(self):
@@ -163,6 +172,9 @@ class Router(QtGui.QWidget, Ui_RouterWidget):
         self.rt.deleteDataFromRouterTable(row)
         self.rt.loadRouterTable()
 
+    def raiseError(self, error):
+        sender =  self.sender().__class__.__name__
+        self.errorMsg.emit(sender + ':\n' + error)
 
 
 

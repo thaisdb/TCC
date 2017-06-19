@@ -72,9 +72,10 @@ class NetworkLayer(QtCore.QThread):
         myNet = self.srcIP + '/' + self.mask
         if ipaddress.IPv4Address(unicode(dstIP)) in ipaddress.IPv4Network(unicode(myNet), strict=False):
             self.msg.emit('Same network')
+            networkPackage = {'destiny' : Layer.PhysicalServer, 'datagram' : datagram}
         else:
             self.msg.emit('Can\'t reach server. Package beeing redirected to gateway...')
-        networkPackage = {'dstIP' : str(dstIP), 'datagram' : datagram}
+            networkPackage = {'destiny': Layer.PhysicalRouter, 'datagram': datagram}
         return json.dumps(networkPackage)
 
     def createDatagram(self, data, color):
@@ -205,6 +206,43 @@ class NetworkServer(NetworkLayer):
                     networkPackage = self.createNetworkPackage(self.createDatagram(self.answer, 'red'))
                     sent = Layer.send(Layer.PhysicalServer, networkPackage)
                     self.msg.emit ('Answer sent to physical layer')
+
+
+
+
+    def end(self):
+        try:
+            self.networkServerSocket.close()
+        except:
+            self.msg.emit('Network server already closed')
+
+class NetworkRouter(NetworkLayer):
+    mask = '255.255.255.0'
+
+    msg = QtCore.pyqtSignal(str)
+    html = QtCore.pyqtSignal(str)
+
+    def __init__(self, parent=None):
+        super(NetworkRouter, self).__init__()
+
+    def run(self):
+        self.networkRouterSocket = socket(AF_INET, SOCK_STREAM)
+        self.networkRouterSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        self.networkRouterSocket.bind (Layer.NetworkRouter)
+        self.networkRouterSocket.listen(1)
+        self.msg.emit('starting network router')
+        while True:
+            self.package, success = Layer.receive(self.networkRouterSocket)
+            if success:
+                self.interpretPackage(self.package, 'blue')
+                #sent = Layer.send(Layer.TransportServer, self.datagram['data'])
+                #if sent:
+                #TODO verify router table
+                self.answer, success = Layer.receive(self.networkRouterSocket)
+                self.msg.emit ('Received answer')
+                networkPackage = self.createNetworkPackage(self.createDatagram(self.answer, 'red'))
+                sent = Layer.send(Layer.PhysicalRouter, networkPackage)
+                self.msg.emit ('Answer sent to physical layer')
 
 
 

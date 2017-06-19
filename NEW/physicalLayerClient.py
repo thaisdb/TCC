@@ -71,8 +71,10 @@ class PhysicalLayer(QtCore.QThread):
 
 
     def getDstMAC (self, ip):
-        self.msg.emit('Getting MAC of IP = ' + str(ip))
-        self.dstIP = ip
+        if ip[0] == 'localhost':
+            ip[0] = Common.myIP()[1]['addr']
+        self.msg.emit('Getting MAC of IP = ' + str(ip[0]))
+        self.dstIP = ip[0]
         self.dstMAC = self.getServerMAC(self.dstIP)
         self.msg.emit("Destiny IP: " + str(self.dstIP))
         self.msg.emit("Destiny MAC: " + str(self.dstMAC) + '\n')
@@ -90,7 +92,6 @@ class PhysicalLayer(QtCore.QThread):
     @staticmethod
     def getMyMAC(interface):
         addr = netifaces.ifaddresses(interface)
-        print 'getting MAC'
         return addr[netifaces.AF_LINK][0]['addr']
 
     @staticmethod
@@ -117,7 +118,8 @@ class PhysicalClient(PhysicalLayer):
             self.msg.emit('Waiting datagram from Network layer')
             self.package, success = Layer.receive(self.physicalClientSocket)
             self.msg.emit('Received package from Network layer.')
-            self.getDstMAC(json.loads(self.package)['dstIP'])
+            self.destiny = json.loads(self.package)['destiny']
+            self.getDstMAC(self.destiny)
             self.package = json.loads(self.package)['datagram']
             if success:
                 if not self.mtuReceived:
@@ -128,7 +130,7 @@ class PhysicalClient(PhysicalLayer):
                         rand = random.randint(0, 10)
                         self.msg.emit('Collision detected, ' + str(rand) + ' seconds to retry...')
                         time.sleep(rand)
-                sent = Layer.send(Layer.PhysicalServer, 'binaryRequestClient.txt', self.myMTU)
+                sent = Layer.send(self.destiny, 'binaryRequestClient.txt', self.myMTU)
                 self.msg.emit('Sent binary file to Physical server = ' + str(sent))
                 if self.receiveFile(self.physicalClientSocket, 'binaryAnswer.txt'):
                     self.msg.emit('Received binary file from server')

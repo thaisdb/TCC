@@ -222,11 +222,14 @@
      <height>211</height>
     </rect>
    </property>
+   <property name="styleSheet">
+    <string notr="true">font: 11pt &quot;Ubuntu Condensed&quot;;</string>
+   </property>
    <property name="lineWrapMode">
     <enum>QTextEdit::NoWrap</enum>
    </property>
    <property name="textInteractionFlags">
-    <set>Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+    <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
    </property>
   </widget>
   <widget class="QLabel" name="label_4">
@@ -264,11 +267,17 @@
      <height>211</height>
     </rect>
    </property>
+   <property name="mouseTracking">
+    <bool>true</bool>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">font: 11pt &quot;Ubuntu Condensed&quot;;</string>
+   </property>
    <property name="lineWrapMode">
     <enum>QTextEdit::NoWrap</enum>
    </property>
    <property name="textInteractionFlags">
-    <set>Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+    <set>Qt::TextBrowserInteraction</set>
    </property>
   </widget>
   <widget class="Line" name="line">
