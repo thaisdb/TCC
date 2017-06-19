@@ -42,11 +42,6 @@ class RouterTable(QtCore.QObject):
 
     #vector of routes
     tableVector = {}
-    route = {
-        'key':'',
-        'mask':'',
-        'value':''
-    }
     def __init__(self):
         print 'router obj'
         super(RouterTable, self).__init__()
@@ -54,6 +49,7 @@ class RouterTable(QtCore.QObject):
 
 
     def loadRouterTable(self):
+        self.tableVector = {}
         try:
             count = 0
             with open ('routerTable.txt', 'r') as rt:
@@ -74,6 +70,7 @@ class RouterTable(QtCore.QObject):
             for x, route in self.tableVector.iteritems():
                 print 'saving ' + str(x)
                 rt.write(route['key'] + ' ' + route['mask'] + ' ' + route['value'] + '\n')
+        self.update.emit()
 
 
     def addDataToRouterTable(self, key, mask, value):
@@ -85,16 +82,13 @@ class RouterTable(QtCore.QObject):
         self.tableVector[len(self.tableVector)] = route
         self.saveRouterTable()
         self.loadRouterTable()
-        self.update.emit()
 
 
     def deleteDataFromRouterTable(self, index):
         print 'deleting index ' + str(index)
         del self.tableVector[index]
-        print str(self.tableVector)
         self.saveRouterTable()
         self.loadRouterTable()
-        self.update.emit()
 
 
 class PDUPrinter():
