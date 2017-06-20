@@ -91,6 +91,11 @@ class RouterTable(QtCore.QObject):
         self.loadRouterTable()
 
 
+    def getRoute(self, ip):
+        for x, route in self.routerVector.interitems():
+            if route['key'] == ip:
+                return route['value']
+
 class PDUPrinter():
 
     @staticmethod

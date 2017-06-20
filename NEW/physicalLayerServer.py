@@ -41,15 +41,16 @@ class PhysicalServer(PhysicalLayer):
                 if not self.mtuSent:
                     self.connect()
                 if self.receiveFile(self.physicalServerSocket, 'binaryRequestServer.txt'):
-                    self.package = self.interpretPackage('binaryRequestServer.txt')
+                    self.package = self.interpretPackage('binaryRequestServer.txt', 'blue')
                     Layer.send(Layer.NetworkServer, self.package)
                     self.msg.emit('Waiting answer...')
                     self.answer, success = Layer.receive(self.physicalServerSocket)
                     self.msg.emit('Received package from Network layer.')
-                    self.getDstMAC(json.loads(self.answer)['dstIP'])
+                    destiny = json.loads(self.answer)['destiny']
+                    self.getDstMAC(destiny[0])
                     self.answer = json.loads(self.answer)['datagram']
                     if success:
-                        self.createFrame_BinaryFile(self.answer, 'server_binary.txt')
+                        self.createFrame_BinaryFile(self.answer, 'server_binary.txt', 'red')
                         #self.sendAnswer()
                         Layer.send(Layer.PhysicalClient, 'server_binary.txt', self.myMTU)
         except Exception as exc:
@@ -116,7 +117,7 @@ class PhysicalRouter(PhysicalLayer):
                 if not self.mtuSent:
                     self.connect()
                 if self.receiveFile(self.physicalRouterSocket, 'binaryRequestServer.txt'):
-                    self.package = self.interpretPackage('binaryRequestServer.txt')
+                    self.package = self.interpretPackage('binaryRequestServer.txt', 'blue')
                     Layer.send(Layer.NetworkRouter, self.package)
                     self.msg.emit('Waiting answer...')
                     self.answer, success = Layer.receive(self.physicalRouterSocket)
@@ -125,7 +126,6 @@ class PhysicalRouter(PhysicalLayer):
                     self.answer = json.loads(self.answer)['datagram']
                     if success:
                         self.createFrame_BinaryFile(self.answer, 'server_binary.txt')
-                        #self.sendAnswer()
                         Layer.send(Layer.PhysicalClient, 'server_binary.txt', self.myMTU)
         except Exception as exc:
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -138,7 +138,7 @@ class PhysicalRouter(PhysicalLayer):
 
     def connect(self):
         self.msg.emit('Waiting client MTU...')
-        physicalReceiver, clientaddr = self.physicalServerSocket.accept()
+        physicalReceiver, clientaddr = self.physicalRouterSocket.accept()
         Layer.PhysicalClient = (clientaddr[0], 4444)
         clientMTU = int(physicalReceiver.recv(4))
         self.myMTU = self.BUFFER_SIZE

@@ -9,7 +9,7 @@ from utils import Common
 from threading import Thread
 from layer import Layer
 import netifaces
-from utils import PDUPrinter
+from utils import PDUPrinter, RouterTable
 from PyQt4 import QtCore
 import ipaddress
 
@@ -66,15 +66,17 @@ class NetworkLayer(QtCore.QThread):
 
     count = 0
 
-    def createNetworkPackage(self, datagram):
+    def createNetworkPackage(self, sendTo, datagram):
         #TODO IF not access
-        dstIP = (Layer.PhysicalServer)[0]
+        dstIP = sendTo[0]
         myNet = self.srcIP + '/' + self.mask
         if ipaddress.IPv4Address(unicode(dstIP)) in ipaddress.IPv4Network(unicode(myNet), strict=False):
             self.msg.emit('Same network')
             networkPackage = {'destiny' : Layer.PhysicalServer, 'datagram' : datagram}
         else:
             self.msg.emit('Can\'t reach server. Package beeing redirected to gateway...')
+            Layer.PhysicalRouter = (Common.myIP()[1]['addr'], Layer.PhysicalRouter[1])
+            print str(Layer.PhysicalRouter)
             networkPackage = {'destiny': Layer.PhysicalRouter, 'datagram': datagram}
         return json.dumps(networkPackage)
 
@@ -127,10 +129,14 @@ class NetworkLayer(QtCore.QThread):
         thisIP = Common.myIP()[1]['addr']
         if str(dstIP) == str(thisIP) or str(dstIP) == 'localhost':
             self.msg.emit ("IP verified. Right server!")
+            return True
         else:
             self.msg.emit ("IP verified. Not this server.\nRediracting datagram...")
-            #TODO send to gateway
+            return False
 
+    def consultTable(self, ip):
+        rt = RouterTable()
+        return rt.getRoute(ip)
 
 class NetworkClient(NetworkLayer):
 
@@ -151,7 +157,7 @@ class NetworkClient(NetworkLayer):
                 self.frame, success = Layer.receive(self.networkClientSocket)
                 if success:
                     self.msg.emit ('Received UDP package from Transport Layer')
-                    networkPackage = self.createNetworkPackage(self.createDatagram(self.frame, 'blue'))
+                    networkPackage = self.createNetworkPackage(Layer.PhysicalServer, self.createDatagram(self.frame, 'blue'))
                     Layer.send(Layer.PhysicalClient, networkPackage)
                     self.msg.emit('Datagram sent to Physical layer.')
                     self.answer, success = Layer.receive(self.networkClientSocket)
@@ -170,9 +176,9 @@ class NetworkClient(NetworkLayer):
     #def configure(self, mask, gateway):
     def configure(self, mask):
         self.mask = mask
-        #self.gateway = gateway
-        self.msg.emit ('Configurated Mask = ' + str(mask))
-        #self.msg.emit ('Configurated Gatewat = ' + str(gateway))
+        self.gateway = Layer.PhysicalRouter
+        self.msg.emit ('Configurated Mask = ' + str(self.mask))
+        self.msg.emit ('Configurated Gatewat = ' + str(self.gateway))
 
 
     def end(self):
@@ -203,7 +209,7 @@ class NetworkServer(NetworkLayer):
                 if sent:
                     self.answer, success = Layer.receive(self.networkServerSocket)
                     self.msg.emit ('Received answer')
-                    networkPackage = self.createNetworkPackage(self.createDatagram(self.answer, 'red'))
+                    networkPackage = self.createNetworkPackage(Layer.PhysicalClient,self.createDatagram(self.answer, 'red'))
                     sent = Layer.send(Layer.PhysicalServer, networkPackage)
                     self.msg.emit ('Answer sent to physical layer')
 
@@ -234,13 +240,12 @@ class NetworkRouter(NetworkLayer):
         while True:
             self.package, success = Layer.receive(self.networkRouterSocket)
             if success:
-                self.interpretPackage(self.package, 'blue')
-                #sent = Layer.send(Layer.TransportServer, self.datagram['data'])
-                #if sent:
-                #TODO verify router table
-                self.answer, success = Layer.receive(self.networkRouterSocket)
-                self.msg.emit ('Received answer')
-                networkPackage = self.createNetworkPackage(self.createDatagram(self.answer, 'red'))
+                if not self.interpretPackage(self.package, 'blue'):
+                    #maintain port
+                    destiny = self.consultTable(dstIP), Layer.PhysicalServer[1]
+
+                # return to physical layer
+                networkPackage = self.createNetworkPackage(destiny, self.createDatagram(self.answer, 'red'))
                 sent = Layer.send(Layer.PhysicalRouter, networkPackage)
                 self.msg.emit ('Answer sent to physical layer')
 

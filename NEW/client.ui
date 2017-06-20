@@ -55,7 +55,7 @@
       <x>0</x>
       <y>0</y>
       <width>1191</width>
-      <height>605</height>
+      <height>599</height>
      </rect>
     </property>
     <property name="accessibleName">
@@ -200,7 +200,7 @@
          </sizepolicy>
         </property>
         <property name="focusPolicy">
-         <enum>Qt::NoFocus</enum>
+         <enum>Qt::StrongFocus</enum>
         </property>
         <property name="frame">
          <bool>true</bool>
@@ -258,7 +258,7 @@
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_6">
       <item>
-       <widget class="QCheckBox" name="checkBox_2">
+       <widget class="QCheckBox" name="probCollision">
         <property name="text">
          <string>Probability of collision(%):</string>
         </property>
@@ -341,7 +341,7 @@
          </sizepolicy>
         </property>
         <property name="focusPolicy">
-         <enum>Qt::NoFocus</enum>
+         <enum>Qt::StrongFocus</enum>
         </property>
         <property name="text">
          <string>255.255.255.0</string>
@@ -427,7 +427,7 @@
       <x>0</x>
       <y>0</y>
       <width>1191</width>
-      <height>605</height>
+      <height>599</height>
      </rect>
     </property>
     <attribute name="label">

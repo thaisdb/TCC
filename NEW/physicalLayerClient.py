@@ -24,7 +24,7 @@ class PhysicalLayer(QtCore.QThread):
 
     BYTE_SIZE = 8
 
-    def createFrame_BinaryFile(self, data, fileName):
+    def createFrame_BinaryFile(self, data, fileName, color):
         self.msg.emit('Creating binary file')
         #TODO fix size
         self.tamanho = sys.getsizeof(data)
@@ -36,7 +36,7 @@ class PhysicalLayer(QtCore.QThread):
         pack = json.dumps(package)
         package['FCS'] = bin(CRC32().calculate(pack))[2:]
         pack = json.dumps(package)
-        self.html.emit(PDUPrinter.Frame(package))
+        self.html.emit(PDUPrinter.Frame(package, color))
         with open(fileName, 'w') as binaryFile:
             for x in pack:
                 binaryFile.write('{0:08b}'.format(ord(x)))
@@ -63,16 +63,14 @@ class PhysicalLayer(QtCore.QThread):
                 data += x
         return data
 
-    def interpretPackage(self, fileName):
+    def interpretPackage(self, fileName, color):
         self.msg.emit('Interpreting:')
         received = json.loads(self.translateReceivedFile(fileName))
-        self.html.emit(PDUPrinter.Frame(received, 'red'))
+        self.html.emit(PDUPrinter.Frame(received, color))
         return received['data']
 
 
     def getDstMAC (self, ip):
-        if ip[0] == 'localhost':
-            ip[0] = Common.myIP()[1]['addr']
         self.msg.emit('Getting MAC of IP = ' + str(ip[0]))
         self.dstIP = ip[0]
         self.dstMAC = self.getServerMAC(self.dstIP)
@@ -118,29 +116,32 @@ class PhysicalClient(PhysicalLayer):
             self.msg.emit('Waiting datagram from Network layer')
             self.package, success = Layer.receive(self.physicalClientSocket)
             self.msg.emit('Received package from Network layer.')
-            self.destiny = json.loads(self.package)['destiny']
+            destiny = json.loads(self.package)['destiny']
+            self.destiny = (destiny[0], destiny[1])
+            print str(self.destiny)
             self.getDstMAC(self.destiny)
             self.package = json.loads(self.package)['datagram']
             if success:
                 if not self.mtuReceived:
-                    self.connect()
-                self.createFrame_BinaryFile(self.package, 'binaryRequestClient.txt')
+                    self.connect(self.destiny)
+                self.createFrame_BinaryFile(self.package, 'binaryRequestClient.txt', 'blue')
                 if self.probCollision != 0:
                     while random.randint(0, 10) <= self.probCollision:
                         rand = random.randint(0, 10)
                         self.msg.emit('Collision detected, ' + str(rand) + ' seconds to retry...')
                         time.sleep(rand)
                 sent = Layer.send(self.destiny, 'binaryRequestClient.txt', self.myMTU)
+
                 self.msg.emit('Sent binary file to Physical server = ' + str(sent))
                 if self.receiveFile(self.physicalClientSocket, 'binaryAnswer.txt'):
                     self.msg.emit('Received binary file from server')
-                    self.answer = self.interpretPackage('binaryAnswer.txt')
+                    self.answer = self.interpretPackage('binaryAnswer.txt', 'red')
                     sent = Layer.send(Layer.NetworkClient, self.answer)
 
 
-    def connect(self):
+    def connect(self, destiny):
         self.physicalSocket = socket(AF_INET, SOCK_STREAM)
-        self.physicalSocket.connect(Layer.PhysicalServer)
+        self.physicalSocket.connect(destiny)
         self.msg.emit('Establishing MTU')
         self.msg.emit('Sending my MTU = ' + str(self.myMTU))
         self.physicalSocket.send(str(self.myMTU).zfill(4))
