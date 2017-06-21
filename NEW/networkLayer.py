@@ -76,8 +76,8 @@ class NetworkLayer(QtCore.QThread):
         else:
             self.msg.emit('Can\'t reach server. Package beeing redirected to gateway...')
             Layer.PhysicalRouter = (Common.myIP()[1]['addr'], Layer.PhysicalRouter[1])
-            print str(Layer.PhysicalRouter)
-            networkPackage = {'destiny': Layer.PhysicalRouter, 'datagram': datagram}
+            self.msg.emit('Router ip = ' + str(Layer.PhysicalRouter))
+            networkPackage = {'destiny' : Layer.PhysicalRouter, 'datagram' : datagram}
         return json.dumps(networkPackage)
 
     def createDatagram(self, data, color):
@@ -125,18 +125,23 @@ class NetworkLayer(QtCore.QThread):
         self.datagram = json.loads(pack)
         self.msg.emit('Datagram received:')
         self.html.emit(PDUPrinter.Datagram(self.datagram, color))
-        dstIP = self.datagram['dstIP']
+
+        self.destiny = self.datagram['dstIP']
         thisIP = Common.myIP()[1]['addr']
-        if str(dstIP) == str(thisIP) or str(dstIP) == 'localhost':
+        if str(self.destiny) == str(thisIP) or str(self.destiny) == 'localhost':
             self.msg.emit ("IP verified. Right server!")
             return True
         else:
-            self.msg.emit ("IP verified. Not this server.\nRediracting datagram...")
+            Layer.PhysicalServer = Layer.PhysicalServer[0], int(json.loads(self.datagram['data'])['dstPort'])
             return False
 
-    def consultTable(self, ip):
+    def consultTable(self, ip, mask):
         rt = RouterTable()
-        return rt.getRoute(ip)
+        destiny = rt.getRoute(ip,mask)
+        self.msg.emit ('Redirecting to ip = ' + str(destiny))
+        return destiny
+
+
 
 class NetworkClient(NetworkLayer):
 
@@ -240,13 +245,13 @@ class NetworkRouter(NetworkLayer):
         while True:
             self.package, success = Layer.receive(self.networkRouterSocket)
             if success:
-                if not self.interpretPackage(self.package, 'blue'):
+                self.interpretPackage(self.package, 'blue')
                     #maintain port
-                    destiny = self.consultTable(dstIP), Layer.PhysicalServer[1]
-
                 # return to physical layer
-                networkPackage = self.createNetworkPackage(destiny, self.createDatagram(self.answer, 'red'))
-                sent = Layer.send(Layer.PhysicalRouter, networkPackage)
+                self.srcIP = json.loads(self.package)['srcIP']
+                destiny = self.consultTable(self.srcIP, self.mask), Layer.PhysicalServer[1]
+                networkPackage = self.createNetworkPackage(destiny, self.createDatagram(self.package, 'red'))
+                sent = Layer.send(destiny, networkPackage)
                 self.msg.emit ('Answer sent to physical layer')
 
 

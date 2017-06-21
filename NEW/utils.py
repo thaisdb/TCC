@@ -2,6 +2,7 @@
 import netifaces
 from PyQt4 import QtCore
 import json
+import ipaddress
 
 class Common():
 
@@ -91,9 +92,11 @@ class RouterTable(QtCore.QObject):
         self.loadRouterTable()
 
 
-    def getRoute(self, ip):
-        for x, route in self.routerVector.interitems():
-            if route['key'] == ip:
+    def getRoute(self, ip, mask):
+        for x, route in self.tableVector.iteritems():
+            myNet = route['key'] + '/' + route['mask']
+            if ipaddress.IPv4Address(unicode(ip)) in ipaddress.IPv4Network(unicode(myNet), strict=False):
+                print 'Selected route = ' + str(x + 1)
                 return route['value']
 
 class PDUPrinter():
