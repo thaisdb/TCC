@@ -125,8 +125,9 @@ class PhysicalRouter(PhysicalLayer):
                     self.getDstMAC(json.loads(self.answer)['dstIP'])
                     self.answer = json.loads(self.answer)['datagram']
                     if success:
-                        self.createFrame_BinaryFile(self.answer, 'server_binary.txt')
-                        Layer.send(Layer.PhysicalClient, 'server_binary.txt', self.myMTU)
+                        self.createFrame_BinaryFile(self.answer, 'router_binary.txt')
+                        self.connectAsClient(Layer.PhysicalClient)
+                        Layer.send(Layer.PhysicalClient, 'router_binary.txt', self.myMTU)
         except Exception as exc:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             error = exc_tb.tb_frame

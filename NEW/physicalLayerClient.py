@@ -86,6 +86,17 @@ class PhysicalLayer(QtCore.QThread):
         self.msg.emit("My IP: " + str(self.myIP['addr']))
         self.msg.emit("My MAC: " + str(self.myMAC))
 
+    def connectAsClient(self, destiny):
+        self.physicalSocket = socket(AF_INET, SOCK_STREAM)
+        self.physicalSocket.connect(destiny)
+        self.msg.emit('Establishing MTU')
+        self.msg.emit('Sending my MTU = ' + str(self.myMTU))
+        self.physicalSocket.send(str(self.myMTU).zfill(4))
+        self.mtu = int(self.physicalSocket.recv(4))
+        self.msg.emit('The smaller MTU, and frame size, is = ' + str(self.mtu) + '.')
+        self.mtuReceived = True
+        self.msg.emit('Frame size = ' + str(self.mtu))
+        self.physicalSocket.close()
 
     @staticmethod
     def getMyMAC(interface):
@@ -123,7 +134,7 @@ class PhysicalClient(PhysicalLayer):
             self.package = json.loads(self.package)['datagram']
             if success:
                 if not self.mtuReceived:
-                    self.connect(self.destiny)
+                    self.connectAsClient(self.destiny)
                 self.createFrame_BinaryFile(self.package, 'binaryRequestClient.txt', 'blue')
                 if self.probCollision != 0:
                     while random.randint(0, 10) <= self.probCollision:
