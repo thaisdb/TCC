@@ -254,7 +254,7 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         self.networkClient = NetworkClient(self)
         self.networkClient.msg.connect(self.doMsg)
         self.networkClient.html.connect(self.doHtml)
-        self.networkClient.configure(self.inputMask.text())
+        self.networkClient.configure(self.inputMask.text(), self.inputGateway.text())
         self.networkClient.start()
 
         self.physicalClient = PhysicalClient(self)

@@ -75,7 +75,6 @@ class NetworkLayer(QtCore.QThread):
             networkPackage = {'destiny' : Layer.PhysicalServer, 'datagram' : datagram}
         else:
             self.msg.emit('Can\'t reach server. Package beeing redirected to gateway...')
-            Layer.PhysicalRouter = (Common.myIP()[1]['addr'], Layer.PhysicalRouter[1])
             self.msg.emit('Router ip = ' + str(Layer.PhysicalRouter))
             networkPackage = {'destiny' : Layer.PhysicalRouter, 'datagram' : datagram}
         return json.dumps(networkPackage)
@@ -178,10 +177,11 @@ class NetworkClient(NetworkLayer):
             self.networkClientSocket.close()
 
 
-    #def configure(self, mask, gateway):
-    def configure(self, mask):
+    def configure(self, mask, gateway):
         self.mask = mask
-        self.gateway = Layer.PhysicalRouter
+        #maintain router port as gateway port
+        self.gateway = str(gateway), Layer.PhysicalRouter[1]
+        Layer.PhysicalRouter = self.gateway
         self.msg.emit ('Configurated Mask = ' + str(self.mask))
         self.msg.emit ('Configurated Gatewat = ' + str(self.gateway))
 
@@ -241,7 +241,7 @@ class NetworkRouter(NetworkLayer):
         self.networkRouterSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.networkRouterSocket.bind (Layer.NetworkRouter)
         self.networkRouterSocket.listen(1)
-        self.msg.emit('starting network router')
+        self.msg.emit('Starting router network layer.')
         while True:
             self.package, success = Layer.receive(self.networkRouterSocket)
             if success:
@@ -250,7 +250,7 @@ class NetworkRouter(NetworkLayer):
                 # return to physical layer
                 self.srcIP = json.loads(self.package)['srcIP']
                 destiny = self.consultTable(self.srcIP, self.mask), Layer.PhysicalServer[1]
-                networkPackage = self.createNetworkPackage(destiny, self.createDatagram(self.package, 'red'))
+                networkPackage = self.createNetworkPackage(destiny, self.package)
                 sent = Layer.send(destiny, networkPackage)
                 self.msg.emit ('Answer sent to physical layer')
 
