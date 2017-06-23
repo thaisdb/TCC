@@ -323,7 +323,7 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         tc = self.physicalLOut.cursorForPosition(event.pos())
         tc.select(QtGui.QTextCursor.WordUnderCursor)
         self.physicalLOut.setTextCursor(tc)
-        word = tc.selectedText()
+        word = str(tc.selectedText()).upper()
         print word
         pos = self.physicalLOut.cursorRect(self.physicalLOut.textCursor()).bottomRight()
         pos = self.physicalLOut.mapToGlobal(pos)
@@ -337,7 +337,7 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         tc = self.networkLOut.cursorForPosition(event.pos())
         tc.select(QtGui.QTextCursor.WordUnderCursor)
         self.networkLOut.setTextCursor(tc)
-        word = tc.selectedText()
+        word = str(tc.selectedText()).upper()
         print word
         pos = self.networkLOut.cursorRect(self.networkLOut.textCursor()).bottomRight()
         pos = self.networkLOut.mapToGlobal(pos)
@@ -350,7 +350,7 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         tc = self.transportLOut.cursorForPosition(event.pos())
         tc.select(QtGui.QTextCursor.WordUnderCursor)
         self.transportLOut.setTextCursor(tc)
-        word = tc.selectedText()
+        word = str(tc.selectedText()).upper()
         print word
         pos = self.transportLOut.cursorRect(self.transportLOut.textCursor()).bottomRight()
         pos = self.transportLOut.mapToGlobal(pos)
@@ -363,7 +363,7 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         tc = self.applicationLOut.cursorForPosition(event.pos())
         tc.select(QtGui.QTextCursor.WordUnderCursor)
         self.applicationLOut.setTextCursor(tc)
-        word = tc.selectedText()
+        word = str(tc.selectedText()).upper()
         print word
         pos = self.applicationLOut.cursorRect(self.applicationLOut.textCursor()).bottomRight()
         pos = self.applicationLOut.mapToGlobal(pos)
@@ -542,7 +542,7 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         tc = self.physicalLOut.cursorForPosition(event.pos())
         tc.select(QtGui.QTextCursor.WordUnderCursor)
         self.physicalLOut.setTextCursor(tc)
-        word = tc.selectedText()
+        word = str(tc.selectedText()).upper()
         print word
         pos = self.physicalLOut.cursorRect(self.physicalLOut.textCursor()).bottomRight()
         pos = self.physicalLOut.mapToGlobal(pos)
@@ -556,7 +556,7 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         tc = self.networkLOut.cursorForPosition(event.pos())
         tc.select(QtGui.QTextCursor.WordUnderCursor)
         self.networkLOut.setTextCursor(tc)
-        word = tc.selectedText()
+        word = str(tc.selectedText()).upper()
         print word
         pos = self.networkLOut.cursorRect(self.networkLOut.textCursor()).bottomRight()
         pos = self.networkLOut.mapToGlobal(pos)
@@ -569,7 +569,7 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         tc = self.transportLOut.cursorForPosition(event.pos())
         tc.select(QtGui.QTextCursor.WordUnderCursor)
         self.transportLOut.setTextCursor(tc)
-        word = tc.selectedText()
+        word = str(tc.selectedText()).upper()
         print word
         pos = self.transportLOut.cursorRect(self.transportLOut.textCursor()).bottomRight()
         pos = self.transportLOut.mapToGlobal(pos)
@@ -582,7 +582,7 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         tc = self.applicationLOut.cursorForPosition(event.pos())
         tc.select(QtGui.QTextCursor.WordUnderCursor)
         self.applicationLOut.setTextCursor(tc)
-        word = tc.selectedText()
+        word = str(tc.selectedText()).upper()
         print word
         pos = self.applicationLOut.cursorRect(self.applicationLOut.textCursor()).bottomRight()
         pos = self.applicationLOut.mapToGlobal(pos)

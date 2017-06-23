@@ -28,7 +28,7 @@ class PhysicalLayer(QtCore.QThread):
         self.msg.emit('Creating binary file')
         #TODO fix size
         self.tamanho = sys.getsizeof(data)
-        package = {'preambulo'  : 7*'(10101010)' + '10101011',
+        package = {'preambulo'  : '7*(10101010)' + '10101011',
                     'srcMAC'    : self.myMAC,
                     'dstMAC'    : self.dstMAC,
                     'tamanho'   : self.tamanho,

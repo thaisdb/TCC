@@ -100,7 +100,6 @@ class NetworkLayer(QtCore.QThread):
                             'fragOffset':'-x-',
                             'TTL':10,
                             'transportProtocol': transportProtocol,
-                            'checksum':'header checksum',
                             'srcIP': self.srcIP,
                             'dstIP': str(self.dstIP),
                             'options':'options',
@@ -108,7 +107,7 @@ class NetworkLayer(QtCore.QThread):
             self.datagram = self.header
             self.datagram['data'] = data
             self.datagram['totalLength'] = len(json.dumps(self.datagram))
-
+            self.datagram['checksum'] = Common.calculateChecksum(json.dumps(self.datagram)),
             self.html.emit(PDUPrinter.Datagram(self.datagram, color))
             return json.dumps(self.datagram)
         except Exception as exc:
@@ -127,6 +126,7 @@ class NetworkLayer(QtCore.QThread):
 
         self.destiny = self.datagram['dstIP']
         thisIP = Common.myIP()[1]['addr']
+        self.count = self.datagram['ID']
         if str(self.destiny) == str(thisIP) or str(self.destiny) == 'localhost':
             self.msg.emit ("IP verified. Right server!")
             return True
@@ -181,9 +181,12 @@ class NetworkClient(NetworkLayer):
         self.mask = mask
         #maintain router port as gateway port
         self.gateway = str(gateway), Layer.PhysicalRouter[1]
-        Layer.PhysicalRouter = self.gateway
+        if gateway != '':
+            Layer.PhysicalRouter = str(self.gateway)
+            self.msg.emit ('Configurated Gateway = ' + str(self.gateway))
+        else:
+            self.msg.emit ('Gateway not configured.')
         self.msg.emit ('Configurated Mask = ' + str(self.mask))
-        self.msg.emit ('Configurated Gatewat = ' + str(self.gateway))
 
 
     def end(self):
