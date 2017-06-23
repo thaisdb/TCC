@@ -129,7 +129,7 @@ class PhysicalClient(PhysicalLayer):
             self.msg.emit('Received package from Network layer.')
             destiny = json.loads(self.package)['destiny']
             self.destiny = (destiny[0], destiny[1])
-            print str(self.destiny)
+            self.msg.emit ('Destiny = ' + str(self.destiny))
             self.getDstMAC(self.destiny)
             self.package = json.loads(self.package)['datagram']
             if success:
@@ -143,7 +143,7 @@ class PhysicalClient(PhysicalLayer):
                         time.sleep(rand)
                 sent = Layer.send(self.destiny, 'binaryRequestClient.txt', self.myMTU)
 
-                self.msg.emit('Sent binary file to Physical server = ' + str(sent))
+                self.msg.emit('Sent binary file to Physical server.')
                 if self.receiveFile(self.physicalClientSocket, 'binaryAnswer.txt'):
                     self.msg.emit('Received binary file from server')
                     self.answer = self.interpretPackage('binaryAnswer.txt', 'red')

@@ -65,6 +65,7 @@ class IP:
 class NetworkLayer(QtCore.QThread):
 
     count = 0
+    returnTo = ''
 
     def createNetworkPackage(self, sendTo, datagram):
         #TODO IF not access
@@ -84,26 +85,29 @@ class NetworkLayer(QtCore.QThread):
         host = re.compile('Host:(.*?):')
         jPack = json.loads(data)
         m = host.search(jPack['data'])
+	if self.returnTo == '':
+        	self.dstIP = (Layer.PhysicalServer)[0]
+	else:
+		self.dstIP = self.returnTo
         self.srcIP = Common.myIP()[1]['addr']
-        self.dstIP = (Layer.PhysicalServer)[0]
         try:
             transportProtocol = jPack['transportProtocol']
             self.count += 1
-            self.header = {'version':'IPV4',
-                            'IHL':'0101', #min = 5
-                            'ECN':'-x-',
-                            'TOS': 'Differentiated Service', #-x-
-                            'totalLength': '',
-                            'ID': self.count,
-                            'DF':1,
-                            'MF':0,
-                            'fragOffset':'-x-',
-                            'TTL':10,
-                            'transportProtocol': transportProtocol,
-                            'srcIP': self.srcIP,
-                            'dstIP': str(self.dstIP),
-                            'options':'options',
-                            'padding':'padding'}
+            self.header = { 'version'		: 'IPV4',
+                            'IHL'		: '0101', #min = 5
+                            'ECN'		: '-x-',
+                            'TOS'		: 'Differentiated Service', #-x-
+                            'totalLength'	: '',
+                            'ID'		: self.count,
+                            'DF'		: 1,
+                            'MF'		: 0,	
+                            'fragOffset'	: '-x-',
+                            'TTL'		: 10,
+                            'transportProtocol'	: transportProtocol,
+                            'srcIP'		: self.srcIP,
+                            'dstIP'		: str(self.dstIP),
+                            'options'		: 'options',
+                            'padding'		: 'padding' }
             self.datagram = self.header
             self.datagram['data'] = data
             self.datagram['totalLength'] = len(json.dumps(self.datagram))
@@ -124,14 +128,14 @@ class NetworkLayer(QtCore.QThread):
         self.msg.emit('Datagram received:')
         self.html.emit(PDUPrinter.Datagram(self.datagram, color))
 
-        self.destiny = self.datagram['dstIP']
+        self.destiny = self.datagram['dstIP'], json.loads(self.datagram['data'])['dstPort']
         thisIP = Common.myIP()[1]['addr']
         self.count = self.datagram['ID']
+	self.returnTo = self.datagram['srcIP']
         if str(self.destiny) == str(thisIP) or str(self.destiny) == 'localhost':
-            self.msg.emit ("IP verified. Right server!")
             return True
         else:
-            Layer.PhysicalServer = Layer.PhysicalServer[0], int(json.loads(self.datagram['data'])['dstPort'])
+            #Layer.PhysicalServer = str(Layer.PhysicalServer[0]), int(json.loads(self.datagram['data'])['dstPort'])
             return False
 
     def consultTable(self, ip, mask):

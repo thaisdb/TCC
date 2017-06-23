@@ -201,7 +201,7 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
 
     def configureClient(self):
         try:
-            ip = self.serverIPInput.text()
+            ip = str(self.serverIPInput.text())
             self.port = self.portaInput.text()
             myIP = Common.myIP()[1]['addr']
             if ip =='':
