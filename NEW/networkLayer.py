@@ -13,54 +13,7 @@ from utils import PDUPrinter, RouterTable
 from PyQt4 import QtCore
 import ipaddress
 
-class IP:
-    def __init__(self, network):
-        ip, self.maskLen = network.split('/')
-        self.ipInt = [int(x) for x in ip.split('.')]
-        print 'ipInt =\t\t' + '.'.join(str(x) for x in self.ipInt)
-        #self.ipBin = [bin(int(x)+256)[3:] for x in ip.split('.')]
-        self.ipBin = [bin(x) for x in self.ipInt]
-        #print "ipBin =\t\t" + '.'.join(str(i) for i in self.ipBin)
-        #self.ipInt = [int(x, 2) for x in self.ipBin]
 
-        self.ipLen = 32 #IPV4
-        #ipLen = 128 #IPV6
-
-        self.suffixMask = (1 << (self.ipLen - int(self.maskLen))) - 1
-        #print "suffix = " + bin(suffixMask)
-        self.netMask = ((1 << self.ipLen ) - 1) - self.suffixMask
-        netMask =  BitArray(bin(self.netMask))
-        #print "NETMASK = " + netMask.bin
-        byte = 8
-        self.netMaskBin = [netMask.bin[i:i+byte] for i in range(0, len(netMask.bin), byte)]
-        print "netMaskBin =\t" + '.'.join(str(i) for i in self.netMaskBin)
-        #print "ipNetwork" + str(ipNetwork)
-        self.netMaskInt = [int(i,2) for i in self.netMaskBin]
-        print 'netMaskInt =\t' + '.'.join(str(i) for i in self.netMaskInt)
-        self.subnetBin = [bin(int(self.ipBin[i], 2) & int(self.netMaskBin[i], 2)) for i in range(0, len(self.ipBin))]
-        self.subnetInt = [int(self.subnetBin[i], 2) for i in range (0, len(self.subnetBin))]
-        #print 'subnetBin =\t' + '.'.join(str(i) for i in subnetBin)
-        print 'subnetInt =\t' + '.'.join(str(i) for i in self.subnetInt)
-        self.ipClass()
-
-
-
-
-
-
-    def ipClass(self):
-        if int(self.netMaskInt[0]) == 255:
-            if int(self.netMaskInt[1]) == 255:
-                if int(self.netMaskInt[2]) == 255:
-                    print 'ip class = C'
-                else :
-                    print 'ip class = B'
-            else:
-                print 'ip class = A'
-        else:
-            print 'unknown class'
-
-    #def validIp(self):
 
 class NetworkLayer(QtCore.QThread):
 
@@ -142,7 +95,7 @@ class NetworkLayer(QtCore.QThread):
         rt = RouterTable()
         destiny = rt.getRoute(ip,mask)
         self.msg.emit ('Redirecting to ip = ' + str(destiny))
-        return destiny
+        return str(destiny)
 
 
 
@@ -256,9 +209,10 @@ class NetworkRouter(NetworkLayer):
                     #maintain port
                 # return to physical layer
                 self.srcIP = json.loads(self.package)['srcIP']
+                self.msg.emit ('Source IP = ' + str(self.srcIP))
                 destiny = self.consultTable(self.srcIP, self.mask), Layer.PhysicalServer[1]
                 networkPackage = self.createNetworkPackage(destiny, self.package)
-                sent = Layer.send(destiny, networkPackage)
+                sent = Layer.send(Layer.PhysicalRouter, networkPackage)
                 self.msg.emit ('Answer sent to physical layer')
 
 
