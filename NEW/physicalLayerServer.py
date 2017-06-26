@@ -126,7 +126,8 @@ class PhysicalRouter(PhysicalLayer):
                     self.answer = json.loads(self.answer)['datagram']
                     if success:
                         self.createFrame_BinaryFile(self.answer, 'router_binary.txt')
-                        self.connectAsClient(Layer.PhysicalClient)
+                        print str(Layer.PhysicalClient)
+                        self.connectAsClient(Layer.PhysicalServer)
                         Layer.send(Layer.PhysicalClient, 'router_binary.txt', self.myMTU)
         except Exception as exc:
             exc_type, exc_obj, exc_tb = sys.exc_info()
