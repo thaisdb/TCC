@@ -186,7 +186,7 @@ class NetworkClient(NetworkLayer):
         #maintain router port as gateway port
         self.gateway = str(gateway), Layer.PhysicalRouter[1]
         if gateway != '':
-            Layer.PhysicalRouter = str(self.gateway)
+            Layer.PhysicalRouter = self.gateway
             self.msg.emit ('Configurated Gateway = ' + str(self.gateway))
         else:
             self.msg.emit ('Gateway not configured.')
