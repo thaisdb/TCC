@@ -4,7 +4,7 @@ from PyQt4.QtGui import QWidget
 class wordbook():
 
     bib = { 'SERVER'    : 'A computer program that provides services to other computer programs (and their users), called clients.',
-            'CLIENT'   : 'A client is a program that retrieves information from or uses resources provided by the server',
+            'CLIENT'    : 'A client is a program that retrieves information from or uses resources provided by the server',
             'DATAGRAM'  : 'Network Layer PDU',
             'FRAME'     : 'Physical Layer PDU',
             'SEGMENT'   : 'Transport Layer PDU',
@@ -22,7 +22,8 @@ class wordbook():
             'FCS'       : 'Frame check sequence',
             'URL'       : 'Uniform Resource Locator',
             'MASK'      : 'A Subnet mask is a 32-bit number that masks an IP address, and divides the IP address into network address and host address.',
-            'GATEWAY'   : 'Gateway is the computer that routes traffic from a workstation to the outside network that is serving up the Web pages.'}
+            'GATEWAY'   : 'Gateway is the computer that routes traffic from a workstation to the outside network that is serving up the Web pages.',
+            'MAC'       : ' MAC address is a unique identifier assigned to network hardware interfaces for communicating on the physical network such as Ethernet.'}
     @classmethod
     def getToolTip(self, key):
         return '<html>' + self.bib[str(key)] + '</html>'

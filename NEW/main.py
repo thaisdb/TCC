@@ -228,17 +228,16 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         return
 
 
-
     def startClient(self):
         self.applicationClient = ApplicationClient(self)
         self.applicationClient.msg.connect(self.doMsg)
         self.applicationClient.html.connect(self.doHtml)
-        self.applicationClient.start()
         if self.stepBox.isChecked():
             self.applicationClient.stepMode(True)
             self.goButton.clicked.connect(self.applicationClient.setGo)
         else:
             self.applicationClient.stepMode(False)
+        self.applicationClient.start()
         self.applicationClient.time.connect(self.setTime)
 
 
@@ -327,8 +326,10 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         print word
         pos = self.physicalLOut.cursorRect(self.physicalLOut.textCursor()).bottomRight()
         pos = self.physicalLOut.mapToGlobal(pos)
+        definition = wb.getToolTip(word)
+        logging.info('Physical cliente request tooltip: ' + word + ' [' + definition + '].')
         try:
-            QtGui.QToolTip.showText(pos, wb.getToolTip(word))
+            QtGui.QToolTip.showText(pos, definition)
         except:
             logging.error(word + ' doesn\'t have a tooltip.')
 
@@ -341,8 +342,10 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         print word
         pos = self.networkLOut.cursorRect(self.networkLOut.textCursor()).bottomRight()
         pos = self.networkLOut.mapToGlobal(pos)
+        definition = wb.getToolTip(word)
+        logging.info('Network cliente request tooltip: ' + word + ' [' + definition + '].')
         try:
-            QtGui.QToolTip.showText(pos, wb.getToolTip(word))
+            QtGui.QToolTip.showText(pos, definition)
         except:
             logging.error(word + ' doesn\'t have a tooltip.')
 
@@ -354,8 +357,10 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         print word
         pos = self.transportLOut.cursorRect(self.transportLOut.textCursor()).bottomRight()
         pos = self.transportLOut.mapToGlobal(pos)
+        definition = wb.getToolTip(word)
+        logging.info('Transport cliente request tooltip: ' + word + ' [' + definition + '].')
         try:
-            QtGui.QToolTip.showText(pos, wb.getToolTip(word))
+            QtGui.QToolTip.showText(pos, definition)
         except:
             logging.error(word + ' doesn\'t have a tooltip.')
 
@@ -367,8 +372,10 @@ class Client(QtGui.QWidget, Ui_ClientWidget):
         print word
         pos = self.applicationLOut.cursorRect(self.applicationLOut.textCursor()).bottomRight()
         pos = self.applicationLOut.mapToGlobal(pos)
+        definition = wb.getToolTip(word)
+        logging.info('Aplication cliente request tooltip: ' + word + ' [' + definition + '].')
         try:
-            QtGui.QToolTip.showText(pos, wb.getToolTip(word))
+            QtGui.QToolTip.showText(pos, definition)
         except:
             logging.error(word + ' doesn\'t have a tooltip.')
 
@@ -546,8 +553,10 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         print word
         pos = self.physicalLOut.cursorRect(self.physicalLOut.textCursor()).bottomRight()
         pos = self.physicalLOut.mapToGlobal(pos)
+        definition = wb.getToolTip(word)
+        logging.info('Physical server request tooltip: ' + word + ' [' + definition + '].')
         try:
-            QtGui.QToolTip.showText(pos, wb.getToolTip(word))
+            QtGui.QToolTip.showText(pos, definition)
         except:
             logging.error(word + ' doesn\'t have a tooltip.')
 
@@ -560,8 +569,10 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         print word
         pos = self.networkLOut.cursorRect(self.networkLOut.textCursor()).bottomRight()
         pos = self.networkLOut.mapToGlobal(pos)
+        definition = wb.getToolTip(word)
+        logging.info('Network server request tooltip: ' + word + ' [' + definition + '].')
         try:
-            QtGui.QToolTip.showText(pos, wb.getToolTip(word))
+            QtGui.QToolTip.showText(pos, definition)
         except:
             logging.error(word + ' doesn\'t have a tooltip.')
 
@@ -573,8 +584,10 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         print word
         pos = self.transportLOut.cursorRect(self.transportLOut.textCursor()).bottomRight()
         pos = self.transportLOut.mapToGlobal(pos)
+        definition = wb.getToolTip(word)
+        logging.info('Transport server request tooltip: ' + word + ' [' + definition + '].')
         try:
-            QtGui.QToolTip.showText(pos, wb.getToolTip(word))
+            QtGui.QToolTip.showText(pos, definition)
         except:
             logging.error(word + ' doesn\'t have a tooltip.')
 
@@ -586,8 +599,10 @@ class Server(QtGui.QWidget, Ui_ServerWidget):
         print word
         pos = self.applicationLOut.cursorRect(self.applicationLOut.textCursor()).bottomRight()
         pos = self.applicationLOut.mapToGlobal(pos)
+        definition = wb.getToolTip(word)
+        logging.info('Aplication server request tooltip: ' + word + ' [' + definition + '].')
         try:
-            QtGui.QToolTip.showText(pos, wb.getToolTip(word))
+            QtGui.QToolTip.showText(pos, definition)
         except:
             logging.error(word + ' doesn\'t have a tooltip.')
 def main():

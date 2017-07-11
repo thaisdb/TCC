@@ -26,6 +26,8 @@ class ApplicationClient(QtCore.QThread):
     msg = QtCore.pyqtSignal(str)
     html = QtCore.pyqtSignal(str)
     time = QtCore.pyqtSignal(float)
+    waitClick = QtCore.pyqtSignal()
+
     def __init__(self, parent=None):
         super(ApplicationClient, self).__init__()
 
@@ -41,18 +43,13 @@ class ApplicationClient(QtCore.QThread):
         self.pid = self.browser.service.process.pid
         self.msg.emit('Browser process ID = ' + str(self.pid) +
                 '.\nWaiting request from browser...')
-        # 2 for oppening another tab on browser
         while True:
-            if self.listenBrowser() :
-                self.msg.emit('Browser request received:')
-                if self.go == True:
-                    self.setGo
+                if not self.go:
+                    self.setGo()
                 else:
-                    self.sendToTransportLayer()
-                    if self.receiveFromTransport():
-                        self.sendToBrowser()
-                    self.package = ''
-                    self.answer = ''
+                    QCoreApplication.processEvents()
+
+
         self.applicationSocket.close()
 
     def end(self):
@@ -97,22 +94,28 @@ class ApplicationClient(QtCore.QThread):
         self.browserMsg = ''
         try:
             self.browserMsg = self.connection.recv(1024)
+            self.msg.emit('Browser request received:')
             self.html.emit(PDUPrinter.HTTP(self.browserMsg, 'blue'))
             return True
         except Exception, ex:
             self.msg.emit('ERROR!' + str(ex))
             return False
 
+
+    @QtCore.pyqtSlot()
     def setGo(self):
         start = time.time()
-        self.sendToTransportLayer()
-        if self.receiveFromTransport():
-            self.sendToBrowser()
-        self.time.emit(time.time() - start)
-        self.package = ''
-        self.answer = ''
+        if self.listenBrowser() :
+            self.msg.emit('Waiting for confirmation command to proceed with the request...')
+            self.sendToTransportLayer()
+            if self.receiveFromTransport():
+                self.sendToBrowser()
+            self.time.emit(time.time() - start)
+            self.package = ''
+            self.answer = ''
+            return True
 
     def stepMode(self, mode):
         self.go = mode
 
-ApplicationClient()
+

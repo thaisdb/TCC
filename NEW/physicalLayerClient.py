@@ -126,28 +126,29 @@ class PhysicalClient(PhysicalLayer):
         while True:
             self.msg.emit('Waiting datagram from Network layer')
             self.package, success = Layer.receive(self.physicalClientSocket)
-            self.msg.emit('Received package from Network layer.')
-            destiny = json.loads(self.package)['destiny']
-            self.destiny = (destiny[0], destiny[1])
-            self.msg.emit ('Destiny = ' + str(self.destiny))
-            self.getDstMAC(self.destiny)
-            self.package = json.loads(self.package)['datagram']
             if success:
-                if not self.mtuReceived:
-                    self.connectAsClient(self.destiny)
-                self.createFrame_BinaryFile(self.package, 'binaryRequestClient.txt', 'blue')
-                if self.probCollision != 0:
-                    while random.randint(0, 10) <= self.probCollision:
-                        rand = random.randint(0, 10)
-                        self.msg.emit('Collision detected, ' + str(rand) + ' seconds to retry...')
-                        time.sleep(rand)
-                sent = Layer.send(self.destiny, 'binaryRequestClient.txt', self.myMTU)
+                self.msg.emit('Received package from Network layer.')
+                destiny = json.loads(self.package)['destiny']
+                self.destiny = (destiny[0], destiny[1])
+                self.msg.emit ('Destiny = ' + str(self.destiny))
+                self.getDstMAC(self.destiny)
+                self.package = json.loads(self.package)['datagram']
+                if success:
+                    if not self.mtuReceived:
+                        self.connectAsClient(self.destiny)
+                    self.createFrame_BinaryFile(self.package, 'binaryRequestClient.txt', 'blue')
+                    if self.probCollision != 0:
+                        while random.randint(0, 10) <= self.probCollision:
+                            rand = random.randint(0, 10)
+                            self.msg.emit('Collision detected, ' + str(rand) + ' seconds to retry...')
+                            time.sleep(rand)
+                    sent = Layer.send(self.destiny, 'binaryRequestClient.txt', self.myMTU)
 
-                self.msg.emit('Sent binary file to Physical server.')
-                if self.receiveFile(self.physicalClientSocket, 'binaryAnswer.txt'):
-                    self.msg.emit('Received binary file from server')
-                    self.answer = self.interpretPackage('binaryAnswer.txt', 'red')
-                    sent = Layer.send(Layer.NetworkClient, self.answer)
+                    self.msg.emit('Sent binary file to Physical server.')
+                    if self.receiveFile(self.physicalClientSocket, 'binaryAnswer.txt'):
+                        self.msg.emit('Received binary file from server')
+                        self.answer = self.interpretPackage('binaryAnswer.txt', 'red')
+                        sent = Layer.send(Layer.NetworkClient, self.answer)
 
 
     def connect(self, destiny):
