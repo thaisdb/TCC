@@ -71,8 +71,8 @@ class PhysicalLayer(QtCore.QThread):
 
 
     def getDstMAC (self, ip):
-        self.msg.emit('Getting MAC of IP = ' + str(ip[0]))
-        self.dstIP = ip[0]
+        self.msg.emit('Getting MAC of IP = ' + str(ip))
+        self.dstIP = ip
         self.dstMAC = self.getServerMAC(self.dstIP)
         self.msg.emit("Destiny IP: " + str(self.dstIP))
         self.msg.emit("Destiny MAC: " + str(self.dstMAC) + '\n')
