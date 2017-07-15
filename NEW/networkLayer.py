@@ -209,7 +209,12 @@ class NetworkRouter(NetworkLayer):
                     #maintain port
                 # return to physical layer
                 self.srcIP = json.loads(self.package)['srcIP']
+		dstIP = self.consultTable(self.srcIP, self.mask)
                 self.msg.emit ('Source IP = ' + str(self.srcIP))
+		transpPackage = json.loads(self.package)['data']
+		port = json.loads(transpPackage)['dstPort']
+		Layer.PhysicalServer = (dstIP, port)
+		print 'PhysicalServer = ' + str(Layer.PhysicalServer)
                 destiny = self.consultTable(self.srcIP, self.mask), Layer.PhysicalServer[1]
                 networkPackage = self.createNetworkPackage(destiny, self.package)
                 sent = Layer.send(Layer.PhysicalRouter, networkPackage)

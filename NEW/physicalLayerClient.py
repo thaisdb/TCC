@@ -87,6 +87,7 @@ class PhysicalLayer(QtCore.QThread):
         self.msg.emit("My MAC: " + str(self.myMAC))
 
     def connectAsClient(self, destiny):
+	print 'connecting as client'
         self.physicalSocket = socket(AF_INET, SOCK_STREAM)
         self.physicalSocket.connect(destiny)
         self.msg.emit('Establishing MTU')

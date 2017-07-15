@@ -123,11 +123,11 @@ class PhysicalRouter(PhysicalLayer):
                     self.answer, success = Layer.receive(self.physicalRouterSocket)
                     self.msg.emit('Received package from Network layer.')
                     serverIP = json.loads(self.answer)['destiny'] 
-                    self.getDstMAC(serverIP)
+                    self.getDstMAC(serverIP[0])
                     self.answer = json.loads(self.answer)['datagram']
                     if success:
-                        self.createFrame_BinaryFile(self.answer, 'router_binary.txt')
-                        print str(Layer.PhysicalClient)
+                        self.createFrame_BinaryFile(self.answer, 'router_binary.txt','green')
+                        self.msg.emit ('Sending to server IP = ' + str(Layer.PhysicalServer))
                         self.connectAsClient(Layer.PhysicalServer)
 
                         Layer.send(Layer.PhysicalServer, 'router_binary.txt', self.myMTU)
@@ -143,7 +143,7 @@ class PhysicalRouter(PhysicalLayer):
     def connect(self):
         self.msg.emit('Waiting client MTU...')
         physicalReceiver, clientaddr = self.physicalRouterSocket.accept()
-        Layer.PhysicalClient = (clientaddr[0], 4444)
+        Layer.PhysicalClient = clientaddr
         clientMTU = int(physicalReceiver.recv(4))
         self.myMTU = self.BUFFER_SIZE
         self.msg.emit('MTU received = ' + str(clientMTU) + '\n' +
