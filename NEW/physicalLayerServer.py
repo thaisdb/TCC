@@ -37,8 +37,8 @@ class PhysicalServer(PhysicalLayer):
             self.errorMsg.emit('ERROR! It was not possible start the execution: \n' + str(exc))
         try:
             while True:
-                self.getMyIPMAC()
                 if not self.mtuSent:
+                    self.getMyIPMAC()
                     self.connect()
                 if self.receiveFile(self.physicalServerSocket, 'binaryRequestServer.txt'):
                     self.package = self.interpretPackage('binaryRequestServer.txt', 'blue')
@@ -70,9 +70,9 @@ class PhysicalServer(PhysicalLayer):
         self.myMTU = self.BUFFER_SIZE
         self.msg.emit('MTU received = ' + str(clientMTU) + '\n' +
             'My MTU = ' + str(self.myMTU))
-        self.myMTU = min(self.myMTU, clientMTU)
-        physicalReceiver.send(str(self.myMTU).zfill(4))
-        self.msg.emit('Accorded MTU = ' + str(self.myMTU))
+        self.mtu = min(self.myMTU, clientMTU)
+        physicalReceiver.send(str(self.mtu).zfill(4))
+        self.msg.emit('Accorded MTU = ' + str(self.mtu))
         self.mtuSent = True
         self.msg.emit('Connected with physical client')
         self.getDstMAC(Layer.PhysicalClient[0])
@@ -109,12 +109,12 @@ class PhysicalRouter(PhysicalLayer):
             self.host, self.port = Layer.PhysicalRouter
             self.physicalRouterSocket.listen(1)
             self.msg.emit("Setup:\nIP = " + str(self.host) + '\tPort = ' + str(self.port) + '\nListening...')
-            self.getMyIPMAC()
         except Exception as exc:
             self.errorMsg.emit('ERROR! It was not possible start the execution: \n' + str(exc))
         try:
             while True:
                 if not self.mtuSent:
+                    self.getMyIPMAC()
                     self.connect()
                 #receive request file from client
                 if self.receiveFile(self.physicalRouterSocket, 'binaryRouterClientRequest.txt'):
@@ -169,9 +169,9 @@ class PhysicalRouter(PhysicalLayer):
         self.myMTU = self.BUFFER_SIZE
         self.msg.emit('MTU received = ' + str(clientMTU) + '\n' +
             'My MTU = ' + str(self.myMTU))
-        self.myMTU = min(self.myMTU, clientMTU)
-        physicalReceiver.send(str(self.myMTU).zfill(4))
-        self.msg.emit('Accorded MTU = ' + str(self.myMTU))
+        self.mtu = min(self.myMTU, clientMTU)
+        physicalReceiver.send(str(self.mtu).zfill(4))
+        self.msg.emit('Accorded MTU = ' + str(self.mtu))
         self.mtuSent = True
         self.msg.emit('Connected with physical client')
         self.getDstMAC(Layer.PhysicalClient[0])
