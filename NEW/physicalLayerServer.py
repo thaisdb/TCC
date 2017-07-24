@@ -39,7 +39,7 @@ class PhysicalServer(PhysicalLayer):
             while True:
                 if not self.mtuSent:
                     self.getMyIPMAC()
-                    self.connect()
+                    self.connectAsServer()
                 if self.receiveFile(self.physicalServerSocket, 'binaryRequestServer.txt'):
                     self.package = self.interpretPackage('binaryRequestServer.txt', 'blue')
                     Layer.send(Layer.NetworkServer, self.package)
@@ -62,21 +62,6 @@ class PhysicalServer(PhysicalLayer):
                     '\nLine = ' + str(line))
             return False
 
-    def connect(self):
-        self.msg.emit('Waiting client MTU...')
-        physicalReceiver, clientaddr = self.physicalServerSocket.accept()
-        Layer.PhysicalClient = (clientaddr[0], 4444)
-        clientMTU = int(physicalReceiver.recv(4))
-        self.myMTU = self.BUFFER_SIZE
-        self.msg.emit('MTU received = ' + str(clientMTU) + '\n' +
-            'My MTU = ' + str(self.myMTU))
-        self.mtu = min(self.myMTU, clientMTU)
-        physicalReceiver.send(str(self.mtu).zfill(4))
-        self.msg.emit('Accorded MTU = ' + str(self.mtu))
-        self.mtuSent = True
-        self.msg.emit('Connected with physical client')
-        self.getDstMAC(Layer.PhysicalClient[0])
-        physicalReceiver.close()
 
 
     def end(self):
@@ -115,7 +100,7 @@ class PhysicalRouter(PhysicalLayer):
             while True:
                 if not self.mtuSent:
                     self.getMyIPMAC()
-                    self.connect()
+                    self.connectAsServer()
                 #receive request file from client
                 if self.receiveFile(self.physicalRouterSocket, 'binaryRouterClientRequest.txt'):
                     self.package = self.interpretPackage('binaryRouterClientRequest.txt', 'blue')
@@ -160,22 +145,6 @@ class PhysicalRouter(PhysicalLayer):
             self.errorMsg.emit('ERROR! It was not possible run the server: \n' + str(exc)+
                     '\nLine = ' + str(line))
             return False
-
-    def connect(self):
-        self.msg.emit('Waiting client MTU...')
-        physicalReceiver, clientaddr = self.physicalRouterSocket.accept()
-        Layer.PhysicalClient = clientaddr
-        clientMTU = int(physicalReceiver.recv(4))
-        self.myMTU = self.BUFFER_SIZE
-        self.msg.emit('MTU received = ' + str(clientMTU) + '\n' +
-            'My MTU = ' + str(self.myMTU))
-        self.mtu = min(self.myMTU, clientMTU)
-        physicalReceiver.send(str(self.mtu).zfill(4))
-        self.msg.emit('Accorded MTU = ' + str(self.mtu))
-        self.mtuSent = True
-        self.msg.emit('Connected with physical client')
-        self.getDstMAC(Layer.PhysicalClient[0])
-        physicalReceiver.close()
 
 
     def end(self):

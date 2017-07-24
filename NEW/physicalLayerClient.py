@@ -97,7 +97,6 @@ class PhysicalLayer(QtCore.QThread):
 		self.mtu = int(self.physicalSocket.recv(4))
 		self.msg.emit('The smaller MTU, and frame size, is = ' + str(self.mtu) + '.')
 		self.mtuReceived = True
-		self.msg.emit('Frame size = ' + str(self.mtu))
 		self.physicalSocket.close()
 	except Exception as e:
 		print "EXCEPTION = " + str(e)
@@ -110,6 +109,24 @@ class PhysicalLayer(QtCore.QThread):
     @staticmethod
     def getServerMAC(ip):
         return os.popen('arp -a ' + str(ip) + ' | awk \'{print $4}\'').read()[:-1]
+
+
+    def connectAsServer(self):
+        self.msg.emit('Waiting client MTU...')
+        physicalReceiver, clientaddr = self.physicalRouterSocket.accept()
+        Layer.PhysicalClient = clientaddr
+        clientMTU = int(physicalReceiver.recv(4))
+        self.myMTU = self.BUFFER_SIZE
+        self.msg.emit('MTU received = ' + str(clientMTU) + '\n' +
+            'My MTU = ' + str(self.myMTU))
+        self.mtu = min(self.myMTU, clientMTU)
+        physicalReceiver.send(str(self.mtu).zfill(4))
+        self.msg.emit('Accorded MTU = ' + str(self.mtu))
+        self.mtuSent = True
+        self.msg.emit('Connected with physical client')
+        self.getDstMAC(Layer.PhysicalClient[0])
+        physicalReceiver.close()
+
 
 class PhysicalClient(PhysicalLayer):
     fileType = 0 #0 to text files and 1 to image files
