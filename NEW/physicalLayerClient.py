@@ -114,7 +114,8 @@ class PhysicalLayer(QtCore.QThread):
     def connectAsServer(self, socket):
         self.msg.emit('Waiting client MTU...')
         physicalReceiver, clientaddr = socket.accept()
-        Layer.PhysicalClient = clientaddr
+        Layer.PhysicalClient = (clientaddr[0], 4444)
+        print "client addr = " + str(clientaddr)
         clientMTU = int(physicalReceiver.recv(4))
         self.myMTU = self.BUFFER_SIZE
         self.msg.emit('MTU received = ' + str(clientMTU) + '\n' +
