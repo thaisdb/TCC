@@ -87,17 +87,20 @@ class PhysicalLayer(QtCore.QThread):
         self.msg.emit("My MAC: " + str(self.myMAC))
 
     def connectAsClient(self, destiny):
-	print 'connecting as client'
-        self.physicalSocket = socket(AF_INET, SOCK_STREAM)
-        self.physicalSocket.connect(destiny)
-        self.msg.emit('Establishing MTU')
-        self.msg.emit('Sending my MTU = ' + str(self.myMTU))
-        self.physicalSocket.send(str(self.myMTU).zfill(4))
-        self.mtu = int(self.physicalSocket.recv(4))
-        self.msg.emit('The smaller MTU, and frame size, is = ' + str(self.mtu) + '.')
-        self.mtuReceived = True
-        self.msg.emit('Frame size = ' + str(self.mtu))
-        self.physicalSocket.close()
+	print 'connecting as client on ' + str(destiny)
+	try:
+		self.physicalSocket = socket(AF_INET, SOCK_STREAM)
+		self.physicalSocket.connect(destiny)
+		self.msg.emit('Establishing MTU')
+		self.msg.emit('Sending my MTU = ' + str(self.myMTU))
+		self.physicalSocket.send(str(self.myMTU).zfill(4))
+		self.mtu = int(self.physicalSocket.recv(4))
+		self.msg.emit('The smaller MTU, and frame size, is = ' + str(self.mtu) + '.')
+		self.mtuReceived = True
+		self.msg.emit('Frame size = ' + str(self.mtu))
+		self.physicalSocket.close()
+	except Exception as e:
+		print "EXCEPTION = " + str(e)
 
     @staticmethod
     def getMyMAC(interface):

@@ -213,7 +213,7 @@ class NetworkRouter(NetworkLayer):
                 self.msg.emit ('Source IP = ' + str(self.srcIP))
 		transpPackage = json.loads(self.package)['data']
 		port = json.loads(transpPackage)['dstPort']
-		Layer.PhysicalServer = (dstIP, port)
+		Layer.PhysicalServer = (dstIP, int(port))
 		print 'PhysicalServer = ' + str(Layer.PhysicalServer)
                 destiny = self.consultTable(self.srcIP, self.mask), Layer.PhysicalServer[1]
                 networkPackage = self.createNetworkPackage(destiny, self.package)
