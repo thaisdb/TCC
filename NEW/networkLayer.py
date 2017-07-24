@@ -26,7 +26,7 @@ class NetworkLayer(QtCore.QThread):
         myNet = self.srcIP + '/' + self.mask
         if ipaddress.IPv4Address(unicode(dstIP)) in ipaddress.IPv4Network(unicode(myNet), strict=False):
             self.msg.emit('Same network')
-            networkPackage = {'destiny' : Layer.PhysicalServer, 'datagram' : datagram}
+            networkPackage = {'destiny' : sendTo, 'datagram' : datagram}
         else:
             self.msg.emit('Can\'t reach server. Package beeing redirected to gateway...')
             self.msg.emit('Router ip = ' + str(Layer.PhysicalRouter))
@@ -53,7 +53,7 @@ class NetworkLayer(QtCore.QThread):
                             'totalLength'	: '',
                             'ID'		: self.count,
                             'DF'		: 1,
-                            'MF'		: 0,	
+                            'MF'		: 0,
                             'fragOffset'	: '-x-',
                             'TTL'		: 10,
                             'transportProtocol'	: transportProtocol,
@@ -153,7 +153,7 @@ class NetworkClient(NetworkLayer):
             self.msg.emit('Network client already closed')
 
 class NetworkServer(NetworkLayer):
-    mask = '255.255.255.0'
+    mask = '255.255.255.224'
 
     msg = QtCore.pyqtSignal(str)
     html = QtCore.pyqtSignal(str)
