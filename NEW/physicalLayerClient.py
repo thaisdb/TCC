@@ -111,9 +111,9 @@ class PhysicalLayer(QtCore.QThread):
         return os.popen('arp -a ' + str(ip) + ' | awk \'{print $4}\'').read()[:-1]
 
 
-    def connectAsServer(self):
+    def connectAsServer(self, socket):
         self.msg.emit('Waiting client MTU...')
-        physicalReceiver, clientaddr = self.physicalRouterSocket.accept()
+        physicalReceiver, clientaddr = socket.accept()
         Layer.PhysicalClient = clientaddr
         clientMTU = int(physicalReceiver.recv(4))
         self.myMTU = self.BUFFER_SIZE

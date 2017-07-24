@@ -39,7 +39,7 @@ class PhysicalServer(PhysicalLayer):
             while True:
                 if not self.mtuSent:
                     self.getMyIPMAC()
-                    self.connectAsServer()
+                    self.connectAsServer(self.physicalServerSocket)
                 if self.receiveFile(self.physicalServerSocket, 'binaryRequestServer.txt'):
                     self.package = self.interpretPackage('binaryRequestServer.txt', 'blue')
                     Layer.send(Layer.NetworkServer, self.package)
@@ -100,7 +100,7 @@ class PhysicalRouter(PhysicalLayer):
             while True:
                 if not self.mtuSent:
                     self.getMyIPMAC()
-                    self.connectAsServer()
+                    self.connectAsServer(self.physicalRouterSocket)
                 #receive request file from client
                 if self.receiveFile(self.physicalRouterSocket, 'binaryRouterClientRequest.txt'):
                     self.package = self.interpretPackage('binaryRouterClientRequest.txt', 'blue')
